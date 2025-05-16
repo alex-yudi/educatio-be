@@ -3,6 +3,8 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// comment: O código abaixo é um script de seed para popular o banco de dados com dados iniciais.
+// Ele cria usuários, departamentos, cursos, disciplinas, turmas, matrículas, notas e frequências.
 async function main() {
   console.log('🚀 Iniciando seed completo...');
 

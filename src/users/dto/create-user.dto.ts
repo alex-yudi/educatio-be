@@ -8,6 +8,7 @@ export enum UserRole {
   ALUNO = 'aluno'
 }
 
+// comment: O código abaixo define um DTO (Data Transfer Object) para criar um usuário. Os DTOS que sempre serão a classe responsável por validar os dados de entrada da API. Ele usa decorators do class-validator e class-transformer para validar e transformar os dados recebidos na requisição. O DTO também usa decorators do Swagger para gerar a documentação da API.
 export class CreateUserDto {
   @ApiProperty({ example: 'João Silva', description: 'Nome completo do usuário' })
   @IsString()

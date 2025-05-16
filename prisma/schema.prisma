@@ -1,3 +1,5 @@
+// comment: Schema responsável por definir o banco de dados utilizado na aplicação
+// e as relações entre os modelos
 generator client {
   provider = "prisma-client-js"
 }

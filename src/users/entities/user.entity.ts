@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Usuario, EnumPerfil } from '@prisma/client';
 import { Exclude, Expose } from 'class-transformer';
 
+// comment: O código abaixo define uma entidade de usuário que representa um usuário no sistema. Ela usa decorators do class-transformer para definir como os dados devem ser expostos e excluídos ao serializar o objeto. A entidade também implementa a interface Usuario do Prisma, garantindo que ela tenha os mesmos campos definidos no banco de dados.
 @Expose()
 export class UserEntity implements Usuario {
   constructor(partial: Partial<UserEntity>) {

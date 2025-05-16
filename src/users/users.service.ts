@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+// comment: O código abaixo define os serviços de usuários da aplicação. Aqui que realmente ocorrem as requisições e consultas ao banco de dados. O DTO deve ser importado para validar os dados de entrada.
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) { }

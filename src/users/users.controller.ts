@@ -14,6 +14,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 
+// comment: O código abaixo define um controlador para gerenciar usuários. Aqui que as rotas são criadas e os métodos correspondentes são definidos. Eles vão importar os services e os DTOs necessários para criar, atualizar, buscar e deletar usuários. O controlador também usa decorators do Swagger para gerar a documentação da API. O controlador é responsável por lidar com as requisições HTTP e retornar as respostas apropriadas para o cliente.
 @Controller('users')
 @ApiTags('users')
 export class UsersController {

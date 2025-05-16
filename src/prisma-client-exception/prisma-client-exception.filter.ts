@@ -3,6 +3,7 @@ import { BaseExceptionFilter } from '@nestjs/core';
 import { Prisma } from '@prisma/client';
 import { Response } from 'express';
 
+// comment: O código abaixo é um filtro de exceção para lidar com erros do Prisma Client. Ele captura erros conhecidos do Prisma e retorna respostas apropriadas para o cliente.
 @Catch()
 export class PrismaClientExceptionFilter extends BaseExceptionFilter {
   catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
