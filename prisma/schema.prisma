@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EnumPerfil {
+  chefeDepartamento
+  professor
+  aluno
+}
+
+model Usuario {
+  id                   Int           @id @default(autoincrement())
+  nome                 String
+  email                String        @unique
+  senha                String
+  role                 EnumPerfil
+  matricula            String?       @unique
+  departamentoMembro   Departamento? @relation("MembroDepartamento", fields: [departamento_id], references: [id])
+  departamento_id      Int?
+  turmasMinistradas    Turma[]       @relation("TurmasProfessor")
+  matriculas           Matricula[]   @relation("MatriculasAluno")
+  cursosCriados        Curso[]       @relation("CursosCriados")
+  departamentoChefiado Departamento? @relation("ChefiaDepartamento")
+  criado_em            DateTime      @default(now())
+  atualizado_em        DateTime      @updatedAt
+  Disciplina           Disciplina[]
+  Nota                 Nota[]
+  Frequencia           Frequencia[]
+}
+
+model Departamento {
+  id            Int       @id @default(autoincrement())
+  nome          String
+  codigo        String    @unique
+  chefe         Usuario?  @relation("ChefiaDepartamento", fields: [chefe_id], references: [id])
+  chefe_id      Int?      @unique
+  cursos        Curso[]
+  professores   Usuario[] @relation("MembroDepartamento")
+  criado_em     DateTime  @default(now())
+  atualizado_em DateTime  @updatedAt
+}
+
+model Curso {
+  id              Int               @id @default(autoincrement())
+  nome            String
+  codigo          String            @unique
+  descricao       String?
+  departamento    Departamento      @relation(fields: [departamento_id], references: [id])
+  departamento_id Int
+  disciplinas     CursoDisciplina[]
+  criado_por      Usuario           @relation(fields: [criado_por_id], references: [id], name: "CursosCriados")
+  criado_por_id   Int
+  criado_em       DateTime          @default(now())
+  atualizado_em   DateTime          @updatedAt
+}
+
+model Disciplina {
+  id             Int               @id @default(autoincrement())
+  nome           String
+  codigo         String            @unique
+  descricao      String?
+  carga_horaria  Int
+  ementa         String?
+  pre_requisitos PreRequisito[]    @relation("PreRequisitos")
+  turmas         Turma[]
+  cursos         CursoDisciplina[]
+  criado_por     Usuario           @relation(fields: [criado_por_id], references: [id])
+  criado_por_id  Int
+  criado_em      DateTime          @default(now())
+  atualizado_em  DateTime          @updatedAt
+  PreRequisito   PreRequisito[]
+}
+
+model CursoDisciplina {
+  curso_id      Int
+  disciplina_id Int
+  curso         Curso      @relation(fields: [curso_id], references: [id])
+  disciplina    Disciplina @relation(fields: [disciplina_id], references: [id])
+  criado_em     DateTime   @default(now())
+
+  @@id([curso_id, disciplina_id])
+}
+
+model PreRequisito {
+  disciplina_id               Int
+  disciplina_pre_requisito_id Int
+  disciplina                  Disciplina @relation(fields: [disciplina_id], references: [id], name: "PreRequisitos")
+  pre_requisito               Disciplina @relation(fields: [disciplina_pre_requisito_id], references: [id])
+  criado_em                   DateTime   @default(now())
+
+  @@id([disciplina_id, disciplina_pre_requisito_id])
+}
+
+model Turma {
+  id            Int         @id @default(autoincrement())
+  codigo        String      @unique
+  disciplina    Disciplina  @relation(fields: [disciplina_id], references: [id])
+  disciplina_id Int
+  professor     Usuario     @relation(fields: [professor_id], references: [id], name: "TurmasProfessor")
+  professor_id  Int
+  ano           Int
+  semestre      Int
+  horario       String?
+  matriculas    Matricula[]
+  criado_em     DateTime    @default(now())
+  atualizado_em DateTime    @updatedAt
+}
+
+model Matricula {
+  id            Int          @id @default(autoincrement())
+  estudante     Usuario      @relation(fields: [estudante_id], references: [id], name: "MatriculasAluno")
+  estudante_id  Int
+  turma         Turma        @relation(fields: [turma_id], references: [id])
+  turma_id      Int
+  notas         Nota[]
+  frequencias   Frequencia[]
+  status        String       @default("ATIVA")
+  criado_em     DateTime     @default(now())
+  atualizado_em DateTime     @updatedAt
+
+  @@unique([estudante_id, turma_id])
+}
+
+model Nota {
+  id            Int       @id @default(autoincrement())
+  matricula     Matricula @relation(fields: [matricula_id], references: [id])
+  matricula_id  Int
+  tipo          String
+  valor         Float
+  criado_por    Usuario   @relation(fields: [criado_por_id], references: [id])
+  criado_por_id Int
+  criado_em     DateTime  @default(now())
+  atualizado_em DateTime  @updatedAt
+}
+
+model Frequencia {
+  id                Int       @id @default(autoincrement())
+  matricula         Matricula @relation(fields: [matricula_id], references: [id])
+  matricula_id      Int
+  data_aula         DateTime
+  presente          Boolean   @default(true)
+  registrado_por    Usuario   @relation(fields: [registrado_por_id], references: [id])
+  registrado_por_id Int
+  criado_em         DateTime  @default(now())
+  atualizado_em     DateTime  @updatedAt
+}

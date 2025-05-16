@@ -1,0 +1,9 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: ${CONTAINER_NAME}
+    restart: always
+    ports:
+      - "5432:${DB_PORT}"
+    env_file:
+      - .env
