@@ -16,6 +16,8 @@ import { LoginResponseEntity } from './entities/login-response.entity';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
 import { AlunoCreatedEntity } from './entities/aluno-created.entity';
 import { AdminGuard } from 'src/auth/guards/admin.guard';
+import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
+import { DisciplinaEntity } from './entities/disciplina.entity';
 
 // comment: O código abaixo define um controlador para gerenciar apenas o login de usuários. 
 // O controlador também usa decorators do Swagger para gerar a documentação da API.
@@ -67,6 +69,36 @@ export class UsersController {
         senha_temporaria: result.senha_temporaria,
         curso: result.curso
       });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores');
+      }
+      throw error;
+    }
+  }
+
+  @Post('disciplina')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiCreatedResponse({
+    type: DisciplinaEntity,
+    description: 'Disciplina cadastrada com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Não autorizado. Apenas administradores podem criar disciplinas'
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado'
+  })
+  async createDisciplina(
+    @Body() createDisciplinaDto: CreateDisciplinaDto,
+    @Req() request: any
+  ) {
+    try {
+      const adminId = request.user.sub;
+      const disciplina = await this.usersService.createDisciplina(createDisciplinaDto, adminId);
+
+      return new DisciplinaEntity(disciplina);
     } catch (error) {
       if (error.status === 401) {
         throw new ForbiddenException('Acesso restrito a administradores');

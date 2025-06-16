@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EnumPerfil } from '@prisma/client';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
 import { generateRandomPassword } from 'src/utils/password.utils';
+import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -104,5 +105,38 @@ export class UsersService {
       senha_temporaria: temporaryPassword,
       curso: curso.nome
     };
+  }
+
+  async createDisciplina(createDisciplinaDto: CreateDisciplinaDto, adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem cadastrar disciplinas');
+    }
+
+    // Verificar se já existe uma disciplina com este código
+    const existingDisciplina = await this.prisma.disciplina.findUnique({
+      where: { codigo: createDisciplinaDto.codigo }
+    });
+
+    if (existingDisciplina) {
+      throw new ConflictException(`Disciplina com código ${createDisciplinaDto.codigo} já existe`);
+    }
+
+    // Criar a disciplina
+    const novaDisciplina = await this.prisma.disciplina.create({
+      data: {
+        nome: createDisciplinaDto.nome,
+        codigo: createDisciplinaDto.codigo,
+        descricao: createDisciplinaDto.descricao,
+        carga_horaria: createDisciplinaDto.carga_horaria || 60, // Valor padrão se não for fornecido
+        ementa: createDisciplinaDto.ementa,
+        criado_por: {
+          connect: { id: adminId }
+        }
+      }
+    });
+
+    return novaDisciplina;
   }
 }
