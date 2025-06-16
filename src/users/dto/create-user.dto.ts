@@ -1,9 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsString, MinLength, ValidateIf } from "class-validator";
 
 export enum UserRole {
-  CHEFE_DEPARTAMENTO = 'chefeDepartamento',
+  ADMIN = 'admin',
   PROFESSOR = 'professor',
   ALUNO = 'aluno'
 }
@@ -29,7 +28,7 @@ export class CreateUserDto {
   @ApiProperty({
     enum: UserRole,
     example: UserRole.ALUNO,
-    description: 'Tipo de usuário: chefeDepartamento, professor ou aluno'
+    description: 'Tipo de usuário: admin, professor ou aluno'
   })
   @IsEnum(UserRole)
   @IsNotEmpty()
@@ -44,14 +43,4 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   matricula?: string;
-
-  @ApiProperty({
-    required: false,
-    example: 1,
-    description: 'ID do departamento (obrigatório para chefes e professores)'
-  })
-  @ValidateIf(o => o.role === UserRole.CHEFE_DEPARTAMENTO || o.role === UserRole.PROFESSOR)
-  @Type(() => Number)
-  @IsNotEmpty()
-  departamento_id?: number;
 }

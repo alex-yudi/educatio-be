@@ -10,7 +10,6 @@ export class UserEntity implements Usuario {
   }
   nome: string;
   matricula: string | null;
-  departamento_id: number | null;
   senha: string;
   criado_em: Date;
   atualizado_em: Date;
@@ -40,18 +39,9 @@ export class UserEntity implements Usuario {
   @Expose({ name: 'matricula' })
   registrationNumber: string | null;
 
-  @ApiProperty({ required: false, example: 1 })
-  @Expose({ name: 'departamento_id' })
-  departmentId: number | null;
-
   @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
   createdAt: Date;
 
   @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
   updatedAt: Date;
-
-  // Campo virtual para nome do departamento
-  @ApiProperty({ required: false, example: 'Ciência da Computação' })
-  @Expose()
-  departamento?: string;
 }
