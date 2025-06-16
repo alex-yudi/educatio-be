@@ -1,10 +1,10 @@
-import { PrismaClient, EnumPerfil } from '@prisma/client';
+import { PrismaClient, EnumPerfil, DiaSemana } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 // comment: O código abaixo é um script de seed para popular o banco de dados com dados iniciais.
-// Ele cria usuários, departamentos, cursos, disciplinas, turmas, matrículas, notas e frequências.
+// Ele cria usuários, cursos, disciplinas, turmas, matrículas, notas e frequências.
 async function main() {
   console.log('🚀 Iniciando seed completo...');
 
@@ -12,17 +12,17 @@ async function main() {
     // 1. Limpar o banco de dados (opcional)
     await prisma.$executeRaw`TRUNCATE TABLE 
       "PreRequisito", "CursoDisciplina", "Matricula", "Nota", "Frequencia", 
-      "Turma", "Disciplina", "Curso", "Departamento", "Usuario" CASCADE`;
+      "HorarioAula", "Turma", "Disciplina", "Curso", "Usuario" CASCADE`;
 
     // 2. Criar usuários
     const saltRounds = 10;
-    const [chefe, professor, aluno] = await Promise.all([
+    const [admin, professor, aluno] = await Promise.all([
       prisma.usuario.create({
         data: {
           nome: 'Maria Fernandes',
-          email: 'chefe.dcomp@uni.edu',
-          senha: await bcrypt.hash('Chefe@123', saltRounds),
-          role: EnumPerfil.chefeDepartamento
+          email: 'admin@uni.edu',
+          senha: await bcrypt.hash('Admin@123', saltRounds),
+          role: EnumPerfil.admin
         }
       }),
       prisma.usuario.create({
@@ -46,36 +46,24 @@ async function main() {
 
     console.log('✔ Usuários criados');
 
-    // 3. Criar departamento
-    const departamento = await prisma.departamento.create({
-      data: {
-        nome: 'Departamento de Computação',
-        codigo: 'DCOMP',
-        chefe_id: chefe.id,
-        professores: { connect: { id: professor.id } }
-      }
-    });
-    console.log('✔ Departamento criado');
-
-    // 4. Criar curso
+    // 3. Criar curso
     const curso = await prisma.curso.create({
       data: {
         nome: 'Engenharia de Software',
         codigo: 'ESOFT',
-        departamento_id: departamento.id,
-        criado_por_id: chefe.id
+        criado_por_id: admin.id
       }
     });
     console.log('✔ Curso criado');
 
-    // 5. Criar disciplinas
+    // 4. Criar disciplinas
     const [prog1, bd] = await Promise.all([
       prisma.disciplina.create({
         data: {
           nome: 'Programação I',
           codigo: 'PROG1',
           carga_horaria: 60,
-          criado_por_id: chefe.id
+          criado_por_id: admin.id
         }
       }),
       prisma.disciplina.create({
@@ -83,12 +71,12 @@ async function main() {
           nome: 'Banco de Dados',
           codigo: 'BD',
           carga_horaria: 80,
-          criado_por_id: chefe.id
+          criado_por_id: admin.id
         }
       })
     ]);
 
-    // 6. Vincular disciplinas ao curso
+    // 5. Vincular disciplinas ao curso
     await prisma.cursoDisciplina.createMany({
       data: [
         { curso_id: curso.id, disciplina_id: prog1.id },
@@ -97,7 +85,7 @@ async function main() {
     });
     console.log('✔ Disciplinas vinculadas ao curso');
 
-    // 7. Definir pré-requisitos
+    // 6. Definir pré-requisitos
     await prisma.preRequisito.create({
       data: {
         disciplina_id: bd.id,
@@ -106,7 +94,7 @@ async function main() {
     });
     console.log('✔ Pré-requisitos definidos');
 
-    // 8. Criar turma
+    // 7. Criar turma
     const turma = await prisma.turma.create({
       data: {
         codigo: 'BD-2024-1A',
@@ -114,10 +102,30 @@ async function main() {
         professor_id: professor.id,
         ano: 2024,
         semestre: 1,
-        horario: 'Segunda 14:00-16:00, Quarta 14:00-16:00'
+        sala: 'Sala A-101',
+        vagas: 35
       }
     });
     console.log('✔ Turma criada');
+
+    // 8. Adicionar horários para a turma
+    await prisma.horarioAula.createMany({
+      data: [
+        {
+          turma_id: turma.id,
+          dia_semana: DiaSemana.SEGUNDA,
+          hora_inicio: '14:00',
+          hora_fim: '16:00'
+        },
+        {
+          turma_id: turma.id,
+          dia_semana: DiaSemana.QUARTA,
+          hora_inicio: '14:00',
+          hora_fim: '16:00'
+        }
+      ]
+    });
+    console.log('✔ Horários das aulas adicionados');
 
     // 9. Matricular aluno
     const matricula = await prisma.matricula.create({
@@ -167,6 +175,10 @@ async function main() {
     console.log('✔ Frequências registradas');
 
     console.log('✅ Seed completo concluído com sucesso!');
+    console.log('\nUsuários criados:');
+    console.log('- Admin: admin@uni.edu / Admin@123');
+    console.log('- Professor: carlos.prof@uni.edu / Professor@123');
+    console.log('- Aluno: joao.aluno@uni.edu / Aluno@123');
 
   } catch (error) {
     console.error('❌ Erro no seed:', error);

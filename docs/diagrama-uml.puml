@@ -1,0 +1,122 @@
+@startuml Sistema Educatio - Diagrama de Classes
+
+' Enums
+enum EnumPerfil {
+  admin
+  professor
+  aluno
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+}
+
+' Classes
+class Usuario {
+  +id: Int
+  +nome: String
+  +email: String
+  +senha: String
+  +role: EnumPerfil
+  +matricula: String?
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class Curso {
+  +id: Int
+  +nome: String
+  +codigo: String
+  +descricao: String?
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class Disciplina {
+  +id: Int
+  +nome: String
+  +codigo: String
+  +descricao: String?
+  +carga_horaria: Int
+  +ementa: String?
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class Turma {
+  +id: Int
+  +codigo: String
+  +ano: Int
+  +semestre: Int
+  +sala: String?
+  +vagas: Int
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class HorarioAula {
+  +id: Int
+  +dia_semana: DiaSemana
+  +hora_inicio: String
+  +hora_fim: String
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class Matricula {
+  +id: Int
+  +status: String
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class Nota {
+  +id: Int
+  +tipo: String
+  +valor: Float
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class Frequencia {
+  +id: Int
+  +data_aula: DateTime
+  +presente: Boolean
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+}
+
+class CursoDisciplina {
+  +criado_em: DateTime
+}
+
+class PreRequisito {
+  +criado_em: DateTime
+}
+
+' Relacionamentos
+Usuario "1" -- "*" Turma : ministra >
+Usuario "1" -- "*" Matricula : tem >
+Usuario "1" -- "*" Curso : cria >
+Usuario "1" -- "*" Disciplina : cria >
+Usuario "1" -- "*" Nota : cria >
+Usuario "1" -- "*" Frequencia : registra >
+
+Curso "1" -- "*" CursoDisciplina : tem >
+Disciplina "1" -- "*" CursoDisciplina : pertence >
+Disciplina "1" -- "*" Turma : tem >
+Disciplina "1" -- "*" PreRequisito : tem >
+Disciplina "1" -- "*" PreRequisito : é pre-requisito >
+
+Turma "1" -- "*" HorarioAula : tem >
+Turma "1" -- "*" Matricula : tem >
+
+Matricula "1" -- "*" Nota : tem >
+Matricula "1" -- "*" Frequencia : tem >
+
+@enduml

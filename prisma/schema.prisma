@@ -10,55 +10,38 @@ datasource db {
 }
 
 enum EnumPerfil {
-  chefeDepartamento
+  admin
   professor
   aluno
 }
 
 model Usuario {
-  id                   Int           @id @default(autoincrement())
-  nome                 String
-  email                String        @unique
-  senha                String
-  role                 EnumPerfil
-  matricula            String?       @unique
-  departamentoMembro   Departamento? @relation("MembroDepartamento", fields: [departamento_id], references: [id])
-  departamento_id      Int?
-  turmasMinistradas    Turma[]       @relation("TurmasProfessor")
-  matriculas           Matricula[]   @relation("MatriculasAluno")
-  cursosCriados        Curso[]       @relation("CursosCriados")
-  departamentoChefiado Departamento? @relation("ChefiaDepartamento")
-  criado_em            DateTime      @default(now())
-  atualizado_em        DateTime      @updatedAt
-  Disciplina           Disciplina[]
-  Nota                 Nota[]
-  Frequencia           Frequencia[]
-}
-
-model Departamento {
-  id            Int       @id @default(autoincrement())
-  nome          String
-  codigo        String    @unique
-  chefe         Usuario?  @relation("ChefiaDepartamento", fields: [chefe_id], references: [id])
-  chefe_id      Int?      @unique
-  cursos        Curso[]
-  professores   Usuario[] @relation("MembroDepartamento")
-  criado_em     DateTime  @default(now())
-  atualizado_em DateTime  @updatedAt
+  id                Int          @id @default(autoincrement())
+  nome              String
+  email             String       @unique
+  senha             String
+  role              EnumPerfil
+  matricula         String?      @unique
+  turmasMinistradas Turma[]      @relation("TurmasProfessor")
+  matriculas        Matricula[]  @relation("MatriculasAluno")
+  cursosCriados     Curso[]      @relation("CursosCriados")
+  criado_em         DateTime     @default(now())
+  atualizado_em     DateTime     @updatedAt
+  Disciplina        Disciplina[]
+  Nota              Nota[]
+  Frequencia        Frequencia[]
 }
 
 model Curso {
-  id              Int               @id @default(autoincrement())
-  nome            String
-  codigo          String            @unique
-  descricao       String?
-  departamento    Departamento      @relation(fields: [departamento_id], references: [id])
-  departamento_id Int
-  disciplinas     CursoDisciplina[]
-  criado_por      Usuario           @relation(fields: [criado_por_id], references: [id], name: "CursosCriados")
-  criado_por_id   Int
-  criado_em       DateTime          @default(now())
-  atualizado_em   DateTime          @updatedAt
+  id            Int               @id @default(autoincrement())
+  nome          String
+  codigo        String            @unique
+  descricao     String?
+  disciplinas   CursoDisciplina[]
+  criado_por    Usuario           @relation(fields: [criado_por_id], references: [id], name: "CursosCriados")
+  criado_por_id Int
+  criado_em     DateTime          @default(now())
+  atualizado_em DateTime          @updatedAt
 }
 
 model Disciplina {
@@ -99,18 +82,40 @@ model PreRequisito {
 }
 
 model Turma {
-  id            Int         @id @default(autoincrement())
-  codigo        String      @unique
-  disciplina    Disciplina  @relation(fields: [disciplina_id], references: [id])
+  id            Int           @id @default(autoincrement())
+  codigo        String        @unique
+  disciplina    Disciplina    @relation(fields: [disciplina_id], references: [id])
   disciplina_id Int
-  professor     Usuario     @relation(fields: [professor_id], references: [id], name: "TurmasProfessor")
+  professor     Usuario       @relation(fields: [professor_id], references: [id], name: "TurmasProfessor")
   professor_id  Int
   ano           Int
   semestre      Int
-  horario       String?
+  horarios      HorarioAula[]
+  sala          String?
+  vagas         Int           @default(30)
   matriculas    Matricula[]
-  criado_em     DateTime    @default(now())
-  atualizado_em DateTime    @updatedAt
+  criado_em     DateTime      @default(now())
+  atualizado_em DateTime      @updatedAt
+}
+
+model HorarioAula {
+  id            Int       @id @default(autoincrement())
+  turma         Turma     @relation(fields: [turma_id], references: [id])
+  turma_id      Int
+  dia_semana    DiaSemana
+  hora_inicio   String // Formato HH:MM
+  hora_fim      String // Formato HH:MM
+  criado_em     DateTime  @default(now())
+  atualizado_em DateTime  @updatedAt
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
 }
 
 model Matricula {
