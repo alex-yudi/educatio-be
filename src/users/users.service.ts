@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
@@ -7,6 +7,7 @@ import { EnumPerfil } from '@prisma/client';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
 import { generateRandomPassword } from 'src/utils/password.utils';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
+import { CreateMatriculaDto } from './dto/create-matricula.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -138,5 +139,73 @@ export class UsersService {
     });
 
     return novaDisciplina;
+  }
+
+  async createMatricula(createMatriculaDto: CreateMatriculaDto, adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem realizar matrículas');
+    }
+
+    // Verificar se o aluno existe
+    const aluno = await this.findByMatricula(createMatriculaDto.matricula_aluno);
+    if (!aluno) {
+      throw new NotFoundException(`Aluno com matrícula ${createMatriculaDto.matricula_aluno} não encontrado`);
+    }
+
+    // Verificar se o aluno tem o perfil correto
+    if (aluno.role !== EnumPerfil.aluno) {
+      throw new BadRequestException('O usuário informado não é um aluno');
+    }
+
+    // Verificar se a turma existe
+    const turma = await this.prisma.turma.findUnique({
+      where: { codigo: createMatriculaDto.codigo_turma },
+      include: {
+        disciplina: true,
+        professor: true,
+        matriculas: true
+      }
+    });
+
+    if (!turma) {
+      throw new NotFoundException(`Turma com código ${createMatriculaDto.codigo_turma} não encontrada`);
+    }
+
+    // Verificar se há vagas disponíveis na turma
+    if (turma.matriculas.length >= turma.vagas) {
+      throw new BadRequestException(`A turma ${turma.codigo} não possui vagas disponíveis`);
+    }
+
+    // Verificar se o aluno já está matriculado nesta turma
+    const matriculaExistente = await this.prisma.matricula.findFirst({
+      where: {
+        estudante_id: aluno.id,
+        turma_id: turma.id
+      }
+    });
+
+    if (matriculaExistente) {
+      throw new ConflictException(`O aluno já está matriculado nesta turma`);
+    }
+
+    // Criar a matrícula
+    const novaMatricula = await this.prisma.matricula.create({
+      data: {
+        estudante_id: aluno.id,
+        turma_id: turma.id,
+        status: 'ATIVA'
+      }
+    });
+
+    // Retornar os dados da matrícula com informações adicionais
+    return {
+      matricula: novaMatricula,
+      aluno: aluno.nome,
+      disciplina: turma.disciplina.nome,
+      turma: turma.codigo,
+      professor: turma.professor.nome
+    };
   }
 }
