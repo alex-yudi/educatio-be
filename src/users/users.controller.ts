@@ -20,6 +20,8 @@ import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { DisciplinaEntity } from './entities/disciplina.entity';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { MatriculaResponseEntity } from './entities/matricula-response.entity';
+import { CreateProfessorDto } from './dto/create-professor.dto';
+import { ProfessorCreatedEntity } from './entities/professor-created.entity';
 
 // comment: O código abaixo define um controlador para gerenciar apenas o login de usuários. 
 // O controlador também usa decorators do Swagger para gerar a documentação da API.
@@ -131,6 +133,40 @@ export class UsersController {
       const result = await this.usersService.createMatricula(createMatriculaDto, adminId);
       
       return new MatriculaResponseEntity(result);
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores');
+      }
+      throw error;
+    }
+  }
+
+  @Post('professor')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiCreatedResponse({
+    type: ProfessorCreatedEntity,
+    description: 'Professor cadastrado com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Não autorizado. Apenas administradores podem criar professores'
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado'
+  })
+  async createProfessor(
+    @Body() createProfessorDto: CreateProfessorDto,
+    @Req() request: any
+  ) {
+    try {
+      const adminId = request.user.sub;
+      const result = await this.usersService.createProfessor(createProfessorDto, adminId);
+
+      return new ProfessorCreatedEntity({
+        usuario: new UserEntity({ ...result.usuario, name: result.usuario.nome }),
+        senha_temporaria: result.senha_temporaria,
+        disciplina: result.disciplina
+      });
     } catch (error) {
       if (error.status === 401) {
         throw new ForbiddenException('Acesso restrito a administradores');

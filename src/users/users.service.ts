@@ -8,6 +8,7 @@ import { CreateAlunoDto } from './dto/create-aluno.dto';
 import { generateRandomPassword } from 'src/utils/password.utils';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
+import { CreateProfessorDto } from './dto/create-professor.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -206,6 +207,56 @@ export class UsersService {
       disciplina: turma.disciplina.nome,
       turma: turma.codigo,
       professor: turma.professor.nome
+    };
+  }
+
+  async createProfessor(createProfessorDto: CreateProfessorDto, adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem cadastrar professores');
+    }
+
+    // Verificar se já existe um usuário com este e-mail
+    const existingUserByEmail = await this.findByEmail(createProfessorDto.email);
+    if (existingUserByEmail) {
+      throw new ConflictException('E-mail já cadastrado');
+    }
+
+    // Gerar senha aleatória
+    const temporaryPassword = generateRandomPassword();
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    // Criar o professor
+    const novoProfessor = await this.prisma.usuario.create({
+      data: {
+        nome: createProfessorDto.nome,
+        email: createProfessorDto.email,
+        senha: hashedPassword,
+        role: EnumPerfil.professor
+      }
+    });
+
+    // Verificar se foi especificado um código de disciplina
+    let disciplinaNome: string | undefined = undefined;
+    if (createProfessorDto.disciplina_codigo) {
+      const disciplina = await this.prisma.disciplina.findUnique({
+        where: { codigo: createProfessorDto.disciplina_codigo }
+      });
+
+      if (!disciplina) {
+        throw new NotFoundException(`Disciplina com código ${createProfessorDto.disciplina_codigo} não encontrada`);
+      }
+
+      // Aqui poderíamos vincular o professor à disciplina se necessário
+      disciplinaNome = disciplina.nome;
+    }
+
+    // Retornar o professor criado, a senha temporária e a disciplina (se houver)
+    return {
+      usuario: novoProfessor,
+      senha_temporaria: temporaryPassword,
+      disciplina: disciplinaNome
     };
   }
 }
