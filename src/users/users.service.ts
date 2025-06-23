@@ -259,4 +259,100 @@ export class UsersService {
       disciplina: disciplinaNome
     };
   }
+
+  async findAllProfessores(adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem listar professores');
+    }
+
+    // Buscar todos os professores
+    const professores = await this.prisma.usuario.findMany({
+      where: {
+        role: EnumPerfil.professor
+      },
+      orderBy: {
+        nome: 'asc'
+      }
+    });
+
+    return {
+      professores,
+      total: professores.length
+    };
+  }
+
+  async findAllAlunos(adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem listar alunos');
+    }
+
+    // Buscar todos os alunos
+    const alunos = await this.prisma.usuario.findMany({
+      where: {
+        role: EnumPerfil.aluno
+      },
+      orderBy: {
+        nome: 'asc'
+      }
+    });
+
+    return {
+      alunos,
+      total: alunos.length
+    };
+  }
+
+  async findAllDisciplinas(adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem listar disciplinas');
+    }
+
+    // Buscar todas as disciplinas
+    const disciplinas = await this.prisma.disciplina.findMany({
+      orderBy: {
+        nome: 'asc'
+      }
+    });
+
+    return {
+      disciplinas,
+      total: disciplinas.length
+    };
+  }
+
+  async findAllTurmas(adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem listar turmas');
+    }
+
+    // Buscar todas as turmas
+    const turmas = await this.prisma.turma.findMany({
+      include: {
+        disciplina: true,
+        professor: true
+      },
+      orderBy: {
+        codigo: 'asc'
+      }
+    });
+
+    return {
+      turmas: turmas.map(turma => ({
+        ...turma,
+        disciplina: undefined,
+        professor: undefined,
+        disciplina_nome: turma.disciplina.nome,
+        professor_nome: turma.professor.nome
+      })),
+      total: turmas.length
+    };
+  }
 }

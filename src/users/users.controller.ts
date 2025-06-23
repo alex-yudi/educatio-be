@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   HttpCode,
   HttpStatus,
@@ -22,6 +23,10 @@ import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { MatriculaResponseEntity } from './entities/matricula-response.entity';
 import { CreateProfessorDto } from './dto/create-professor.dto';
 import { ProfessorCreatedEntity } from './entities/professor-created.entity';
+import { ProfessorListEntity } from './entities/professor-list.entity';
+import { AlunoListEntity } from './entities/aluno-list.entity';
+import { DisciplinaListEntity } from './entities/disciplina-list.entity';
+import { TurmaListEntity } from './entities/turma-list.entity';
 
 // comment: O código abaixo define um controlador para gerenciar apenas o login de usuários. 
 // O controlador também usa decorators do Swagger para gerar a documentação da API.
@@ -166,6 +171,136 @@ export class UsersController {
         usuario: new UserEntity({ ...result.usuario, name: result.usuario.nome }),
         senha_temporaria: result.senha_temporaria,
         disciplina: result.disciplina
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores');
+      }
+      throw error;
+    }
+  }
+
+  @Get('professores')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    type: ProfessorListEntity,
+    description: 'Lista de professores obtida com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Não autorizado. Apenas administradores podem listar professores'
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado'
+  })
+  async findAllProfessores(@Req() request: any) {
+    try {
+      const adminId = request.user.sub;
+      const result = await this.usersService.findAllProfessores(adminId);
+      
+      return new ProfessorListEntity({
+        professores: result.professores.map(professor => 
+          new UserEntity({ ...professor, name: professor.nome })
+        ),
+        total: result.total
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores');
+      }
+      throw error;
+    }
+  }
+
+  @Get('alunos')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    type: AlunoListEntity,
+    description: 'Lista de alunos obtida com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Não autorizado. Apenas administradores podem listar alunos'
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado'
+  })
+  async findAllAlunos(@Req() request: any) {
+    try {
+      const adminId = request.user.sub;
+      const result = await this.usersService.findAllAlunos(adminId);
+      
+      return new AlunoListEntity({
+        alunos: result.alunos.map(aluno => 
+          new UserEntity({ ...aluno, name: aluno.nome })
+        ),
+        total: result.total
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores');
+      }
+      throw error;
+    }
+  }
+
+  @Get('disciplinas')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    type: DisciplinaListEntity,
+    description: 'Lista de disciplinas obtida com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Não autorizado. Apenas administradores podem listar disciplinas'
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado'
+  })
+  async findAllDisciplinas(@Req() request: any) {
+    try {
+      const adminId = request.user.sub;
+      const result = await this.usersService.findAllDisciplinas(adminId);
+      
+      return new DisciplinaListEntity({
+        disciplinas: result.disciplinas.map(disciplina => 
+          new DisciplinaEntity(disciplina)
+        ),
+        total: result.total
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores');
+      }
+      throw error;
+    }
+  }
+
+  @Get('turmas')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    type: TurmaListEntity,
+    description: 'Lista de turmas obtida com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Não autorizado. Apenas administradores podem listar turmas'
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado'
+  })
+  async findAllTurmas(@Req() request: any) {
+    try {
+      const adminId = request.user.sub;
+      const result = await this.usersService.findAllTurmas(adminId);
+      
+      return new TurmaListEntity({
+        turmas: result.turmas.map(turma => ({
+          ...turma,
+          disciplina_nome: turma.disciplina_nome,
+          professor_nome: turma.professor_nome
+        })),
+        total: result.total
       });
     } catch (error) {
       if (error.status === 401) {
