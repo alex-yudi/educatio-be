@@ -27,6 +27,8 @@ import { ProfessorListEntity } from './entities/professor-list.entity';
 import { AlunoListEntity } from './entities/aluno-list.entity';
 import { DisciplinaListEntity } from './entities/disciplina-list.entity';
 import { TurmaListEntity } from './entities/turma-list.entity';
+import { CreateTurmaDto } from './dto/create-turma.dto';
+import { TurmaCreatedEntity } from './entities/turma-created.entity';
 
 // comment: O código abaixo define um controlador para gerenciar apenas o login de usuários. 
 // O controlador também usa decorators do Swagger para gerar a documentação da API.
@@ -171,6 +173,44 @@ export class UsersController {
         usuario: new UserEntity({ ...result.usuario, name: result.usuario.nome }),
         senha_temporaria: result.senha_temporaria,
         disciplina: result.disciplina
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores');
+      }
+      throw error;
+    }
+  }
+
+  @Post('turma')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiCreatedResponse({
+    type: TurmaCreatedEntity,
+    description: 'Turma cadastrada com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Não autorizado. Apenas administradores podem criar turmas'
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado'
+  })
+  async createTurma(
+    @Body() createTurmaDto: CreateTurmaDto,
+    @Req() request: any
+  ) {
+    try {
+      const adminId = request.user.sub;
+      const result = await this.usersService.createTurma(createTurmaDto, adminId);
+      
+      return new TurmaCreatedEntity({
+        turma: {
+          ...result.turma,
+          disciplina_nome: result.disciplina_nome,
+          professor_nome: result.professor_nome
+        },
+        disciplina_nome: result.disciplina_nome,
+        professor_nome: result.professor_nome
       });
     } catch (error) {
       if (error.status === 401) {

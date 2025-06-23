@@ -9,6 +9,7 @@ import { generateRandomPassword } from 'src/utils/password.utils';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { CreateProfessorDto } from './dto/create-professor.dto';
+import { CreateTurmaDto } from './dto/create-turma.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -257,6 +258,64 @@ export class UsersService {
       usuario: novoProfessor,
       senha_temporaria: temporaryPassword,
       disciplina: disciplinaNome
+    };
+  }
+
+  async createTurma(createTurmaDto: CreateTurmaDto, adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem cadastrar turmas');
+    }
+
+    // Verificar se já existe uma turma com este código
+    const existingTurma = await this.prisma.turma.findUnique({
+      where: { codigo: createTurmaDto.codigo }
+    });
+
+    if (existingTurma) {
+      throw new ConflictException(`Turma com código ${createTurmaDto.codigo} já existe`);
+    }
+
+    // Verificar se a disciplina existe
+    const disciplina = await this.prisma.disciplina.findUnique({
+      where: { codigo: createTurmaDto.disciplina_codigo }
+    });
+
+    if (!disciplina) {
+      throw new NotFoundException(`Disciplina com código ${createTurmaDto.disciplina_codigo} não encontrada`);
+    }
+
+    // Verificar se o professor existe
+    const professor = await this.findByEmail(createTurmaDto.professor_email);
+    
+    if (!professor) {
+      throw new NotFoundException(`Professor com email ${createTurmaDto.professor_email} não encontrado`);
+    }
+
+    // Verificar se o usuário tem o perfil de professor
+    if (professor.role !== EnumPerfil.professor) {
+      throw new BadRequestException(`Usuário com email ${createTurmaDto.professor_email} não é um professor`);
+    }
+
+    // Criar a turma
+    const novaTurma = await this.prisma.turma.create({
+      data: {
+        codigo: createTurmaDto.codigo,
+        disciplina_id: disciplina.id,
+        professor_id: professor.id,
+        ano: createTurmaDto.ano,
+        semestre: createTurmaDto.semestre,
+        sala: createTurmaDto.sala,
+        vagas: createTurmaDto.vagas || 30
+      }
+    });
+
+    // Retornar os dados da turma criada com informações adicionais
+    return {
+      turma: novaTurma,
+      disciplina_nome: disciplina.nome,
+      professor_nome: professor.nome
     };
   }
 
