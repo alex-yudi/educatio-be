@@ -11,6 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { generateRandomPassword } from 'src/utils/password.utils';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
+import { CreateCursoDto } from './dto/create-curso.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -602,5 +603,296 @@ export class UsersService {
     });
 
     return turmaAtualizada;
+  }
+
+  // ===== MÉTODOS PARA CURSOS =====
+  async createCurso(createCursoDto: CreateCursoDto, adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem cadastrar cursos');
+    }
+
+    // Verificar se já existe um curso com este código
+    const existingCurso = await this.prisma.curso.findUnique({
+      where: { codigo: createCursoDto.codigo }
+    });
+
+    if (existingCurso) {
+      throw new ConflictException('Código do curso já existe no sistema');
+    }
+
+    // Verificar se as disciplinas existem (se fornecidas)
+    let disciplinasValidas: any[] = [];
+    if (createCursoDto.disciplinas_codigos && createCursoDto.disciplinas_codigos.length > 0) {
+      disciplinasValidas = await this.prisma.disciplina.findMany({
+        where: {
+          codigo: {
+            in: createCursoDto.disciplinas_codigos
+          }
+        }
+      });
+
+      if (disciplinasValidas.length !== createCursoDto.disciplinas_codigos.length) {
+        const codigosEncontrados = disciplinasValidas.map(d => d.codigo);
+        const codigosNaoEncontrados = createCursoDto.disciplinas_codigos.filter(
+          codigo => !codigosEncontrados.includes(codigo)
+        );
+        throw new NotFoundException(`Disciplinas não encontradas: ${codigosNaoEncontrados.join(', ')}`);
+      }
+    }
+
+    // Criar curso
+    const novoCurso = await this.prisma.curso.create({
+      data: {
+        nome: createCursoDto.nome,
+        codigo: createCursoDto.codigo,
+        descricao: createCursoDto.descricao || null,
+        criado_por_id: adminId
+      },
+      include: {
+        criado_por: {
+          select: {
+            nome: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    // Vincular disciplinas ao curso (se fornecidas)
+    if (disciplinasValidas.length > 0) {
+      await this.prisma.cursoDisciplina.createMany({
+        data: disciplinasValidas.map(disciplina => ({
+          curso_id: novoCurso.id,
+          disciplina_id: disciplina.id
+        }))
+      });
+    }
+
+    // Buscar curso completo com disciplinas
+    const cursoCompleto = await this.prisma.curso.findUnique({
+      where: { id: novoCurso.id },
+      include: {
+        criado_por: {
+          select: {
+            nome: true,
+            email: true
+          }
+        },
+        disciplinas: {
+          include: {
+            disciplina: {
+              select: {
+                nome: true,
+                codigo: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return {
+      ...cursoCompleto,
+      disciplinas_nomes: cursoCompleto?.disciplinas.map(cd => cd.disciplina.nome) || []
+    };
+  }
+
+  async findAllCursos() {
+    const cursos = await this.prisma.curso.findMany({
+      include: {
+        criado_por: {
+          select: {
+            nome: true,
+            email: true
+          }
+        },
+        disciplinas: {
+          include: {
+            disciplina: true
+          }
+        },
+        _count: {
+          select: {
+            disciplinas: true
+          }
+        }
+      }
+    });
+
+    // Para cada curso, contar alunos matriculados
+    const cursosComDados = await Promise.all(
+      cursos.map(async (curso) => {
+        // Contar alunos do curso através das matrículas em turmas das disciplinas do curso
+        const alunosCount = await this.prisma.matricula.groupBy({
+          by: ['estudante_id'],
+          where: {
+            turma: {
+              disciplina: {
+                cursos: {
+                  some: {
+                    curso_id: curso.id
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        return {
+          id: curso.id,
+          nome: curso.nome,
+          codigo: curso.codigo,
+          descricao: curso.descricao,
+          total_disciplinas: curso._count.disciplinas,
+          total_alunos: alunosCount.length,
+          criado_por: curso.criado_por.nome,
+          criado_em: curso.criado_em,
+          atualizado_em: curso.atualizado_em
+        };
+      })
+    );
+
+    return cursosComDados;
+  }
+
+  async updateCurso(id: number, updateData: Partial<CreateCursoDto>, adminId: number) {
+    // Verificar se o admin existe
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException('Apenas administradores podem atualizar cursos');
+    }
+
+    // Verificar se o curso existe
+    const curso = await this.prisma.curso.findUnique({
+      where: { id },
+      include: {
+        disciplinas: true
+      }
+    });
+
+    if (!curso) {
+      throw new NotFoundException('Curso não encontrado');
+    }
+
+    // Verificar se o código não está sendo usado por outro curso
+    if (updateData.codigo && updateData.codigo !== curso.codigo) {
+      const existingCurso = await this.prisma.curso.findUnique({
+        where: { codigo: updateData.codigo }
+      });
+      if (existingCurso) {
+        throw new ConflictException('Código do curso já existe');
+      }
+    }
+
+    // Atualizar dados básicos do curso
+    const cursoAtualizado = await this.prisma.curso.update({
+      where: { id },
+      data: {
+        nome: updateData.nome || curso.nome,
+        codigo: updateData.codigo || curso.codigo,
+        descricao: updateData.descricao !== undefined ? updateData.descricao : curso.descricao
+      }
+    });
+
+    // Se foram fornecidas novas disciplinas, atualizar relacionamentos
+    if (updateData.disciplinas_codigos) {
+      // Verificar se as disciplinas existem
+      const disciplinasValidas = await this.prisma.disciplina.findMany({
+        where: {
+          codigo: {
+            in: updateData.disciplinas_codigos
+          }
+        }
+      });
+
+      if (disciplinasValidas.length !== updateData.disciplinas_codigos.length) {
+        const codigosEncontrados = disciplinasValidas.map(d => d.codigo);
+        const codigosNaoEncontrados = updateData.disciplinas_codigos.filter(
+          codigo => !codigosEncontrados.includes(codigo)
+        );
+        throw new NotFoundException(`Disciplinas não encontradas: ${codigosNaoEncontrados.join(', ')}`);
+      }
+
+      // Remover relacionamentos existentes
+      await this.prisma.cursoDisciplina.deleteMany({
+        where: { curso_id: id }
+      });
+
+      // Criar novos relacionamentos
+      if (disciplinasValidas.length > 0) {
+        await this.prisma.cursoDisciplina.createMany({
+          data: disciplinasValidas.map(disciplina => ({
+            curso_id: id,
+            disciplina_id: disciplina.id
+          }))
+        });
+      }
+    }
+
+    // Buscar curso atualizado completo
+    const cursoCompleto = await this.prisma.curso.findUnique({
+      where: { id },
+      include: {
+        criado_por: {
+          select: {
+            nome: true,
+            email: true
+          }
+        },
+        disciplinas: {
+          include: {
+            disciplina: {
+              select: {
+                nome: true,
+                codigo: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return {
+      ...cursoCompleto,
+      disciplinas_nomes: cursoCompleto?.disciplinas.map(cd => cd.disciplina.nome) || []
+    };
+  }
+
+  async findCursoById(id: number) {
+    const curso = await this.prisma.curso.findUnique({
+      where: { id },
+      include: {
+        criado_por: {
+          select: {
+            nome: true,
+            email: true
+          }
+        },
+        disciplinas: {
+          include: {
+            disciplina: {
+              select: {
+                id: true,
+                nome: true,
+                codigo: true,
+                carga_horaria: true,
+                ementa: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!curso) {
+      throw new NotFoundException('Curso não encontrado');
+    }
+
+    return {
+      ...curso,
+      disciplinas_detalhes: curso.disciplinas.map(cd => cd.disciplina)
+    };
   }
 }

@@ -11,6 +11,7 @@ import { DisciplinasController } from './disciplinas/disciplinas.controller';
 import { MatriculasController } from './matriculas/matriculas.controller';
 import { ProfessoresController } from './professores/professores.controller';
 import { TurmasController } from './turmas/turmas.controller';
+import { CursosController } from './cursos/cursos.controller';
 
 // comment: O código abaixo é o módulo principal da aplicação NestJS. Ele importa os módulos Prisma e Users, e define o controlador e o serviço principais da aplicação.
 @Module({
@@ -29,7 +30,8 @@ import { TurmasController } from './turmas/turmas.controller';
     DisciplinasController,
     MatriculasController,
     ProfessoresController,
-    TurmasController
+    TurmasController,
+    CursosController
   ],
   providers: [AppService],
 })

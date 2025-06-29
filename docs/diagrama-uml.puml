@@ -57,6 +57,24 @@ class Curso {
   +atualizado_em: DateTime
   --
   ' Relacionamentos
+  +disciplinas: CursoDisciplina[] <<many-to-many>>
+  +criado_por: Usuario <<FK criado_por_id>>
+  --
+  ' Métodos de Negócio
+  +adicionarDisciplina(disciplina: Disciplina): void
+  +removerDisciplina(disciplina: Disciplina): void
+  +listarDisciplinas(): Disciplina[]
+  +contarAlunosMatriculados(): Int
+}
+  +id: Int <<PK>>
+  +nome: String
+  +codigo: String <<unique>>
+  +descricao: String?
+  +criado_por_id: Int <<FK>>
+  +criado_em: DateTime
+  +atualizado_em: DateTime
+  --
+  ' Relacionamentos
   +disciplinas: CursoDisciplina[]
   +criado_por: Usuario
 }
@@ -228,5 +246,68 @@ note top of PreRequisito : **Chave Composta:**\n[disciplina_id, disciplina_pre_r
 note top of HorarioAula : **Formato de Horário:**\nHH:MM (ex: "14:30")\nValidação no backend
 
 note top of Frequencia : **Data da Aula:**\nDateTime completo\nPermite controle detalhado
+
+' ==================================================
+' ENDPOINTS DA API REST
+' ==================================================
+package "API Endpoints" {
+  class AuthAPI {
+    +POST /auth/login
+    --
+    **Público**
+  }
+  
+  class CursosAPI {
+    +POST /cursos
+    +GET /cursos
+    +GET /cursos/:id
+    +PUT /cursos/:id
+    --
+    **Admin only:** POST, PUT
+    **Admin + Professor:** GET
+  }
+  
+  class DisciplinasAPI {
+    +POST /disciplinas
+    +GET /disciplinas
+    +PUT /disciplinas/:id
+    --
+    **Admin only:** POST, PUT
+    **Admin + Professor:** GET
+  }
+  
+  class ProfessoresAPI {
+    +POST /professores
+    +GET /professores
+    +PUT /professores/:id
+    --
+    **Admin only:** POST, PUT
+    **Admin + Professor:** GET
+  }
+  
+  class AlunosAPI {
+    +POST /alunos
+    +GET /alunos
+    +PUT /alunos/:id
+    --
+    **Admin only:** POST, PUT
+    **Admin + Professor:** GET
+  }
+  
+  class TurmasAPI {
+    +POST /turmas
+    +GET /turmas
+    +PUT /turmas/:id
+    --
+    **Admin only:** POST, PUT
+    **Admin + Professor:** GET
+  }
+  
+  class MatriculasAPI {
+    +POST /matriculas
+    --
+    **Admin only:** POST
+  }
+}
 
 @enduml
