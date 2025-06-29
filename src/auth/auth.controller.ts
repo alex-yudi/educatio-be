@@ -14,7 +14,7 @@ import { LoginResponseEntity } from '../users/entities/login-response.entity';
 @Controller('auth')
 @ApiTags('Autenticação')
 export class AuthController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

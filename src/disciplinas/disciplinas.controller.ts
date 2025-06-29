@@ -6,13 +6,13 @@ import {
   Req,
   ForbiddenException,
 } from '@nestjs/common';
-import { 
-  ApiCreatedResponse, 
-  ApiTags, 
-  ApiUnauthorizedResponse, 
-  ApiBearerAuth, 
-  ApiForbiddenResponse, 
-  ApiOperation, 
+import {
+  ApiCreatedResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOperation,
   ApiBadRequestResponse,
   ApiConflictResponse
 } from '@nestjs/swagger';
@@ -26,7 +26,7 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class DisciplinasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({

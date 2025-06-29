@@ -6,13 +6,13 @@ import {
   Req,
   ForbiddenException,
 } from '@nestjs/common';
-import { 
-  ApiCreatedResponse, 
-  ApiTags, 
-  ApiUnauthorizedResponse, 
-  ApiBearerAuth, 
-  ApiForbiddenResponse, 
-  ApiOperation, 
+import {
+  ApiCreatedResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOperation,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiConflictResponse
@@ -27,7 +27,7 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class MatriculasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({

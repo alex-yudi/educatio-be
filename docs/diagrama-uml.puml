@@ -1,6 +1,14 @@
 @startuml Sistema Educatio - Diagrama de Classes
 
-' Enums
+' ==================================================
+' SISTEMA DE GERENCIAMENTO EDUCACIONAL EDUCATIO
+' ==================================================
+' Este diagrama representa a estrutura completa do
+' sistema de gerenciamento educacional, incluindo
+' usuários, cursos, disciplinas, turmas e avaliações.
+' ==================================================
+
+' Enums do Sistema
 enum EnumPerfil {
   admin
   professor
@@ -16,107 +24,209 @@ enum DiaSemana {
   SABADO
 }
 
-' Classes
+' ==================================================
+' ENTIDADES PRINCIPAIS DO SISTEMA
+' ==================================================
+
 class Usuario {
-  +id: Int
+  +id: Int <<PK>>
   +nome: String
-  +email: String
+  +email: String <<unique>>
   +senha: String
   +role: EnumPerfil
-  +matricula: String?
+  +matricula: String? <<unique>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +turmasMinistradas: Turma[] <<FK professor_id>>
+  +matriculas: Matricula[] <<FK estudante_id>>
+  +cursosCriados: Curso[] <<FK criado_por_id>>
+  +disciplinasCriadas: Disciplina[] <<FK criado_por_id>>
+  +notasCriadas: Nota[] <<FK criado_por_id>>
+  +frequenciasRegistradas: Frequencia[] <<FK registrado_por_id>>
 }
 
 class Curso {
-  +id: Int
+  +id: Int <<PK>>
   +nome: String
-  +codigo: String
+  +codigo: String <<unique>>
   +descricao: String?
+  +criado_por_id: Int <<FK>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +disciplinas: CursoDisciplina[]
+  +criado_por: Usuario
 }
 
 class Disciplina {
-  +id: Int
+  +id: Int <<PK>>
   +nome: String
-  +codigo: String
+  +codigo: String <<unique>>
   +descricao: String?
   +carga_horaria: Int
   +ementa: String?
+  +criado_por_id: Int <<FK>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +pre_requisitos: PreRequisito[] <<FK disciplina_id>>
+  +turmas: Turma[] <<FK disciplina_id>>
+  +cursos: CursoDisciplina[] <<FK disciplina_id>>
+  +criado_por: Usuario
+  +dependencias: PreRequisito[] <<FK disciplina_pre_requisito_id>>
 }
 
 class Turma {
-  +id: Int
-  +codigo: String
+  +id: Int <<PK>>
+  +codigo: String <<unique>>
+  +disciplina_id: Int <<FK>>
+  +professor_id: Int <<FK>>
   +ano: Int
   +semestre: Int
   +sala: String?
-  +vagas: Int
+  +vagas: Int <<default(30)>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +disciplina: Disciplina
+  +professor: Usuario
+  +horarios: HorarioAula[] <<FK turma_id>>
+  +matriculas: Matricula[] <<FK turma_id>>
 }
 
 class HorarioAula {
-  +id: Int
+  +id: Int <<PK>>
+  +turma_id: Int <<FK>>
   +dia_semana: DiaSemana
-  +hora_inicio: String
-  +hora_fim: String
+  +hora_inicio: String <<formato HH:MM>>
+  +hora_fim: String <<formato HH:MM>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +turma: Turma
 }
 
 class Matricula {
-  +id: Int
-  +status: String
+  +id: Int <<PK>>
+  +estudante_id: Int <<FK>>
+  +turma_id: Int <<FK>>
+  +status: String <<default("ATIVA")>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +estudante: Usuario
+  +turma: Turma
+  +notas: Nota[] <<FK matricula_id>>
+  +frequencias: Frequencia[] <<FK matricula_id>>
+  --
+  <<unique([estudante_id, turma_id])>>
 }
 
 class Nota {
-  +id: Int
+  +id: Int <<PK>>
+  +matricula_id: Int <<FK>>
   +tipo: String
   +valor: Float
+  +criado_por_id: Int <<FK>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +matricula: Matricula
+  +criado_por: Usuario
 }
 
 class Frequencia {
-  +id: Int
+  +id: Int <<PK>>
+  +matricula_id: Int <<FK>>
   +data_aula: DateTime
-  +presente: Boolean
+  +presente: Boolean <<default(true)>>
+  +registrado_por_id: Int <<FK>>
   +criado_em: DateTime
   +atualizado_em: DateTime
+  --
+  ' Relacionamentos
+  +matricula: Matricula
+  +registrado_por: Usuario
 }
 
+' ==================================================
+' ENTIDADES DE RELACIONAMENTO (TABELAS PIVOT)
+' ==================================================
+
 class CursoDisciplina {
+  +curso_id: Int <<FK, composite PK>>
+  +disciplina_id: Int <<FK, composite PK>>
   +criado_em: DateTime
+  --
+  ' Relacionamentos
+  +curso: Curso
+  +disciplina: Disciplina
+  --
+  <<composite key: [curso_id, disciplina_id]>>
 }
 
 class PreRequisito {
+  +disciplina_id: Int <<FK, composite PK>>
+  +disciplina_pre_requisito_id: Int <<FK, composite PK>>
   +criado_em: DateTime
+  --
+  ' Relacionamentos
+  +disciplina: Disciplina
+  +pre_requisito: Disciplina
+  --
+  <<composite key: [disciplina_id, disciplina_pre_requisito_id]>>
 }
 
-' Relacionamentos
-Usuario "1" -- "*" Turma : ministra >
-Usuario "1" -- "*" Matricula : tem >
-Usuario "1" -- "*" Curso : cria >
-Usuario "1" -- "*" Disciplina : cria >
-Usuario "1" -- "*" Nota : cria >
-Usuario "1" -- "*" Frequencia : registra >
+' ==================================================
+' RELACIONAMENTOS ENTRE ENTIDADES
+' ==================================================
 
-Curso "1" -- "*" CursoDisciplina : tem >
-Disciplina "1" -- "*" CursoDisciplina : pertence >
-Disciplina "1" -- "*" Turma : tem >
-Disciplina "1" -- "*" PreRequisito : tem >
-Disciplina "1" -- "*" PreRequisito : é pre-requisito >
+' === Relacionamentos do Usuario ===
+Usuario ||--o{ Turma : "professor ministra\n(professor_id)"
+Usuario ||--o{ Matricula : "aluno estuda\n(estudante_id)"
+Usuario ||--o{ Curso : "admin cria\n(criado_por_id)"
+Usuario ||--o{ Disciplina : "admin cria\n(criado_por_id)"
+Usuario ||--o{ Nota : "professor cria\n(criado_por_id)"
+Usuario ||--o{ Frequencia : "professor registra\n(registrado_por_id)"
 
-Turma "1" -- "*" HorarioAula : tem >
-Turma "1" -- "*" Matricula : tem >
+' === Relacionamentos do Curso ===
+Curso ||--o{ CursoDisciplina : "curso tem\ndisciplinas"
 
-Matricula "1" -- "*" Nota : tem >
-Matricula "1" -- "*" Frequencia : tem >
+' === Relacionamentos da Disciplina ===
+Disciplina ||--o{ CursoDisciplina : "disciplina pertence\na cursos"
+Disciplina ||--o{ Turma : "disciplina tem\nturmas (disciplina_id)"
+Disciplina ||--o{ PreRequisito : "disciplina tem\npré-requisitos (disciplina_id)"
+Disciplina ||--o{ PreRequisito : "disciplina é\npré-requisito (disciplina_pre_requisito_id)"
+
+' === Relacionamentos da Turma ===
+Turma ||--o{ HorarioAula : "turma tem\nhorários (turma_id)"
+Turma ||--o{ Matricula : "turma tem\nmatrículas (turma_id)"
+
+' === Relacionamentos da Matricula ===
+Matricula ||--o{ Nota : "matrícula tem\nnotas (matricula_id)"
+Matricula ||--o{ Frequencia : "matrícula tem\nfrequências (matricula_id)"
+
+' ==================================================
+' NOTAS TÉCNICAS
+' ==================================================
+note top of Usuario : **Roles do Sistema:**\n• admin: Gestão completa\n• professor: Ministrar aulas\n• aluno: Estudar disciplinas
+
+note top of Matricula : **Constraint Unique:**\n[estudante_id, turma_id]\nImpede matrícula duplicada
+
+note top of CursoDisciplina : **Chave Composta:**\n[curso_id, disciplina_id]\nRelação N:N entre entidades
+
+note top of PreRequisito : **Chave Composta:**\n[disciplina_id, disciplina_pre_requisito_id]\nPré-requisitos de disciplinas
+
+note top of HorarioAula : **Formato de Horário:**\nHH:MM (ex: "14:30")\nValidação no backend
+
+note top of Frequencia : **Data da Aula:**\nDateTime completo\nPermite controle detalhado
 
 @enduml
