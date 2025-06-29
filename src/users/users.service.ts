@@ -13,6 +13,7 @@ import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { LancarFrequenciaDto } from './dto/lancar-frequencia.dto';
+import { AlterarFrequenciaDto } from './dto/alterar-frequencia.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -1083,6 +1084,144 @@ export class UsersService {
         professor: turma.professor.nome
       },
       frequencias: Object.values(frequenciasPorData)
+    };
+  }
+
+  async alterarFrequencia(alterarFrequenciaDto: AlterarFrequenciaDto, professorId: number) {
+    // Verificar se o professor existe
+    const professor = await this.findOne(professorId);
+    if (!professor || professor.role !== EnumPerfil.professor) {
+      throw new UnauthorizedException('Apenas professores podem alterar frequência');
+    }
+
+    // Verificar se a turma existe e se o professor é responsável por ela
+    const turma = await this.prisma.turma.findUnique({
+      where: { id: alterarFrequenciaDto.turma_id },
+      include: {
+        disciplina: true,
+        professor: true,
+        matriculas: {
+          include: {
+            estudante: true
+          }
+        }
+      }
+    });
+
+    if (!turma) {
+      throw new NotFoundException('Turma não encontrada');
+    }
+
+    if (turma.professor_id !== professorId) {
+      throw new UnauthorizedException('Você só pode alterar frequência de suas próprias turmas');
+    }
+
+    const dataAula = new Date(alterarFrequenciaDto.data_aula);
+
+    // Verificar se existe frequência para esta data
+    const frequenciasExistentes = await this.prisma.frequencia.findMany({
+      where: {
+        matricula: {
+          turma_id: turma.id
+        },
+        data_aula: dataAula
+      },
+      include: {
+        matricula: {
+          include: {
+            estudante: true
+          }
+        }
+      }
+    });
+
+    if (frequenciasExistentes.length === 0) {
+      throw new NotFoundException(`Não existe frequência registrada para a aula do dia ${dataAula.toLocaleDateString('pt-BR')}`);
+    }
+
+    // Validar se todos os alunos das alterações estão matriculados na turma
+    const matriculasIds = turma.matriculas.map(m => m.estudante_id);
+    const alunosAlteracoes = alterarFrequenciaDto.alteracoes.map(a => a.aluno_id);
+    const alunosInvalidos = alunosAlteracoes.filter(alunoId => !matriculasIds.includes(alunoId));
+
+    if (alunosInvalidos.length > 0) {
+      throw new BadRequestException(`Alunos não matriculados na turma: ${alunosInvalidos.join(', ')}`);
+    }
+
+    // Preparar as alterações e buscar status anterior
+    const detalhesAlteracoes: any[] = [];
+
+    for (const alteracao of alterarFrequenciaDto.alteracoes) {
+      // Buscar a frequência atual do aluno
+      const frequenciaAtual = frequenciasExistentes.find(f =>
+        f.matricula.estudante_id === alteracao.aluno_id
+      );
+
+      if (!frequenciaAtual) {
+        throw new NotFoundException(`Frequência não encontrada para o aluno ID ${alteracao.aluno_id}`);
+      }
+
+      // Só atualizar se o status mudou
+      if (frequenciaAtual.presente !== alteracao.presente) {
+        await this.prisma.frequencia.update({
+          where: { id: frequenciaAtual.id },
+          data: {
+            presente: alteracao.presente,
+            registrado_por_id: professorId,
+            atualizado_em: new Date()
+          }
+        });
+
+        // Adicionar aos detalhes
+        const statusAnterior = frequenciaAtual.presente ? 'Presente' : 'Ausente';
+        const statusNovo = alteracao.presente ? 'Presente' : 'Ausente';
+
+        detalhesAlteracoes.push({
+          aluno_id: alteracao.aluno_id,
+          aluno_nome: frequenciaAtual.matricula.estudante.nome,
+          matricula: frequenciaAtual.matricula.estudante.matricula,
+          status_anterior: frequenciaAtual.presente,
+          status_novo: alteracao.presente,
+          alteracao: `${statusAnterior} → ${statusNovo}`
+        });
+      }
+    }
+
+    if (detalhesAlteracoes.length === 0) {
+      throw new BadRequestException('Nenhuma alteração foi necessária. Os status informados já são os atuais.');
+    }
+
+    // Buscar frequências atualizadas para estatísticas finais
+    const frequenciasAtualizadas = await this.prisma.frequencia.findMany({
+      where: {
+        matricula: {
+          turma_id: turma.id
+        },
+        data_aula: dataAula
+      },
+      include: {
+        matricula: {
+          include: {
+            estudante: true
+          }
+        }
+      }
+    });
+
+    const presentesFinal = frequenciasAtualizadas.filter(f => f.presente).length;
+    const ausentesFinal = frequenciasAtualizadas.filter(f => !f.presente).length;
+
+    return {
+      message: 'Frequência alterada com sucesso',
+      turma_codigo: turma.codigo,
+      disciplina_nome: turma.disciplina.nome,
+      data_aula: dataAula,
+      total_alteracoes: detalhesAlteracoes.length,
+      presentes_final: presentesFinal,
+      ausentes_final: ausentesFinal,
+      detalhes_alteracoes: detalhesAlteracoes,
+      alterado_por: professor.nome,
+      data_alteracao: new Date()
     };
   }
 }

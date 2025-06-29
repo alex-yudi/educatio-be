@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Body,
   Param,
   Query,
@@ -25,7 +26,9 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { LancarFrequenciaDto } from '../users/dto/lancar-frequencia.dto';
+import { AlterarFrequenciaDto } from '../users/dto/alterar-frequencia.dto';
 import { FrequenciaResponseEntity } from '../users/entities/frequencia-response.entity';
+import { AlterarFrequenciaResponseEntity } from '../users/entities/alterar-frequencia-response.entity';
 import { ProfessorGuard } from '../auth/guards/professor.guard';
 
 @Controller('frequencia')
@@ -129,6 +132,58 @@ export class FrequenciaController {
     try {
       const professorId = request.user.sub;
       return await this.usersService.consultarFrequencia(turmaId, professorId, dataInicio, dataFim);
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a professores');
+      }
+      throw error;
+    }
+  }
+
+  @Put('alterar')
+  @ApiOperation({
+    summary: 'Alterar frequência de uma aula já registrada',
+    description: `Permite que um professor altere a frequência de alunos em uma aula que já foi registrada.
+    
+    FUNCIONALIDADES:
+    - Apenas o professor responsável pela turma pode alterar
+    - Permite mudar alunos de presente para ausente e vice-versa
+    - A aula deve ter frequência já registrada anteriormente
+    - Envie TODOS os alunos com o status desejado (presente: true/false)
+    - Sistema registra histórico das alterações realizadas
+    - Alunos não incluídos manterão o status anterior
+    
+    IMPORTANTE:
+    - Use o ID do usuário (campo "id" da entidade Usuario)
+    - A data_aula deve corresponder a uma aula já lançada
+    - Apenas alterações necessárias são processadas
+    - Sistema valida se professor é responsável pela turma`
+  })
+  @ApiOkResponse({
+    type: AlterarFrequenciaResponseEntity,
+    description: 'Frequência alterada com sucesso'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou usuário não é professor'
+  })
+  @ApiForbiddenResponse({
+    description: 'Professor não é responsável pela turma'
+  })
+  @ApiBadRequestResponse({
+    description: 'Dados inválidos, alunos não matriculados ou nenhuma alteração necessária'
+  })
+  @ApiNotFoundResponse({
+    description: 'Turma não encontrada ou frequência não registrada para a data informada'
+  })
+  async alterarFrequencia(
+    @Body() alterarFrequenciaDto: AlterarFrequenciaDto,
+    @Req() request: any
+  ) {
+    try {
+      const professorId = request.user.sub;
+      const result = await this.usersService.alterarFrequencia(alterarFrequenciaDto, professorId);
+
+      return new AlterarFrequenciaResponseEntity(result);
     } catch (error) {
       if (error.status === 401) {
         throw new ForbiddenException('Acesso restrito a professores');
