@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -8,7 +7,7 @@ import { AuthModule } from 'src/auth/auth.module';
 
 // comment: O código abaixo define o módulo de usuários da aplicação. Esse módulo deve ser importado no módulo principal da aplicação (AppModule) para que a aplicação o reconheça
 @Module({
-  controllers: [UsersController],
+  controllers: [],
   providers: [UsersService],
   imports: [
     PrismaModule,
