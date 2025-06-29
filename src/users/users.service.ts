@@ -12,6 +12,7 @@ import { generateRandomPassword } from 'src/utils/password.utils';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { CreateCursoDto } from './dto/create-curso.dto';
+import { LancarFrequenciaDto } from './dto/lancar-frequencia.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -893,6 +894,195 @@ export class UsersService {
     return {
       ...curso,
       disciplinas_detalhes: curso.disciplinas.map(cd => cd.disciplina)
+    };
+  }
+
+  async lancarFrequencia(lancarFrequenciaDto: LancarFrequenciaDto, professorId: number) {
+    // Verificar se o professor existe
+    const professor = await this.findOne(professorId);
+    if (!professor || professor.role !== EnumPerfil.professor) {
+      throw new UnauthorizedException('Apenas professores podem lançar frequência');
+    }
+
+    // Verificar se a turma existe e se o professor é responsável por ela
+    const turma = await this.prisma.turma.findUnique({
+      where: { id: lancarFrequenciaDto.turma_id },
+      include: {
+        disciplina: true,
+        professor: true,
+        matriculas: {
+          include: {
+            estudante: true
+          }
+        }
+      }
+    });
+
+    if (!turma) {
+      throw new NotFoundException('Turma não encontrada');
+    }
+
+    if (turma.professor_id !== professorId) {
+      throw new UnauthorizedException('Você só pode lançar frequência para suas próprias turmas');
+    }
+
+    // Verificar se já existe frequência para esta data
+    const dataAula = new Date(lancarFrequenciaDto.data_aula);
+    const frequenciaExistente = await this.prisma.frequencia.findFirst({
+      where: {
+        matricula: {
+          turma_id: turma.id
+        },
+        data_aula: dataAula
+      }
+    });
+
+    if (frequenciaExistente) {
+      throw new ConflictException(`Frequência já foi lançada para a aula do dia ${dataAula.toLocaleDateString('pt-BR')}`);
+    }
+
+    // Validar se todos os alunos presentes estão matriculados na turma
+    const matriculasIds = turma.matriculas.map(m => m.estudante_id);
+    const alunosInvalidos = lancarFrequenciaDto.alunos_presentes.filter(
+      alunoId => !matriculasIds.includes(alunoId)
+    );
+
+    if (alunosInvalidos.length > 0) {
+      throw new BadRequestException(`Alunos não matriculados na turma: ${alunosInvalidos.join(', ')}`);
+    }
+
+    // Preparar dados de frequência para todos os alunos da turma
+    const frequenciasData = turma.matriculas.map(matricula => ({
+      matricula_id: matricula.id,
+      data_aula: dataAula,
+      presente: lancarFrequenciaDto.alunos_presentes.includes(matricula.estudante_id),
+      registrado_por_id: professorId
+    }));
+
+    // Inserir frequências
+    await this.prisma.frequencia.createMany({
+      data: frequenciasData
+    });
+
+    // Preparar resposta
+    const alunosPresentes = turma.matriculas
+      .filter(m => lancarFrequenciaDto.alunos_presentes.includes(m.estudante_id))
+      .map(m => m.estudante.nome);
+
+    const alunosAusentes = turma.matriculas
+      .filter(m => !lancarFrequenciaDto.alunos_presentes.includes(m.estudante_id))
+      .map(m => m.estudante.nome);
+
+    return {
+      message: 'Frequência lançada com sucesso',
+      turma_codigo: turma.codigo,
+      disciplina_nome: turma.disciplina.nome,
+      data_aula: dataAula,
+      total_alunos: turma.matriculas.length,
+      presentes: alunosPresentes.length,
+      ausentes: alunosAusentes.length,
+      alunos_presentes: alunosPresentes,
+      alunos_ausentes: alunosAusentes,
+      registrado_por: professor.nome
+    };
+  }
+
+  async consultarFrequencia(turmaId: number, professorId: number, dataInicio?: string, dataFim?: string) {
+    // Verificar se o professor é responsável pela turma
+    const turma = await this.prisma.turma.findUnique({
+      where: { id: turmaId },
+      include: {
+        disciplina: true,
+        professor: true
+      }
+    });
+
+    if (!turma) {
+      throw new NotFoundException('Turma não encontrada');
+    }
+
+    if (turma.professor_id !== professorId) {
+      throw new UnauthorizedException('Você só pode consultar frequência de suas próprias turmas');
+    }
+
+    // Construir filtros de data
+    const whereClause: any = {
+      matricula: {
+        turma_id: turmaId
+      }
+    };
+
+    if (dataInicio || dataFim) {
+      whereClause.data_aula = {};
+      if (dataInicio) {
+        whereClause.data_aula.gte = new Date(dataInicio);
+      }
+      if (dataFim) {
+        whereClause.data_aula.lte = new Date(dataFim);
+      }
+    }
+
+    // Buscar frequências
+    const frequencias = await this.prisma.frequencia.findMany({
+      where: whereClause,
+      include: {
+        matricula: {
+          include: {
+            estudante: {
+              select: {
+                id: true,
+                nome: true,
+                matricula: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { data_aula: 'desc' },
+        { matricula: { estudante: { nome: 'asc' } } }
+      ]
+    });
+
+    // Agrupar por data de aula
+    const frequenciasPorData = frequencias.reduce((acc, freq) => {
+      const dataKey = freq.data_aula.toISOString().split('T')[0];
+
+      if (!acc[dataKey]) {
+        acc[dataKey] = {
+          data_aula: freq.data_aula,
+          total_alunos: 0,
+          presentes: 0,
+          ausentes: 0,
+          alunos: []
+        };
+      }
+
+      acc[dataKey].total_alunos++;
+      if (freq.presente) {
+        acc[dataKey].presentes++;
+      } else {
+        acc[dataKey].ausentes++;
+      }
+
+      acc[dataKey].alunos.push({
+        id: freq.matricula.estudante.id,
+        nome: freq.matricula.estudante.nome,
+        matricula: freq.matricula.estudante.matricula,
+        presente: freq.presente
+      });
+
+      return acc;
+    }, {});
+
+    return {
+      turma: {
+        id: turma.id,
+        codigo: turma.codigo,
+        disciplina: turma.disciplina.nome,
+        professor: turma.professor.nome
+      },
+      frequencias: Object.values(frequenciasPorData)
     };
   }
 }
