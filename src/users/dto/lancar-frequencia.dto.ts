@@ -20,8 +20,8 @@ export class LancarFrequenciaDto {
   data_aula: string;
 
   @ApiProperty({
-    example: [1, 2, 3],
-    description: 'Array com IDs dos alunos presentes na aula',
+    example: [23, 24, 25],
+    description: 'Array com os IDs únicos dos alunos que estiveram PRESENTES na aula. Os alunos matriculados na turma que não estiverem neste array serão automaticamente marcados como AUSENTES. Use o ID do usuário (campo "id" da tabela Usuario), não a matrícula nem o ID da matrícula.',
     type: [Number]
   })
   @IsArray()
