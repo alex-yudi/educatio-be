@@ -268,45 +268,6 @@ docker compose up -d --build
 docker compose down -v
 ```
 
-## 🛣️ Roadmap
-
-### Versão Atual (v1.0)
-- [x] Sistema de autenticação JWT
-- [x] Gestão básica de usuários
-- [x] CRUD de cursos, disciplinas e turmas
-- [x] Sistema de matrículas
-- [x] Documentação Swagger
-
-### Próximas Funcionalidades
-- [ ] Dashboard administrativo
-- [ ] Relatórios acadêmicos avançados
-- [ ] Sistema de notificações
-- [ ] API de importação/exportação
-- [ ] Módulo financeiro
-- [ ] App mobile (React Native)
-- [ ] Sistema de biblioteca
-- [ ] Calendário acadêmico
-
-### Melhorias Técnicas
-- [ ] Cache com Redis
-- [ ] Logs estruturados
-- [ ] Monitoramento com Prometheus
-- [ ] CI/CD automatizado
-- [ ] Testes automatizados completos
-- [ ] Deploy automatizado com Kubernetes
-
----
-
-## 🤝 Contribuição
-
-Para contribuir com o projeto:
-
-1. Faça um fork do repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
-
 ## 📄 Licença
 
 Este projeto está sob a licença [MIT](LICENSE).
