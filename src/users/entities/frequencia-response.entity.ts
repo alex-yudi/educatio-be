@@ -15,31 +15,34 @@ export class FrequenciaResponseEntity {
 
   @ApiProperty({
     example: 5,
-    description: 'Total de alunos matriculados na turma'
+    description: 'Total de alunos matriculados na turma',
   })
   total_alunos: number;
 
   @ApiProperty({
     example: 4,
-    description: 'Quantidade de alunos presentes na aula'
+    description: 'Quantidade de alunos presentes na aula',
   })
   presentes: number;
 
   @ApiProperty({
     example: 1,
-    description: 'Quantidade de alunos ausentes na aula (calculado automaticamente)'
+    description:
+      'Quantidade de alunos ausentes na aula (calculado automaticamente)',
   })
   ausentes: number;
 
   @ApiProperty({
     example: ['João da Silva', 'Maria José Santos'],
-    description: 'Lista com os nomes dos alunos que estiveram presentes na aula'
+    description:
+      'Lista com os nomes dos alunos que estiveram presentes na aula',
   })
   alunos_presentes: string[];
 
   @ApiProperty({
     example: ['Lucas Ferreira'],
-    description: 'Lista com os nomes dos alunos que não compareceram (marcados automaticamente como ausentes)'
+    description:
+      'Lista com os nomes dos alunos que não compareceram (marcados automaticamente como ausentes)',
   })
   alunos_ausentes: string[];
 

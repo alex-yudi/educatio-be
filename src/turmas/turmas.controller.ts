@@ -20,7 +20,7 @@ import {
   ApiOperation,
   ApiBadRequestResponse,
   ApiConflictResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateTurmaDto } from '../users/dto/create-turma.dto';
@@ -33,40 +33,41 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 @ApiTags('Turmas')
 @ApiBearerAuth()
 export class TurmasController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Cadastrar nova turma',
-    description: 'Cria uma nova turma no sistema. Apenas administradores podem realizar esta operação.'
+    description:
+      'Cria uma nova turma no sistema. Apenas administradores podem realizar esta operação.',
   })
   @ApiCreatedResponse({
     type: TurmaCreatedEntity,
-    description: 'Turma cadastrada com sucesso'
+    description: 'Turma cadastrada com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem cadastrar turmas'
+    description: 'Acesso negado. Apenas administradores podem cadastrar turmas',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiConflictResponse({
-    description: 'Código da turma já existe no sistema'
+    description: 'Código da turma já existe no sistema',
   })
   @ApiNotFoundResponse({
-    description: 'Disciplina ou professor não encontrados'
+    description: 'Disciplina ou professor não encontrados',
   })
-  async create(
-    @Body() createTurmaDto: CreateTurmaDto,
-    @Req() request: any
-  ) {
+  async create(@Body() createTurmaDto: CreateTurmaDto, @Req() request: any) {
     try {
       const adminId = request.user.sub;
-      const result = await this.usersService.createTurma(createTurmaDto, adminId);
+      const result = await this.usersService.createTurma(
+        createTurmaDto,
+        adminId,
+      );
 
       return new TurmaCreatedEntity({
         turma: {
@@ -79,10 +80,10 @@ export class TurmasController {
           sala: result.sala,
           vagas: result.vagas,
           criado_em: result.criado_em,
-          atualizado_em: result.atualizado_em
+          atualizado_em: result.atualizado_em,
         },
         disciplina_nome: result.disciplina.nome,
-        professor_nome: result.professor.nome
+        professor_nome: result.professor.nome,
       });
     } catch (error) {
       if (error.status === 401) {
@@ -96,21 +97,23 @@ export class TurmasController {
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
     summary: 'Listar turmas',
-    description: 'Lista todas as turmas cadastradas no sistema. Administradores e professores podem acessar.'
+    description:
+      'Lista todas as turmas cadastradas no sistema. Administradores e professores podem acessar.',
   })
   @ApiOkResponse({
     type: [TurmaEntity],
-    description: 'Lista de turmas'
+    description: 'Lista de turmas',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem listar'
+    description:
+      'Acesso negado. Apenas administradores e professores podem listar',
   })
   async findAll() {
     const turmas = await this.usersService.findAllTurmas();
-    return turmas.map(turma => ({
+    return turmas.map((turma) => ({
       id: turma.id,
       codigo: turma.codigo,
       disciplina_id: turma.disciplina_id,
@@ -123,7 +126,7 @@ export class TurmasController {
       vagas: turma.vagas,
       matriculados: turma._count.matriculas,
       criado_em: turma.criado_em,
-      atualizado_em: turma.atualizado_em
+      atualizado_em: turma.atualizado_em,
     }));
   }
 
@@ -131,32 +134,37 @@ export class TurmasController {
   @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Atualizar turma',
-    description: 'Atualiza os dados de uma turma. Apenas administradores podem realizar esta operação.'
+    description:
+      'Atualiza os dados de uma turma. Apenas administradores podem realizar esta operação.',
   })
   @ApiOkResponse({
     type: TurmaCreatedEntity,
-    description: 'Turma atualizada com sucesso'
+    description: 'Turma atualizada com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem atualizar turmas'
+    description: 'Acesso negado. Apenas administradores podem atualizar turmas',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiNotFoundResponse({
-    description: 'Turma não encontrada'
+    description: 'Turma não encontrada',
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTurmaDto: Partial<CreateTurmaDto>,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const adminId = request.user.sub;
-      const turma = await this.usersService.updateTurma(id, updateTurmaDto, adminId);
+      const turma = await this.usersService.updateTurma(
+        id,
+        updateTurmaDto,
+        adminId,
+      );
 
       return new TurmaCreatedEntity({
         turma: {
@@ -169,10 +177,10 @@ export class TurmasController {
           sala: turma.sala,
           vagas: turma.vagas,
           criado_em: turma.criado_em,
-          atualizado_em: turma.atualizado_em
+          atualizado_em: turma.atualizado_em,
         },
         disciplina_nome: turma.disciplina.nome,
-        professor_nome: turma.professor.nome
+        professor_nome: turma.professor.nome,
       });
     } catch (error) {
       if (error.status === 401) {

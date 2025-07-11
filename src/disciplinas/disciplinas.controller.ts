@@ -20,7 +20,7 @@ import {
   ApiOperation,
   ApiBadRequestResponse,
   ApiConflictResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateDisciplinaDto } from '../users/dto/create-disciplina.dto';
@@ -33,36 +33,41 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class DisciplinasController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({
     summary: 'Cadastrar nova disciplina',
-    description: 'Cria uma nova disciplina no sistema com código único. Apenas administradores podem realizar esta operação.'
+    description:
+      'Cria uma nova disciplina no sistema com código único. Apenas administradores podem realizar esta operação.',
   })
   @ApiCreatedResponse({
     type: DisciplinaEntity,
-    description: 'Disciplina cadastrada com sucesso'
+    description: 'Disciplina cadastrada com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem cadastrar disciplinas'
+    description:
+      'Acesso negado. Apenas administradores podem cadastrar disciplinas',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiConflictResponse({
-    description: 'Código da disciplina já existe no sistema'
+    description: 'Código da disciplina já existe no sistema',
   })
   async create(
     @Body() createDisciplinaDto: CreateDisciplinaDto,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const adminId = request.user.sub;
-      const disciplina = await this.usersService.createDisciplina(createDisciplinaDto, adminId);
+      const disciplina = await this.usersService.createDisciplina(
+        createDisciplinaDto,
+        adminId,
+      );
 
       return new DisciplinaEntity(disciplina);
     } catch (error) {
@@ -76,22 +81,24 @@ export class DisciplinasController {
   @Get()
   @ApiOperation({
     summary: 'Listar disciplinas',
-    description: 'Retorna uma lista de todas as disciplinas cadastradas no sistema.'
+    description:
+      'Retorna uma lista de todas as disciplinas cadastradas no sistema.',
   })
   @ApiOkResponse({
     type: [DisciplinaEntity],
-    description: 'Lista de disciplinas'
+    description: 'Lista de disciplinas',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem acessar esta rota'
+    description:
+      'Acesso negado. Apenas administradores podem acessar esta rota',
   })
   async findAll(@Req() request: any) {
     try {
       const disciplinas = await this.usersService.findAllDisciplinas();
-      return disciplinas.map(disciplina => new DisciplinaEntity(disciplina));
+      return disciplinas.map((disciplina) => new DisciplinaEntity(disciplina));
     } catch (error) {
       throw error;
     }
@@ -100,32 +107,37 @@ export class DisciplinasController {
   @Put(':id')
   @ApiOperation({
     summary: 'Atualizar disciplina',
-    description: 'Atualiza os dados de uma disciplina existente no sistema.'
+    description: 'Atualiza os dados de uma disciplina existente no sistema.',
   })
   @ApiOkResponse({
     type: DisciplinaEntity,
-    description: 'Disciplina atualizada com sucesso'
+    description: 'Disciplina atualizada com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem atualizar disciplinas'
+    description:
+      'Acesso negado. Apenas administradores podem atualizar disciplinas',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiNotFoundResponse({
-    description: 'Disciplina não encontrada'
+    description: 'Disciplina não encontrada',
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDisciplinaDto: CreateDisciplinaDto,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const adminId = request.user.sub;
-      const disciplina = await this.usersService.updateDisciplina(id, updateDisciplinaDto, adminId);
+      const disciplina = await this.usersService.updateDisciplina(
+        id,
+        updateDisciplinaDto,
+        adminId,
+      );
 
       return new DisciplinaEntity(disciplina);
     } catch (error) {

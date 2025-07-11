@@ -20,7 +20,7 @@ import {
   ApiOperation,
   ApiBadRequestResponse,
   ApiConflictResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateCursoDto } from '../users/dto/create-curso.dto';
@@ -34,40 +34,41 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 @ApiTags('Cursos')
 @ApiBearerAuth()
 export class CursosController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Cadastrar novo curso',
-    description: 'Cria um novo curso no sistema e pode vincular disciplinas existentes. Apenas administradores podem realizar esta operação.'
+    description:
+      'Cria um novo curso no sistema e pode vincular disciplinas existentes. Apenas administradores podem realizar esta operação.',
   })
   @ApiCreatedResponse({
     type: CursoCreatedEntity,
-    description: 'Curso cadastrado com sucesso'
+    description: 'Curso cadastrado com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem cadastrar cursos'
+    description: 'Acesso negado. Apenas administradores podem cadastrar cursos',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiConflictResponse({
-    description: 'Código do curso já existe no sistema'
+    description: 'Código do curso já existe no sistema',
   })
   @ApiNotFoundResponse({
-    description: 'Uma ou mais disciplinas especificadas não foram encontradas'
+    description: 'Uma ou mais disciplinas especificadas não foram encontradas',
   })
-  async create(
-    @Body() createCursoDto: CreateCursoDto,
-    @Req() request: any
-  ) {
+  async create(@Body() createCursoDto: CreateCursoDto, @Req() request: any) {
     try {
       const adminId = request.user.sub;
-      const result = await this.usersService.createCurso(createCursoDto, adminId);
+      const result = await this.usersService.createCurso(
+        createCursoDto,
+        adminId,
+      );
 
       return new CursoCreatedEntity({
         curso: new CursoEntity({
@@ -77,10 +78,10 @@ export class CursosController {
           descricao: result.descricao || undefined,
           criado_por_id: result.criado_por_id,
           criado_em: result.criado_em,
-          atualizado_em: result.atualizado_em
+          atualizado_em: result.atualizado_em,
         }),
         disciplinas: result.disciplinas_nomes,
-        criado_por: result.criado_por?.nome || 'Administrador'
+        criado_por: result.criado_por?.nome || 'Administrador',
       });
     } catch (error) {
       if (error.status === 401) {
@@ -94,43 +95,50 @@ export class CursosController {
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
     summary: 'Listar cursos',
-    description: 'Lista todos os cursos cadastrados no sistema com informações resumidas. Administradores e professores podem acessar.'
+    description:
+      'Lista todos os cursos cadastrados no sistema com informações resumidas. Administradores e professores podem acessar.',
   })
   @ApiOkResponse({
     type: [CursoListEntity],
-    description: 'Lista de cursos'
+    description: 'Lista de cursos',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem listar'
+    description:
+      'Acesso negado. Apenas administradores e professores podem listar',
   })
   async findAll() {
     const cursos = await this.usersService.findAllCursos();
-    return cursos.map(curso => new CursoListEntity({
-      ...curso,
-      descricao: curso.descricao || undefined
-    }));
+    return cursos.map(
+      (curso) =>
+        new CursoListEntity({
+          ...curso,
+          descricao: curso.descricao || undefined,
+        }),
+    );
   }
 
   @Get(':id')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
     summary: 'Buscar curso por ID',
-    description: 'Retorna os detalhes completos de um curso específico, incluindo disciplinas. Administradores e professores podem acessar.'
+    description:
+      'Retorna os detalhes completos de um curso específico, incluindo disciplinas. Administradores e professores podem acessar.',
   })
   @ApiOkResponse({
-    description: 'Detalhes do curso com disciplinas'
+    description: 'Detalhes do curso com disciplinas',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem acessar'
+    description:
+      'Acesso negado. Apenas administradores e professores podem acessar',
   })
   @ApiNotFoundResponse({
-    description: 'Curso não encontrado'
+    description: 'Curso não encontrado',
   })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findCursoById(id);
@@ -140,35 +148,41 @@ export class CursosController {
   @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Atualizar curso',
-    description: 'Atualiza os dados de um curso e pode modificar as disciplinas vinculadas. Apenas administradores podem realizar esta operação.'
+    description:
+      'Atualiza os dados de um curso e pode modificar as disciplinas vinculadas. Apenas administradores podem realizar esta operação.',
   })
   @ApiOkResponse({
     type: CursoCreatedEntity,
-    description: 'Curso atualizado com sucesso'
+    description: 'Curso atualizado com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem atualizar cursos'
+    description: 'Acesso negado. Apenas administradores podem atualizar cursos',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiNotFoundResponse({
-    description: 'Curso não encontrado ou disciplinas especificadas não existem'
+    description:
+      'Curso não encontrado ou disciplinas especificadas não existem',
   })
   @ApiConflictResponse({
-    description: 'Código do curso já existe'
+    description: 'Código do curso já existe',
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCursoDto: Partial<CreateCursoDto>,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const adminId = request.user.sub;
-      const result = await this.usersService.updateCurso(id, updateCursoDto, adminId);
+      const result = await this.usersService.updateCurso(
+        id,
+        updateCursoDto,
+        adminId,
+      );
 
       return new CursoCreatedEntity({
         curso: new CursoEntity({
@@ -178,10 +192,10 @@ export class CursosController {
           descricao: result.descricao || undefined,
           criado_por_id: result.criado_por_id,
           criado_em: result.criado_em,
-          atualizado_em: result.atualizado_em
+          atualizado_em: result.atualizado_em,
         }),
         disciplinas: result.disciplinas_nomes,
-        criado_por: result.criado_por?.nome || 'Administrador'
+        criado_por: result.criado_por?.nome || 'Administrador',
       });
     } catch (error) {
       if (error.status === 401) {

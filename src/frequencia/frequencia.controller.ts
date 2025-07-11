@@ -22,7 +22,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
-  ApiQuery
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { LancarFrequenciaDto } from '../users/dto/lancar-frequencia.dto';
@@ -36,7 +36,7 @@ import { ProfessorGuard } from '../auth/guards/professor.guard';
 @ApiBearerAuth()
 @UseGuards(ProfessorGuard)
 export class FrequenciaController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({
@@ -48,34 +48,37 @@ export class FrequenciaController {
     - Envie no campo "alunos_presentes" apenas os IDs dos alunos que estiveram PRESENTES
     - Os alunos matriculados que não estiverem no array serão marcados como AUSENTES automaticamente
     - Use o ID do usuário (campo "id" da entidade Usuario), não matrícula nem ID de matrícula
-    - Não é possível lançar frequência duas vezes para a mesma data`
+    - Não é possível lançar frequência duas vezes para a mesma data`,
   })
   @ApiCreatedResponse({
     type: FrequenciaResponseEntity,
-    description: 'Frequência lançada com sucesso'
+    description: 'Frequência lançada com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou usuário não é professor'
+    description: 'Token de acesso inválido ou usuário não é professor',
   })
   @ApiForbiddenResponse({
-    description: 'Professor não é responsável pela turma'
+    description: 'Professor não é responsável pela turma',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos ou alunos não matriculados na turma'
+    description: 'Dados inválidos ou alunos não matriculados na turma',
   })
   @ApiConflictResponse({
-    description: 'Frequência já foi lançada para esta data'
+    description: 'Frequência já foi lançada para esta data',
   })
   @ApiNotFoundResponse({
-    description: 'Turma não encontrada'
+    description: 'Turma não encontrada',
   })
   async lancarFrequencia(
     @Body() lancarFrequenciaDto: LancarFrequenciaDto,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const professorId = request.user.sub;
-      const result = await this.usersService.lancarFrequencia(lancarFrequenciaDto, professorId);
+      const result = await this.usersService.lancarFrequencia(
+        lancarFrequenciaDto,
+        professorId,
+      );
 
       return new FrequenciaResponseEntity(result);
     } catch (error) {
@@ -97,41 +100,46 @@ export class FrequenciaController {
     - Filtros opcionais por período (dataInicio e/ou dataFim)
     - Mostra estatísticas: total de alunos, presentes, ausentes
     - Lista detalhada por aluno com status de presença
-    - Dados incluem: ID, nome, matrícula e status (presente/ausente)`
+    - Dados incluem: ID, nome, matrícula e status (presente/ausente)`,
   })
   @ApiOkResponse({
-    description: 'Histórico de frequência da turma'
+    description: 'Histórico de frequência da turma',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou usuário não é professor'
+    description: 'Token de acesso inválido ou usuário não é professor',
   })
   @ApiForbiddenResponse({
-    description: 'Professor não é responsável pela turma'
+    description: 'Professor não é responsável pela turma',
   })
   @ApiNotFoundResponse({
-    description: 'Turma não encontrada'
+    description: 'Turma não encontrada',
   })
   @ApiQuery({
     name: 'dataInicio',
     required: false,
     description: 'Data de início do período (formato: YYYY-MM-DD)',
-    example: '2024-06-01'
+    example: '2024-06-01',
   })
   @ApiQuery({
     name: 'dataFim',
     required: false,
     description: 'Data de fim do período (formato: YYYY-MM-DD)',
-    example: '2024-06-30'
+    example: '2024-06-30',
   })
   async consultarFrequencia(
     @Param('id', ParseIntPipe) turmaId: number,
     @Query('dataInicio') dataInicio?: string,
     @Query('dataFim') dataFim?: string,
-    @Req() request?: any
+    @Req() request?: any,
   ) {
     try {
       const professorId = request.user.sub;
-      return await this.usersService.consultarFrequencia(turmaId, professorId, dataInicio, dataFim);
+      return await this.usersService.consultarFrequencia(
+        turmaId,
+        professorId,
+        dataInicio,
+        dataFim,
+      );
     } catch (error) {
       if (error.status === 401) {
         throw new ForbiddenException('Acesso restrito a professores');
@@ -157,31 +165,36 @@ export class FrequenciaController {
     - Use o ID do usuário (campo "id" da entidade Usuario)
     - A data_aula deve corresponder a uma aula já lançada
     - Apenas alterações necessárias são processadas
-    - Sistema valida se professor é responsável pela turma`
+    - Sistema valida se professor é responsável pela turma`,
   })
   @ApiOkResponse({
     type: AlterarFrequenciaResponseEntity,
-    description: 'Frequência alterada com sucesso'
+    description: 'Frequência alterada com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou usuário não é professor'
+    description: 'Token de acesso inválido ou usuário não é professor',
   })
   @ApiForbiddenResponse({
-    description: 'Professor não é responsável pela turma'
+    description: 'Professor não é responsável pela turma',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos, alunos não matriculados ou nenhuma alteração necessária'
+    description:
+      'Dados inválidos, alunos não matriculados ou nenhuma alteração necessária',
   })
   @ApiNotFoundResponse({
-    description: 'Turma não encontrada ou frequência não registrada para a data informada'
+    description:
+      'Turma não encontrada ou frequência não registrada para a data informada',
   })
   async alterarFrequencia(
     @Body() alterarFrequenciaDto: AlterarFrequenciaDto,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const professorId = request.user.sub;
-      const result = await this.usersService.alterarFrequencia(alterarFrequenciaDto, professorId);
+      const result = await this.usersService.alterarFrequencia(
+        alterarFrequenciaDto,
+        professorId,
+      );
 
       return new AlterarFrequenciaResponseEntity(result);
     } catch (error) {

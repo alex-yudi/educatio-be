@@ -20,7 +20,7 @@ import {
   ApiOperation,
   ApiBadRequestResponse,
   ApiConflictResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
@@ -35,44 +35,48 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class AlunosController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({
     summary: 'Cadastrar novo aluno',
-    description: 'Cria um novo aluno no sistema com senha temporária gerada automaticamente. Apenas administradores podem realizar esta operação.'
+    description:
+      'Cria um novo aluno no sistema com senha temporária gerada automaticamente. Apenas administradores podem realizar esta operação.',
   })
   @ApiCreatedResponse({
     type: AlunoCreatedEntity,
-    description: 'Aluno cadastrado com sucesso'
+    description: 'Aluno cadastrado com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem cadastrar alunos'
+    description: 'Acesso negado. Apenas administradores podem cadastrar alunos',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiConflictResponse({
-    description: 'E-mail ou matrícula já cadastrados no sistema'
+    description: 'E-mail ou matrícula já cadastrados no sistema',
   })
   @ApiNotFoundResponse({
-    description: 'Curso especificado não encontrado'
+    description: 'Curso especificado não encontrado',
   })
-  async create(
-    @Body() createAlunoDto: CreateAlunoDto,
-    @Req() request: any
-  ) {
+  async create(@Body() createAlunoDto: CreateAlunoDto, @Req() request: any) {
     try {
       const adminId = request.user.sub;
-      const result = await this.usersService.createAluno(createAlunoDto, adminId);
+      const result = await this.usersService.createAluno(
+        createAlunoDto,
+        adminId,
+      );
 
       return new AlunoCreatedEntity({
-        usuario: new UserEntity({ ...result.usuario, name: result.usuario.nome }),
+        usuario: new UserEntity({
+          ...result.usuario,
+          name: result.usuario.nome,
+        }),
         senha_temporaria: result.senha_temporaria,
-        curso: result.curso
+        curso: result.curso,
       });
     } catch (error) {
       if (error.status === 401) {
@@ -85,36 +89,40 @@ export class AlunosController {
   @Get()
   @ApiOperation({
     summary: 'Listar alunos',
-    description: 'Retorna uma lista de alunos cadastrados no sistema. Apenas administradores podem realizar esta operação.'
+    description:
+      'Retorna uma lista de alunos cadastrados no sistema. Apenas administradores podem realizar esta operação.',
   })
   @ApiOkResponse({
     type: [UserEntity],
-    description: 'Lista de alunos retornada com sucesso'
+    description: 'Lista de alunos retornada com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem listar alunos'
+    description: 'Acesso negado. Apenas administradores podem listar alunos',
   })
   async findAll(@Req() request: any) {
     try {
       const alunos = await this.usersService.findAllAlunos();
-      return alunos.map(aluno => new UserEntity({
-        id: aluno.id,
-        name: aluno.nome,
-        nome: aluno.nome,
-        email: aluno.email,
-        password: '',
-        senha: '',
-        role: aluno.role,
-        registrationNumber: aluno.matricula,
-        matricula: aluno.matricula,
-        createdAt: aluno.criado_em,
-        criado_em: aluno.criado_em,
-        updatedAt: aluno.atualizado_em,
-        atualizado_em: aluno.atualizado_em
-      }));
+      return alunos.map(
+        (aluno) =>
+          new UserEntity({
+            id: aluno.id,
+            name: aluno.nome,
+            nome: aluno.nome,
+            email: aluno.email,
+            password: '',
+            senha: '',
+            role: aluno.role,
+            registrationNumber: aluno.matricula,
+            matricula: aluno.matricula,
+            createdAt: aluno.criado_em,
+            criado_em: aluno.criado_em,
+            updatedAt: aluno.atualizado_em,
+            atualizado_em: aluno.atualizado_em,
+          }),
+      );
     } catch (error) {
       if (error.status === 401) {
         throw new ForbiddenException('Acesso restrito a administradores');
@@ -126,32 +134,37 @@ export class AlunosController {
   @Put(':id')
   @ApiOperation({
     summary: 'Atualizar aluno',
-    description: 'Atualiza os dados de um aluno cadastrado no sistema. Apenas administradores podem realizar esta operação.'
+    description:
+      'Atualiza os dados de um aluno cadastrado no sistema. Apenas administradores podem realizar esta operação.',
   })
   @ApiOkResponse({
     type: UserEntity,
-    description: 'Aluno atualizado com sucesso'
+    description: 'Aluno atualizado com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem atualizar alunos'
+    description: 'Acesso negado. Apenas administradores podem atualizar alunos',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiNotFoundResponse({
-    description: 'Aluno não encontrado'
+    description: 'Aluno não encontrado',
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const adminId = request.user.sub;
-      const result = await this.usersService.updateAluno(id, updateUserDto, adminId);
+      const result = await this.usersService.updateAluno(
+        id,
+        updateUserDto,
+        adminId,
+      );
 
       return new UserEntity({
         id: result.id,
@@ -166,7 +179,7 @@ export class AlunosController {
         createdAt: result.criado_em,
         criado_em: result.criado_em,
         updatedAt: result.atualizado_em,
-        atualizado_em: result.atualizado_em
+        atualizado_em: result.atualizado_em,
       });
     } catch (error) {
       if (error.status === 401) {

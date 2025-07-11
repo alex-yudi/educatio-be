@@ -1,10 +1,15 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { EnumPerfil } from '@prisma/client';
 
 @Injectable()
 export class ProfessorGuard implements CanActivate {
-  constructor(private jwtService: JwtService) { }
+  constructor(private jwtService: JwtService) {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
@@ -26,7 +31,9 @@ export class ProfessorGuard implements CanActivate {
       request.user = payload;
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Token de autenticação inválido ou expirado');
+      throw new UnauthorizedException(
+        'Token de autenticação inválido ou expirado',
+      );
     }
   }
 }

@@ -22,7 +22,7 @@ import { FrequenciaController } from './frequencia/frequencia.controller';
     }),
     PrismaModule,
     AuthModule,
-    UsersModule
+    UsersModule,
   ],
   controllers: [
     AppController,
@@ -33,8 +33,8 @@ import { FrequenciaController } from './frequencia/frequencia.controller';
     ProfessoresController,
     TurmasController,
     CursosController,
-    FrequenciaController
+    FrequenciaController,
   ],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

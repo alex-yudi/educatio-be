@@ -13,10 +13,18 @@ export function generateRandomPassword(length: number = 8): string {
 
   // Garantir pelo menos um caractere de cada tipo
   let password = '';
-  password += uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length));
-  password += lowercaseChars.charAt(Math.floor(Math.random() * lowercaseChars.length));
-  password += numberChars.charAt(Math.floor(Math.random() * numberChars.length));
-  password += specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+  password += uppercaseChars.charAt(
+    Math.floor(Math.random() * uppercaseChars.length),
+  );
+  password += lowercaseChars.charAt(
+    Math.floor(Math.random() * lowercaseChars.length),
+  );
+  password += numberChars.charAt(
+    Math.floor(Math.random() * numberChars.length),
+  );
+  password += specialChars.charAt(
+    Math.floor(Math.random() * specialChars.length),
+  );
 
   // Preencher o resto da senha
   for (let i = 4; i < length; i++) {
@@ -24,5 +32,8 @@ export function generateRandomPassword(length: number = 8): string {
   }
 
   // Embaralhar a senha
-  return password.split('').sort(() => 0.5 - Math.random()).join('');
+  return password
+    .split('')
+    .sort(() => 0.5 - Math.random())
+    .join('');
 }

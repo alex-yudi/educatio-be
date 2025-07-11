@@ -9,20 +9,20 @@ export class ProfessorCreatedEntity {
   }
 
   @ApiProperty({
-    description: 'Usuário professor criado'
+    description: 'Usuário professor criado',
   })
   usuario: UserEntity;
 
   @ApiProperty({
     example: 'Ab1Cd2Ef3',
-    description: 'Senha temporária gerada para o primeiro acesso'
+    description: 'Senha temporária gerada para o primeiro acesso',
   })
   senha_temporaria: string;
 
   @ApiProperty({
     example: 'Programação I',
     description: 'Nome da disciplina ministrada (se informada)',
-    required: false
+    required: false,
   })
   @Expose()
   disciplina?: string;

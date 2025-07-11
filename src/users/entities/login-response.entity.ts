@@ -10,12 +10,12 @@ export class LoginResponseEntity {
 
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    description: 'Token de autenticação'
+    description: 'Token de autenticação',
   })
   accessToken: string;
 
   @ApiProperty({
-    description: 'Dados do usuário autenticado'
+    description: 'Dados do usuário autenticado',
   })
   user: UserEntity;
 }

@@ -1,10 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsArray, ArrayNotEmpty } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsArray,
+  ArrayNotEmpty,
+} from 'class-validator';
 
 export class CreateCursoDto {
   @ApiProperty({
     example: 'Engenharia de Software',
-    description: 'Nome do curso'
+    description: 'Nome do curso',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,7 +18,7 @@ export class CreateCursoDto {
 
   @ApiProperty({
     example: 'ESOFT',
-    description: 'Código único do curso'
+    description: 'Código único do curso',
   })
   @IsString()
   @IsNotEmpty()
@@ -21,7 +27,7 @@ export class CreateCursoDto {
   @ApiProperty({
     example: 'Curso voltado para formação de engenheiros de software',
     description: 'Descrição detalhada do curso',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -31,7 +37,7 @@ export class CreateCursoDto {
     example: ['PROG1', 'PROG2', 'BD', 'ENGSW'],
     description: 'Lista de códigos das disciplinas que fazem parte do curso',
     type: [String],
-    required: false
+    required: false,
   })
   @IsArray()
   @IsString({ each: true })

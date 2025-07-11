@@ -4,7 +4,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 export class CreateDisciplinaDto {
   @ApiProperty({
     example: 'Programação Orientada a Objetos',
-    description: 'Nome da disciplina'
+    description: 'Nome da disciplina',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class CreateDisciplinaDto {
 
   @ApiProperty({
     example: 'POO101',
-    description: 'Código único da disciplina'
+    description: 'Código único da disciplina',
   })
   @IsString()
   @IsNotEmpty()
@@ -21,7 +21,7 @@ export class CreateDisciplinaDto {
   @ApiProperty({
     example: 'Introdução aos conceitos de POO',
     description: 'Descrição da disciplina',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -31,7 +31,7 @@ export class CreateDisciplinaDto {
     example: 60,
     description: 'Carga horária total em horas',
     required: false,
-    default: 60
+    default: 60,
   })
   @IsInt()
   @Min(1)
@@ -41,7 +41,7 @@ export class CreateDisciplinaDto {
   @ApiProperty({
     example: 'Ementa completa da disciplina...',
     description: 'Ementa da disciplina',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()

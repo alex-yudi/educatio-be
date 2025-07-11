@@ -4,13 +4,13 @@ import { UserEntity } from './user.entity';
 export class ProfessorListEntity {
   @ApiProperty({
     description: 'Lista de professores',
-    type: [UserEntity]
+    type: [UserEntity],
   })
   professores: UserEntity[];
 
   @ApiProperty({
     example: 10,
-    description: 'Total de professores encontrados'
+    description: 'Total de professores encontrados',
   })
   total: number;
 

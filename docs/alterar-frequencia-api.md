@@ -13,6 +13,7 @@ O endpoint de alteração permite que professores modifiquem a frequência de al
 ## 📡 Endpoint de Alteração
 
 ### 🔄 Alterar Frequência Existente
+
 ```
 PUT /frequencia/alterar
 ```
@@ -22,6 +23,7 @@ PUT /frequencia/alterar
 **Autenticação:** Bearer Token (Professor da turma)
 
 **Body (JSON):**
+
 ```json
 {
   "turma_id": 6,
@@ -46,10 +48,12 @@ PUT /frequencia/alterar
 **Campos Detalhados:**
 
 1. **`turma_id`** (number)
+
    - ID da turma que terá a frequência alterada
    - Deve ser uma turma do professor logado
 
 2. **`data_aula`** (string)
+
    - Data e hora da aula no formato ISO 8601
    - **IMPORTANTE:** Deve ser uma aula com frequência já registrada
 
@@ -117,6 +121,7 @@ PUT /frequencia/alterar
 ## 🚨 Códigos de Erro
 
 ### 400 - Bad Request
+
 ```json
 {
   "message": "Nenhuma alteração foi necessária. Os status informados já são os atuais.",
@@ -124,18 +129,21 @@ PUT /frequencia/alterar
   "statusCode": 400
 }
 ```
+
 **Causa:** Todos os status informados já são os atuais (não há mudanças)
 
 ```json
 {
   "message": "Alunos não matriculados na turma: 999",
-  "error": "Bad Request", 
+  "error": "Bad Request",
   "statusCode": 400
 }
 ```
+
 **Causa:** IDs de alunos não estão matriculados na turma
 
 ### 401 - Unauthorized
+
 ```json
 {
   "message": "Apenas professores podem alterar frequência",
@@ -143,9 +151,11 @@ PUT /frequencia/alterar
   "statusCode": 401
 }
 ```
+
 **Causa:** Token inválido ou usuário não é professor
 
 ### 403 - Forbidden
+
 ```json
 {
   "message": "Acesso restrito a professores",
@@ -153,9 +163,11 @@ PUT /frequencia/alterar
   "statusCode": 403
 }
 ```
+
 **Causa:** Professor não é responsável pela turma especificada
 
 ### 404 - Not Found
+
 ```json
 {
   "message": "Turma não encontrada",
@@ -163,6 +175,7 @@ PUT /frequencia/alterar
   "statusCode": 404
 }
 ```
+
 **Causa:** Turma com o ID informado não existe
 
 ```json
@@ -172,6 +185,7 @@ PUT /frequencia/alterar
   "statusCode": 404
 }
 ```
+
 **Causa:** Frequência ainda não foi lançada para esta data específica
 
 ## 📋 Exemplos Práticos
@@ -255,6 +269,7 @@ curl -X PUT http://localhost:3000/frequencia/alterar \
 ## 🔍 Fluxo Completo de Uso
 
 ### 1. Consultar Frequência Atual
+
 ```bash
 # Ver status atual da aula
 curl -X GET "http://localhost:3000/frequencia/turma/6" \
@@ -262,10 +277,12 @@ curl -X GET "http://localhost:3000/frequencia/turma/6" \
 ```
 
 ### 2. Identificar Alterações Necessárias
+
 - Verificar na resposta quais alunos têm status incorreto
 - Anotar os IDs dos alunos e novos status desejados
 
 ### 3. Fazer as Alterações
+
 ```bash
 # Aplicar correções
 curl -X PUT http://localhost:3000/frequencia/alterar \
@@ -275,12 +292,14 @@ curl -X PUT http://localhost:3000/frequencia/alterar \
 ```
 
 ### 4. Verificar Resultado
+
 - A resposta já mostra o resultado das alterações
 - Opcionalmente, consultar novamente para confirmar
 
 ## ⚠️ Boas Práticas
 
 ### ✅ Fazer
+
 - **Consultar primeiro:** Veja a frequência atual antes de alterar
 - **Alterar apenas necessário:** Inclua somente alunos que realmente mudam de status
 - **Verificar IDs:** Use os IDs corretos dos alunos (campo `id` do Usuario)
@@ -288,6 +307,7 @@ curl -X PUT http://localhost:3000/frequencia/alterar \
 - **Múltiplas alterações:** Agrupe várias alterações numa única requisição
 
 ### ❌ Evitar
+
 - **Alterar sem consultar:** Pode causar mudanças desnecessárias
 - **IDs incorretos:** Não use matrícula nem ID de matrícula
 - **Data errada:** Data deve corresponder a aula já registrada
@@ -295,24 +315,26 @@ curl -X PUT http://localhost:3000/frequencia/alterar \
 - **Múltiplas requisições:** Prefira uma requisição com várias alterações
 
 ### 🚀 Otimização
+
 - **Eficiência:** Sistema só processa mudanças reais de status
 - **Atomicidade:** Todas as alterações são aplicadas em uma transação
 - **Validação:** Verifica permissões e dados antes de aplicar alterações
 
 ## 🔄 Diferenças dos Endpoints
 
-| Aspecto | Lançar Frequência | Alterar Frequência |
-|---------|------------------|-------------------|
-| **Quando usar** | Primeira vez | Correções posteriores |
-| **Pré-requisito** | Nenhum | Frequência já lançada |
-| **Input** | Apenas presentes | Todos com status |
-| **Ausentes** | Automático | Manual |
-| **Endpoint** | `POST /frequencia` | `PUT /frequencia/alterar` |
-| **Validação** | Data não duplicada | Data deve existir |
+| Aspecto           | Lançar Frequência  | Alterar Frequência        |
+| ----------------- | ------------------ | ------------------------- |
+| **Quando usar**   | Primeira vez       | Correções posteriores     |
+| **Pré-requisito** | Nenhum             | Frequência já lançada     |
+| **Input**         | Apenas presentes   | Todos com status          |
+| **Ausentes**      | Automático         | Manual                    |
+| **Endpoint**      | `POST /frequencia` | `PUT /frequencia/alterar` |
+| **Validação**     | Data não duplicada | Data deve existir         |
 
 ## 📚 Documentação Completa
 
 Para documentação interativa completa:
+
 ```
 http://localhost:3000/api
 ```

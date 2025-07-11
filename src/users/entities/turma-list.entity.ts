@@ -4,13 +4,13 @@ import { TurmaEntity } from './turma.entity';
 export class TurmaListEntity {
   @ApiProperty({
     description: 'Lista de turmas',
-    type: [TurmaEntity]
+    type: [TurmaEntity],
   })
   turmas: TurmaEntity[];
 
   @ApiProperty({
     example: 8,
-    description: 'Total de turmas encontradas'
+    description: 'Total de turmas encontradas',
   })
   total: number;
 

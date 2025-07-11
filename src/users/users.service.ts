@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
@@ -21,8 +27,8 @@ import { AlterarFrequenciaDto } from './dto/alterar-frequencia.dto';
 export class UsersService {
   constructor(
     private prisma: PrismaService,
-    private jwtService: JwtService
-  ) { }
+    private jwtService: JwtService,
+  ) {}
 
   findByEmail(email: string) {
     return this.prisma.usuario.findUnique({ where: { email } });
@@ -49,17 +55,36 @@ export class UsersService {
     const payload = {
       sub: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
     };
 
     // Retornar token e informações do usuário
     return {
       accessToken: this.jwtService.sign(payload),
-      user
+      user,
     };
   }
 
-  private async comparePasswords(plainTextPassword: string, hashedPassword: string): Promise<boolean> {
+  async verifyToken(token: string) {
+    const payload = this.jwtService.verify<{
+      sub: number;
+      email: string;
+      role: EnumPerfil;
+    }>(token);
+
+    const user = await this.findOne(payload.sub);
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado para token jwt');
+    }
+
+    return user;
+  }
+
+  private async comparePasswords(
+    plainTextPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     return await bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
@@ -67,7 +92,9 @@ export class UsersService {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem cadastrar alunos');
+      throw new UnauthorizedException(
+        'Apenas administradores podem cadastrar alunos',
+      );
     }
 
     // Verificar se já existe um usuário com este e-mail
@@ -77,18 +104,22 @@ export class UsersService {
     }
 
     // Verificar se já existe um usuário com esta matrícula
-    const existingUserByMatricula = await this.findByMatricula(createAlunoDto.matricula);
+    const existingUserByMatricula = await this.findByMatricula(
+      createAlunoDto.matricula,
+    );
     if (existingUserByMatricula) {
       throw new ConflictException('Matrícula já cadastrada');
     }
 
     // Verificar se o curso existe
     const curso = await this.prisma.curso.findUnique({
-      where: { codigo: createAlunoDto.curso_codigo }
+      where: { codigo: createAlunoDto.curso_codigo },
     });
 
     if (!curso) {
-      throw new NotFoundException(`Curso com código ${createAlunoDto.curso_codigo} não encontrado`);
+      throw new NotFoundException(
+        `Curso com código ${createAlunoDto.curso_codigo} não encontrado`,
+      );
     }
 
     // Gerar senha aleatória
@@ -102,15 +133,15 @@ export class UsersService {
         email: createAlunoDto.email,
         matricula: createAlunoDto.matricula,
         senha: hashedPassword,
-        role: EnumPerfil.aluno
-      }
+        role: EnumPerfil.aluno,
+      },
     });
 
     // Retornar o aluno criado, a senha temporária e o curso
     return {
       usuario: novoAluno,
       senha_temporaria: temporaryPassword,
-      curso: curso.nome
+      curso: curso.nome,
     };
   }
 
@@ -118,31 +149,39 @@ export class UsersService {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem cadastrar turmas');
+      throw new UnauthorizedException(
+        'Apenas administradores podem cadastrar turmas',
+      );
     }
 
     // Verificar se já existe uma turma com este código
     const existingTurma = await this.prisma.turma.findUnique({
-      where: { codigo: createTurmaDto.codigo }
+      where: { codigo: createTurmaDto.codigo },
     });
 
     if (existingTurma) {
-      throw new ConflictException(`Turma com código ${createTurmaDto.codigo} já existe`);
+      throw new ConflictException(
+        `Turma com código ${createTurmaDto.codigo} já existe`,
+      );
     }
 
     // Verificar se a disciplina existe
     const disciplina = await this.prisma.disciplina.findUnique({
-      where: { codigo: createTurmaDto.disciplina_codigo }
+      where: { codigo: createTurmaDto.disciplina_codigo },
     });
 
     if (!disciplina) {
-      throw new NotFoundException(`Disciplina com código ${createTurmaDto.disciplina_codigo} não encontrada`);
+      throw new NotFoundException(
+        `Disciplina com código ${createTurmaDto.disciplina_codigo} não encontrada`,
+      );
     }
 
     // Verificar se o professor existe
     const professor = await this.findByEmail(createTurmaDto.professor_email);
     if (!professor || professor.role !== EnumPerfil.professor) {
-      throw new NotFoundException(`Professor com email ${createTurmaDto.professor_email} não encontrado`);
+      throw new NotFoundException(
+        `Professor com email ${createTurmaDto.professor_email} não encontrado`,
+      );
     }
 
     // Criar a turma
@@ -154,12 +193,12 @@ export class UsersService {
         ano: createTurmaDto.ano,
         semestre: createTurmaDto.semestre,
         sala: createTurmaDto.sala || null,
-        vagas: createTurmaDto.vagas || 30
+        vagas: createTurmaDto.vagas || 30,
       },
       include: {
         disciplina: true,
-        professor: true
-      }
+        professor: true,
+      },
     });
 
     return novaTurma;
@@ -169,7 +208,9 @@ export class UsersService {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem atualizar usuários');
+      throw new UnauthorizedException(
+        'Apenas administradores podem atualizar usuários',
+      );
     }
 
     // Verificar se o usuário existe
@@ -185,27 +226,34 @@ export class UsersService {
         nome: updateUserDto.nome,
         email: updateUserDto.email,
         matricula: updateUserDto.matricula,
-        role: updateUserDto.role
-      }
+        role: updateUserDto.role,
+      },
     });
 
     return updatedUser;
   }
 
-  async createDisciplina(createDisciplinaDto: CreateDisciplinaDto, adminId: number) {
+  async createDisciplina(
+    createDisciplinaDto: CreateDisciplinaDto,
+    adminId: number,
+  ) {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem cadastrar disciplinas');
+      throw new UnauthorizedException(
+        'Apenas administradores podem cadastrar disciplinas',
+      );
     }
 
     // Verificar se já existe uma disciplina com este código
     const existingDisciplina = await this.prisma.disciplina.findUnique({
-      where: { codigo: createDisciplinaDto.codigo }
+      where: { codigo: createDisciplinaDto.codigo },
     });
 
     if (existingDisciplina) {
-      throw new ConflictException(`Disciplina com código ${createDisciplinaDto.codigo} já existe`);
+      throw new ConflictException(
+        `Disciplina com código ${createDisciplinaDto.codigo} já existe`,
+      );
     }
 
     // Criar a disciplina
@@ -217,25 +265,34 @@ export class UsersService {
         carga_horaria: createDisciplinaDto.carga_horaria || 60, // Valor padrão se não for fornecido
         ementa: createDisciplinaDto.ementa,
         criado_por: {
-          connect: { id: adminId }
-        }
-      }
+          connect: { id: adminId },
+        },
+      },
     });
 
     return novaDisciplina;
   }
 
-  async createMatricula(createMatriculaDto: CreateMatriculaDto, adminId: number) {
+  async createMatricula(
+    createMatriculaDto: CreateMatriculaDto,
+    adminId: number,
+  ) {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem realizar matrículas');
+      throw new UnauthorizedException(
+        'Apenas administradores podem realizar matrículas',
+      );
     }
 
     // Verificar se o aluno existe
-    const aluno = await this.findByMatricula(createMatriculaDto.matricula_aluno);
+    const aluno = await this.findByMatricula(
+      createMatriculaDto.matricula_aluno,
+    );
     if (!aluno) {
-      throw new NotFoundException(`Aluno com matrícula ${createMatriculaDto.matricula_aluno} não encontrado`);
+      throw new NotFoundException(
+        `Aluno com matrícula ${createMatriculaDto.matricula_aluno} não encontrado`,
+      );
     }
 
     // Verificar se o aluno tem o perfil correto
@@ -249,25 +306,29 @@ export class UsersService {
       include: {
         disciplina: true,
         professor: true,
-        matriculas: true
-      }
+        matriculas: true,
+      },
     });
 
     if (!turma) {
-      throw new NotFoundException(`Turma com código ${createMatriculaDto.codigo_turma} não encontrada`);
+      throw new NotFoundException(
+        `Turma com código ${createMatriculaDto.codigo_turma} não encontrada`,
+      );
     }
 
     // Verificar se há vagas disponíveis na turma
     if (turma.matriculas.length >= turma.vagas) {
-      throw new BadRequestException(`A turma ${turma.codigo} não possui vagas disponíveis`);
+      throw new BadRequestException(
+        `A turma ${turma.codigo} não possui vagas disponíveis`,
+      );
     }
 
     // Verificar se o aluno já está matriculado nesta turma
     const matriculaExistente = await this.prisma.matricula.findFirst({
       where: {
         estudante_id: aluno.id,
-        turma_id: turma.id
-      }
+        turma_id: turma.id,
+      },
     });
 
     if (matriculaExistente) {
@@ -279,8 +340,8 @@ export class UsersService {
       data: {
         estudante_id: aluno.id,
         turma_id: turma.id,
-        status: 'ATIVA'
-      }
+        status: 'ATIVA',
+      },
     });
 
     // Retornar os dados da matrícula com informações adicionais
@@ -289,16 +350,21 @@ export class UsersService {
       aluno: aluno.nome,
       disciplina: turma.disciplina.nome,
       turma: turma.codigo,
-      professor: turma.professor.nome
+      professor: turma.professor.nome,
     };
   }
 
   // ===== MÉTODOS PARA PROFESSORES =====
-  async createProfessor(createProfessorDto: CreateProfessorDto, adminId: number) {
+  async createProfessor(
+    createProfessorDto: CreateProfessorDto,
+    adminId: number,
+  ) {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem cadastrar professores');
+      throw new UnauthorizedException(
+        'Apenas administradores podem cadastrar professores',
+      );
     }
 
     // Verificar se já existe um usuário com este email
@@ -317,13 +383,13 @@ export class UsersService {
         nome: createProfessorDto.nome,
         email: createProfessorDto.email,
         senha: senhaHash,
-        role: EnumPerfil.professor
-      }
+        role: EnumPerfil.professor,
+      },
     });
 
     return {
       ...professor,
-      senha_temporaria: senhaTemporaria
+      senha_temporaria: senhaTemporaria,
     };
   }
 
@@ -336,16 +402,22 @@ export class UsersService {
         email: true,
         role: true,
         criado_em: true,
-        atualizado_em: true
-      }
+        atualizado_em: true,
+      },
     });
   }
 
-  async updateProfessor(id: number, updateUserDto: UpdateUserDto, adminId: number) {
+  async updateProfessor(
+    id: number,
+    updateUserDto: UpdateUserDto,
+    adminId: number,
+  ) {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem atualizar professores');
+      throw new UnauthorizedException(
+        'Apenas administradores podem atualizar professores',
+      );
     }
 
     // Verificar se o professor existe
@@ -365,7 +437,7 @@ export class UsersService {
     // Preparar dados para atualização
     const updateData: any = {
       nome: updateUserDto.nome || professor.nome,
-      email: updateUserDto.email || professor.email
+      email: updateUserDto.email || professor.email,
     };
 
     // Se uma nova senha foi fornecida, fazer hash
@@ -383,8 +455,8 @@ export class UsersService {
         email: true,
         role: true,
         criado_em: true,
-        atualizado_em: true
-      }
+        atualizado_em: true,
+      },
     });
 
     return professorAtualizado;
@@ -401,8 +473,8 @@ export class UsersService {
         matricula: true,
         role: true,
         criado_em: true,
-        atualizado_em: true
-      }
+        atualizado_em: true,
+      },
     });
   }
 
@@ -410,7 +482,9 @@ export class UsersService {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem atualizar alunos');
+      throw new UnauthorizedException(
+        'Apenas administradores podem atualizar alunos',
+      );
     }
 
     // Verificar se o aluno existe
@@ -430,7 +504,7 @@ export class UsersService {
     // Preparar dados para atualização
     const updateData: any = {
       nome: updateUserDto.nome || aluno.nome,
-      email: updateUserDto.email || aluno.email
+      email: updateUserDto.email || aluno.email,
     };
 
     // Se uma nova senha foi fornecida, fazer hash
@@ -449,8 +523,8 @@ export class UsersService {
         matricula: true,
         role: true,
         criado_em: true,
-        atualizado_em: true
-      }
+        atualizado_em: true,
+      },
     });
 
     return alunoAtualizado;
@@ -463,23 +537,29 @@ export class UsersService {
         criado_por: {
           select: {
             nome: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
   }
 
-  async updateDisciplina(id: number, updateData: Partial<CreateDisciplinaDto>, adminId: number) {
+  async updateDisciplina(
+    id: number,
+    updateData: Partial<CreateDisciplinaDto>,
+    adminId: number,
+  ) {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem atualizar disciplinas');
+      throw new UnauthorizedException(
+        'Apenas administradores podem atualizar disciplinas',
+      );
     }
 
     // Verificar se a disciplina existe
     const disciplina = await this.prisma.disciplina.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!disciplina) {
@@ -489,7 +569,7 @@ export class UsersService {
     // Verificar se o código não está sendo usado por outra disciplina
     if (updateData.codigo && updateData.codigo !== disciplina.codigo) {
       const existingDisciplina = await this.prisma.disciplina.findUnique({
-        where: { codigo: updateData.codigo }
+        where: { codigo: updateData.codigo },
       });
       if (existingDisciplina) {
         throw new ConflictException('Código da disciplina já existe');
@@ -504,8 +584,8 @@ export class UsersService {
         codigo: updateData.codigo || disciplina.codigo,
         descricao: updateData.descricao || disciplina.descricao,
         carga_horaria: updateData.carga_horaria || disciplina.carga_horaria,
-        ementa: updateData.ementa || disciplina.ementa
-      }
+        ementa: updateData.ementa || disciplina.ementa,
+      },
     });
 
     return disciplinaAtualizada;
@@ -518,35 +598,41 @@ export class UsersService {
         disciplina: {
           select: {
             nome: true,
-            codigo: true
-          }
+            codigo: true,
+          },
         },
         professor: {
           select: {
             nome: true,
-            email: true
-          }
+            email: true,
+          },
         },
         horarios: true,
         _count: {
           select: {
-            matriculas: true
-          }
-        }
-      }
+            matriculas: true,
+          },
+        },
+      },
     });
   }
 
-  async updateTurma(id: number, updateData: Partial<CreateTurmaDto>, adminId: number) {
+  async updateTurma(
+    id: number,
+    updateData: Partial<CreateTurmaDto>,
+    adminId: number,
+  ) {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem atualizar turmas');
+      throw new UnauthorizedException(
+        'Apenas administradores podem atualizar turmas',
+      );
     }
 
     // Verificar se a turma existe
     const turma = await this.prisma.turma.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!turma) {
@@ -556,7 +642,7 @@ export class UsersService {
     // Verificar se o código não está sendo usado por outra turma
     if (updateData.codigo && updateData.codigo !== turma.codigo) {
       const existingTurma = await this.prisma.turma.findUnique({
-        where: { codigo: updateData.codigo }
+        where: { codigo: updateData.codigo },
       });
       if (existingTurma) {
         throw new ConflictException('Código da turma já existe');
@@ -569,10 +655,12 @@ export class UsersService {
     // Se foi fornecido um novo código de disciplina
     if (updateData.disciplina_codigo) {
       const novaDisciplina = await this.prisma.disciplina.findUnique({
-        where: { codigo: updateData.disciplina_codigo }
+        where: { codigo: updateData.disciplina_codigo },
       });
       if (!novaDisciplina) {
-        throw new NotFoundException(`Disciplina com código ${updateData.disciplina_codigo} não encontrada`);
+        throw new NotFoundException(
+          `Disciplina com código ${updateData.disciplina_codigo} não encontrada`,
+        );
       }
       disciplina_id = novaDisciplina.id;
     }
@@ -581,7 +669,9 @@ export class UsersService {
     if (updateData.professor_email) {
       const novoProfessor = await this.findByEmail(updateData.professor_email);
       if (!novoProfessor || novoProfessor.role !== EnumPerfil.professor) {
-        throw new NotFoundException(`Professor com email ${updateData.professor_email} não encontrado`);
+        throw new NotFoundException(
+          `Professor com email ${updateData.professor_email} não encontrado`,
+        );
       }
       professor_id = novoProfessor.id;
     }
@@ -596,12 +686,12 @@ export class UsersService {
         ano: updateData.ano || turma.ano,
         semestre: updateData.semestre || turma.semestre,
         sala: updateData.sala !== undefined ? updateData.sala : turma.sala,
-        vagas: updateData.vagas || turma.vagas
+        vagas: updateData.vagas || turma.vagas,
       },
       include: {
         disciplina: true,
-        professor: true
-      }
+        professor: true,
+      },
     });
 
     return turmaAtualizada;
@@ -612,12 +702,14 @@ export class UsersService {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem cadastrar cursos');
+      throw new UnauthorizedException(
+        'Apenas administradores podem cadastrar cursos',
+      );
     }
 
     // Verificar se já existe um curso com este código
     const existingCurso = await this.prisma.curso.findUnique({
-      where: { codigo: createCursoDto.codigo }
+      where: { codigo: createCursoDto.codigo },
     });
 
     if (existingCurso) {
@@ -626,21 +718,28 @@ export class UsersService {
 
     // Verificar se as disciplinas existem (se fornecidas)
     let disciplinasValidas: any[] = [];
-    if (createCursoDto.disciplinas_codigos && createCursoDto.disciplinas_codigos.length > 0) {
+    if (
+      createCursoDto.disciplinas_codigos &&
+      createCursoDto.disciplinas_codigos.length > 0
+    ) {
       disciplinasValidas = await this.prisma.disciplina.findMany({
         where: {
           codigo: {
-            in: createCursoDto.disciplinas_codigos
-          }
-        }
+            in: createCursoDto.disciplinas_codigos,
+          },
+        },
       });
 
-      if (disciplinasValidas.length !== createCursoDto.disciplinas_codigos.length) {
-        const codigosEncontrados = disciplinasValidas.map(d => d.codigo);
+      if (
+        disciplinasValidas.length !== createCursoDto.disciplinas_codigos.length
+      ) {
+        const codigosEncontrados = disciplinasValidas.map((d) => d.codigo);
         const codigosNaoEncontrados = createCursoDto.disciplinas_codigos.filter(
-          codigo => !codigosEncontrados.includes(codigo)
+          (codigo) => !codigosEncontrados.includes(codigo),
         );
-        throw new NotFoundException(`Disciplinas não encontradas: ${codigosNaoEncontrados.join(', ')}`);
+        throw new NotFoundException(
+          `Disciplinas não encontradas: ${codigosNaoEncontrados.join(', ')}`,
+        );
       }
     }
 
@@ -650,25 +749,25 @@ export class UsersService {
         nome: createCursoDto.nome,
         codigo: createCursoDto.codigo,
         descricao: createCursoDto.descricao || null,
-        criado_por_id: adminId
+        criado_por_id: adminId,
       },
       include: {
         criado_por: {
           select: {
             nome: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
 
     // Vincular disciplinas ao curso (se fornecidas)
     if (disciplinasValidas.length > 0) {
       await this.prisma.cursoDisciplina.createMany({
-        data: disciplinasValidas.map(disciplina => ({
+        data: disciplinasValidas.map((disciplina) => ({
           curso_id: novoCurso.id,
-          disciplina_id: disciplina.id
-        }))
+          disciplina_id: disciplina.id,
+        })),
       });
     }
 
@@ -679,25 +778,26 @@ export class UsersService {
         criado_por: {
           select: {
             nome: true,
-            email: true
-          }
+            email: true,
+          },
         },
         disciplinas: {
           include: {
             disciplina: {
               select: {
                 nome: true,
-                codigo: true
-              }
-            }
-          }
-        }
-      }
+                codigo: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     return {
       ...cursoCompleto,
-      disciplinas_nomes: cursoCompleto?.disciplinas.map(cd => cd.disciplina.nome) || []
+      disciplinas_nomes:
+        cursoCompleto?.disciplinas.map((cd) => cd.disciplina.nome) || [],
     };
   }
 
@@ -707,20 +807,20 @@ export class UsersService {
         criado_por: {
           select: {
             nome: true,
-            email: true
-          }
+            email: true,
+          },
         },
         disciplinas: {
           include: {
-            disciplina: true
-          }
+            disciplina: true,
+          },
         },
         _count: {
           select: {
-            disciplinas: true
-          }
-        }
-      }
+            disciplinas: true,
+          },
+        },
+      },
     });
 
     // Para cada curso, contar alunos matriculados
@@ -734,12 +834,12 @@ export class UsersService {
               disciplina: {
                 cursos: {
                   some: {
-                    curso_id: curso.id
-                  }
-                }
-              }
-            }
-          }
+                    curso_id: curso.id,
+                  },
+                },
+              },
+            },
+          },
         });
 
         return {
@@ -751,27 +851,33 @@ export class UsersService {
           total_alunos: alunosCount.length,
           criado_por: curso.criado_por.nome,
           criado_em: curso.criado_em,
-          atualizado_em: curso.atualizado_em
+          atualizado_em: curso.atualizado_em,
         };
-      })
+      }),
     );
 
     return cursosComDados;
   }
 
-  async updateCurso(id: number, updateData: Partial<CreateCursoDto>, adminId: number) {
+  async updateCurso(
+    id: number,
+    updateData: Partial<CreateCursoDto>,
+    adminId: number,
+  ) {
     // Verificar se o admin existe
     const admin = await this.findOne(adminId);
     if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException('Apenas administradores podem atualizar cursos');
+      throw new UnauthorizedException(
+        'Apenas administradores podem atualizar cursos',
+      );
     }
 
     // Verificar se o curso existe
     const curso = await this.prisma.curso.findUnique({
       where: { id },
       include: {
-        disciplinas: true
-      }
+        disciplinas: true,
+      },
     });
 
     if (!curso) {
@@ -781,7 +887,7 @@ export class UsersService {
     // Verificar se o código não está sendo usado por outro curso
     if (updateData.codigo && updateData.codigo !== curso.codigo) {
       const existingCurso = await this.prisma.curso.findUnique({
-        where: { codigo: updateData.codigo }
+        where: { codigo: updateData.codigo },
       });
       if (existingCurso) {
         throw new ConflictException('Código do curso já existe');
@@ -794,8 +900,11 @@ export class UsersService {
       data: {
         nome: updateData.nome || curso.nome,
         codigo: updateData.codigo || curso.codigo,
-        descricao: updateData.descricao !== undefined ? updateData.descricao : curso.descricao
-      }
+        descricao:
+          updateData.descricao !== undefined
+            ? updateData.descricao
+            : curso.descricao,
+      },
     });
 
     // Se foram fornecidas novas disciplinas, atualizar relacionamentos
@@ -804,31 +913,33 @@ export class UsersService {
       const disciplinasValidas = await this.prisma.disciplina.findMany({
         where: {
           codigo: {
-            in: updateData.disciplinas_codigos
-          }
-        }
+            in: updateData.disciplinas_codigos,
+          },
+        },
       });
 
       if (disciplinasValidas.length !== updateData.disciplinas_codigos.length) {
-        const codigosEncontrados = disciplinasValidas.map(d => d.codigo);
+        const codigosEncontrados = disciplinasValidas.map((d) => d.codigo);
         const codigosNaoEncontrados = updateData.disciplinas_codigos.filter(
-          codigo => !codigosEncontrados.includes(codigo)
+          (codigo) => !codigosEncontrados.includes(codigo),
         );
-        throw new NotFoundException(`Disciplinas não encontradas: ${codigosNaoEncontrados.join(', ')}`);
+        throw new NotFoundException(
+          `Disciplinas não encontradas: ${codigosNaoEncontrados.join(', ')}`,
+        );
       }
 
       // Remover relacionamentos existentes
       await this.prisma.cursoDisciplina.deleteMany({
-        where: { curso_id: id }
+        where: { curso_id: id },
       });
 
       // Criar novos relacionamentos
       if (disciplinasValidas.length > 0) {
         await this.prisma.cursoDisciplina.createMany({
-          data: disciplinasValidas.map(disciplina => ({
+          data: disciplinasValidas.map((disciplina) => ({
             curso_id: id,
-            disciplina_id: disciplina.id
-          }))
+            disciplina_id: disciplina.id,
+          })),
         });
       }
     }
@@ -840,25 +951,26 @@ export class UsersService {
         criado_por: {
           select: {
             nome: true,
-            email: true
-          }
+            email: true,
+          },
         },
         disciplinas: {
           include: {
             disciplina: {
               select: {
                 nome: true,
-                codigo: true
-              }
-            }
-          }
-        }
-      }
+                codigo: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     return {
       ...cursoCompleto,
-      disciplinas_nomes: cursoCompleto?.disciplinas.map(cd => cd.disciplina.nome) || []
+      disciplinas_nomes:
+        cursoCompleto?.disciplinas.map((cd) => cd.disciplina.nome) || [],
     };
   }
 
@@ -869,8 +981,8 @@ export class UsersService {
         criado_por: {
           select: {
             nome: true,
-            email: true
-          }
+            email: true,
+          },
         },
         disciplinas: {
           include: {
@@ -880,12 +992,12 @@ export class UsersService {
                 nome: true,
                 codigo: true,
                 carga_horaria: true,
-                ementa: true
-              }
-            }
-          }
-        }
-      }
+                ementa: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!curso) {
@@ -894,15 +1006,20 @@ export class UsersService {
 
     return {
       ...curso,
-      disciplinas_detalhes: curso.disciplinas.map(cd => cd.disciplina)
+      disciplinas_detalhes: curso.disciplinas.map((cd) => cd.disciplina),
     };
   }
 
-  async lancarFrequencia(lancarFrequenciaDto: LancarFrequenciaDto, professorId: number) {
+  async lancarFrequencia(
+    lancarFrequenciaDto: LancarFrequenciaDto,
+    professorId: number,
+  ) {
     // Verificar se o professor existe
     const professor = await this.findOne(professorId);
     if (!professor || professor.role !== EnumPerfil.professor) {
-      throw new UnauthorizedException('Apenas professores podem lançar frequência');
+      throw new UnauthorizedException(
+        'Apenas professores podem lançar frequência',
+      );
     }
 
     // Verificar se a turma existe e se o professor é responsável por ela
@@ -913,10 +1030,10 @@ export class UsersService {
         professor: true,
         matriculas: {
           include: {
-            estudante: true
-          }
-        }
-      }
+            estudante: true,
+          },
+        },
+      },
     });
 
     if (!turma) {
@@ -924,7 +1041,9 @@ export class UsersService {
     }
 
     if (turma.professor_id !== professorId) {
-      throw new UnauthorizedException('Você só pode lançar frequência para suas próprias turmas');
+      throw new UnauthorizedException(
+        'Você só pode lançar frequência para suas próprias turmas',
+      );
     }
 
     // Verificar se já existe frequência para esta data
@@ -932,47 +1051,57 @@ export class UsersService {
     const frequenciaExistente = await this.prisma.frequencia.findFirst({
       where: {
         matricula: {
-          turma_id: turma.id
+          turma_id: turma.id,
         },
-        data_aula: dataAula
-      }
+        data_aula: dataAula,
+      },
     });
 
     if (frequenciaExistente) {
-      throw new ConflictException(`Frequência já foi lançada para a aula do dia ${dataAula.toLocaleDateString('pt-BR')}`);
+      throw new ConflictException(
+        `Frequência já foi lançada para a aula do dia ${dataAula.toLocaleDateString('pt-BR')}`,
+      );
     }
 
     // Validar se todos os alunos presentes estão matriculados na turma
-    const matriculasIds = turma.matriculas.map(m => m.estudante_id);
+    const matriculasIds = turma.matriculas.map((m) => m.estudante_id);
     const alunosInvalidos = lancarFrequenciaDto.alunos_presentes.filter(
-      alunoId => !matriculasIds.includes(alunoId)
+      (alunoId) => !matriculasIds.includes(alunoId),
     );
 
     if (alunosInvalidos.length > 0) {
-      throw new BadRequestException(`Alunos não matriculados na turma: ${alunosInvalidos.join(', ')}`);
+      throw new BadRequestException(
+        `Alunos não matriculados na turma: ${alunosInvalidos.join(', ')}`,
+      );
     }
 
     // Preparar dados de frequência para todos os alunos da turma
-    const frequenciasData = turma.matriculas.map(matricula => ({
+    const frequenciasData = turma.matriculas.map((matricula) => ({
       matricula_id: matricula.id,
       data_aula: dataAula,
-      presente: lancarFrequenciaDto.alunos_presentes.includes(matricula.estudante_id),
-      registrado_por_id: professorId
+      presente: lancarFrequenciaDto.alunos_presentes.includes(
+        matricula.estudante_id,
+      ),
+      registrado_por_id: professorId,
     }));
 
     // Inserir frequências
     await this.prisma.frequencia.createMany({
-      data: frequenciasData
+      data: frequenciasData,
     });
 
     // Preparar resposta
     const alunosPresentes = turma.matriculas
-      .filter(m => lancarFrequenciaDto.alunos_presentes.includes(m.estudante_id))
-      .map(m => m.estudante.nome);
+      .filter((m) =>
+        lancarFrequenciaDto.alunos_presentes.includes(m.estudante_id),
+      )
+      .map((m) => m.estudante.nome);
 
     const alunosAusentes = turma.matriculas
-      .filter(m => !lancarFrequenciaDto.alunos_presentes.includes(m.estudante_id))
-      .map(m => m.estudante.nome);
+      .filter(
+        (m) => !lancarFrequenciaDto.alunos_presentes.includes(m.estudante_id),
+      )
+      .map((m) => m.estudante.nome);
 
     return {
       message: 'Frequência lançada com sucesso',
@@ -984,18 +1113,23 @@ export class UsersService {
       ausentes: alunosAusentes.length,
       alunos_presentes: alunosPresentes,
       alunos_ausentes: alunosAusentes,
-      registrado_por: professor.nome
+      registrado_por: professor.nome,
     };
   }
 
-  async consultarFrequencia(turmaId: number, professorId: number, dataInicio?: string, dataFim?: string) {
+  async consultarFrequencia(
+    turmaId: number,
+    professorId: number,
+    dataInicio?: string,
+    dataFim?: string,
+  ) {
     // Verificar se o professor é responsável pela turma
     const turma = await this.prisma.turma.findUnique({
       where: { id: turmaId },
       include: {
         disciplina: true,
-        professor: true
-      }
+        professor: true,
+      },
     });
 
     if (!turma) {
@@ -1003,14 +1137,16 @@ export class UsersService {
     }
 
     if (turma.professor_id !== professorId) {
-      throw new UnauthorizedException('Você só pode consultar frequência de suas próprias turmas');
+      throw new UnauthorizedException(
+        'Você só pode consultar frequência de suas próprias turmas',
+      );
     }
 
     // Construir filtros de data
     const whereClause: any = {
       matricula: {
-        turma_id: turmaId
-      }
+        turma_id: turmaId,
+      },
     };
 
     if (dataInicio || dataFim) {
@@ -1033,16 +1169,16 @@ export class UsersService {
               select: {
                 id: true,
                 nome: true,
-                matricula: true
-              }
-            }
-          }
-        }
+                matricula: true,
+              },
+            },
+          },
+        },
       },
       orderBy: [
         { data_aula: 'desc' },
-        { matricula: { estudante: { nome: 'asc' } } }
-      ]
+        { matricula: { estudante: { nome: 'asc' } } },
+      ],
     });
 
     // Agrupar por data de aula
@@ -1055,7 +1191,7 @@ export class UsersService {
           total_alunos: 0,
           presentes: 0,
           ausentes: 0,
-          alunos: []
+          alunos: [],
         };
       }
 
@@ -1070,7 +1206,7 @@ export class UsersService {
         id: freq.matricula.estudante.id,
         nome: freq.matricula.estudante.nome,
         matricula: freq.matricula.estudante.matricula,
-        presente: freq.presente
+        presente: freq.presente,
       });
 
       return acc;
@@ -1081,17 +1217,22 @@ export class UsersService {
         id: turma.id,
         codigo: turma.codigo,
         disciplina: turma.disciplina.nome,
-        professor: turma.professor.nome
+        professor: turma.professor.nome,
       },
-      frequencias: Object.values(frequenciasPorData)
+      frequencias: Object.values(frequenciasPorData),
     };
   }
 
-  async alterarFrequencia(alterarFrequenciaDto: AlterarFrequenciaDto, professorId: number) {
+  async alterarFrequencia(
+    alterarFrequenciaDto: AlterarFrequenciaDto,
+    professorId: number,
+  ) {
     // Verificar se o professor existe
     const professor = await this.findOne(professorId);
     if (!professor || professor.role !== EnumPerfil.professor) {
-      throw new UnauthorizedException('Apenas professores podem alterar frequência');
+      throw new UnauthorizedException(
+        'Apenas professores podem alterar frequência',
+      );
     }
 
     // Verificar se a turma existe e se o professor é responsável por ela
@@ -1102,10 +1243,10 @@ export class UsersService {
         professor: true,
         matriculas: {
           include: {
-            estudante: true
-          }
-        }
-      }
+            estudante: true,
+          },
+        },
+      },
     });
 
     if (!turma) {
@@ -1113,7 +1254,9 @@ export class UsersService {
     }
 
     if (turma.professor_id !== professorId) {
-      throw new UnauthorizedException('Você só pode alterar frequência de suas próprias turmas');
+      throw new UnauthorizedException(
+        'Você só pode alterar frequência de suas próprias turmas',
+      );
     }
 
     const dataAula = new Date(alterarFrequenciaDto.data_aula);
@@ -1122,30 +1265,38 @@ export class UsersService {
     const frequenciasExistentes = await this.prisma.frequencia.findMany({
       where: {
         matricula: {
-          turma_id: turma.id
+          turma_id: turma.id,
         },
-        data_aula: dataAula
+        data_aula: dataAula,
       },
       include: {
         matricula: {
           include: {
-            estudante: true
-          }
-        }
-      }
+            estudante: true,
+          },
+        },
+      },
     });
 
     if (frequenciasExistentes.length === 0) {
-      throw new NotFoundException(`Não existe frequência registrada para a aula do dia ${dataAula.toLocaleDateString('pt-BR')}`);
+      throw new NotFoundException(
+        `Não existe frequência registrada para a aula do dia ${dataAula.toLocaleDateString('pt-BR')}`,
+      );
     }
 
     // Validar se todos os alunos das alterações estão matriculados na turma
-    const matriculasIds = turma.matriculas.map(m => m.estudante_id);
-    const alunosAlteracoes = alterarFrequenciaDto.alteracoes.map(a => a.aluno_id);
-    const alunosInvalidos = alunosAlteracoes.filter(alunoId => !matriculasIds.includes(alunoId));
+    const matriculasIds = turma.matriculas.map((m) => m.estudante_id);
+    const alunosAlteracoes = alterarFrequenciaDto.alteracoes.map(
+      (a) => a.aluno_id,
+    );
+    const alunosInvalidos = alunosAlteracoes.filter(
+      (alunoId) => !matriculasIds.includes(alunoId),
+    );
 
     if (alunosInvalidos.length > 0) {
-      throw new BadRequestException(`Alunos não matriculados na turma: ${alunosInvalidos.join(', ')}`);
+      throw new BadRequestException(
+        `Alunos não matriculados na turma: ${alunosInvalidos.join(', ')}`,
+      );
     }
 
     // Preparar as alterações e buscar status anterior
@@ -1153,12 +1304,14 @@ export class UsersService {
 
     for (const alteracao of alterarFrequenciaDto.alteracoes) {
       // Buscar a frequência atual do aluno
-      const frequenciaAtual = frequenciasExistentes.find(f =>
-        f.matricula.estudante_id === alteracao.aluno_id
+      const frequenciaAtual = frequenciasExistentes.find(
+        (f) => f.matricula.estudante_id === alteracao.aluno_id,
       );
 
       if (!frequenciaAtual) {
-        throw new NotFoundException(`Frequência não encontrada para o aluno ID ${alteracao.aluno_id}`);
+        throw new NotFoundException(
+          `Frequência não encontrada para o aluno ID ${alteracao.aluno_id}`,
+        );
       }
 
       // Só atualizar se o status mudou
@@ -1168,12 +1321,14 @@ export class UsersService {
           data: {
             presente: alteracao.presente,
             registrado_por_id: professorId,
-            atualizado_em: new Date()
-          }
+            atualizado_em: new Date(),
+          },
         });
 
         // Adicionar aos detalhes
-        const statusAnterior = frequenciaAtual.presente ? 'Presente' : 'Ausente';
+        const statusAnterior = frequenciaAtual.presente
+          ? 'Presente'
+          : 'Ausente';
         const statusNovo = alteracao.presente ? 'Presente' : 'Ausente';
 
         detalhesAlteracoes.push({
@@ -1182,34 +1337,40 @@ export class UsersService {
           matricula: frequenciaAtual.matricula.estudante.matricula,
           status_anterior: frequenciaAtual.presente,
           status_novo: alteracao.presente,
-          alteracao: `${statusAnterior} → ${statusNovo}`
+          alteracao: `${statusAnterior} → ${statusNovo}`,
         });
       }
     }
 
     if (detalhesAlteracoes.length === 0) {
-      throw new BadRequestException('Nenhuma alteração foi necessária. Os status informados já são os atuais.');
+      throw new BadRequestException(
+        'Nenhuma alteração foi necessária. Os status informados já são os atuais.',
+      );
     }
 
     // Buscar frequências atualizadas para estatísticas finais
     const frequenciasAtualizadas = await this.prisma.frequencia.findMany({
       where: {
         matricula: {
-          turma_id: turma.id
+          turma_id: turma.id,
         },
-        data_aula: dataAula
+        data_aula: dataAula,
       },
       include: {
         matricula: {
           include: {
-            estudante: true
-          }
-        }
-      }
+            estudante: true,
+          },
+        },
+      },
     });
 
-    const presentesFinal = frequenciasAtualizadas.filter(f => f.presente).length;
-    const ausentesFinal = frequenciasAtualizadas.filter(f => !f.presente).length;
+    const presentesFinal = frequenciasAtualizadas.filter(
+      (f) => f.presente,
+    ).length;
+    const ausentesFinal = frequenciasAtualizadas.filter(
+      (f) => !f.presente,
+    ).length;
 
     return {
       message: 'Frequência alterada com sucesso',
@@ -1221,7 +1382,7 @@ export class UsersService {
       ausentes_final: ausentesFinal,
       detalhes_alteracoes: detalhesAlteracoes,
       alterado_por: professor.nome,
-      data_alteracao: new Date()
+      data_alteracao: new Date(),
     };
   }
 }

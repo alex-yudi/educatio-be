@@ -20,7 +20,7 @@ import {
   ApiOperation,
   ApiBadRequestResponse,
   ApiConflictResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateProfessorDto } from '../users/dto/create-professor.dto';
@@ -35,37 +35,42 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 @ApiTags('Professores')
 @ApiBearerAuth()
 export class ProfessoresController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Cadastrar novo professor',
-    description: 'Cria um novo professor no sistema. Apenas administradores podem realizar esta operação.'
+    description:
+      'Cria um novo professor no sistema. Apenas administradores podem realizar esta operação.',
   })
   @ApiCreatedResponse({
     type: ProfessorCreatedEntity,
-    description: 'Professor cadastrado com sucesso'
+    description: 'Professor cadastrado com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem cadastrar professores'
+    description:
+      'Acesso negado. Apenas administradores podem cadastrar professores',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiConflictResponse({
-    description: 'E-mail já cadastrado no sistema'
+    description: 'E-mail já cadastrado no sistema',
   })
   async create(
     @Body() createProfessorDto: CreateProfessorDto,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const adminId = request.user.sub;
-      const result = await this.usersService.createProfessor(createProfessorDto, adminId);
+      const result = await this.usersService.createProfessor(
+        createProfessorDto,
+        adminId,
+      );
 
       return new ProfessorCreatedEntity({
         usuario: new UserEntity({
@@ -81,9 +86,9 @@ export class ProfessoresController {
           createdAt: result.criado_em,
           criado_em: result.criado_em,
           updatedAt: result.atualizado_em,
-          atualizado_em: result.atualizado_em
+          atualizado_em: result.atualizado_em,
         }),
-        senha_temporaria: result.senha_temporaria
+        senha_temporaria: result.senha_temporaria,
       });
     } catch (error) {
       if (error.status === 401) {
@@ -97,67 +102,78 @@ export class ProfessoresController {
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
     summary: 'Listar professores',
-    description: 'Lista todos os professores cadastrados no sistema. Administradores e professores podem acessar.'
+    description:
+      'Lista todos os professores cadastrados no sistema. Administradores e professores podem acessar.',
   })
   @ApiOkResponse({
     type: [UserEntity],
-    description: 'Lista de professores'
+    description: 'Lista de professores',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem listar'
+    description:
+      'Acesso negado. Apenas administradores e professores podem listar',
   })
   async findAll() {
     const professores = await this.usersService.findAllProfessores();
-    return professores.map(prof => new UserEntity({
-      id: prof.id,
-      name: prof.nome,
-      nome: prof.nome,
-      email: prof.email,
-      password: '',
-      senha: '',
-      role: prof.role,
-      registrationNumber: null,
-      matricula: null,
-      createdAt: prof.criado_em,
-      criado_em: prof.criado_em,
-      updatedAt: prof.atualizado_em,
-      atualizado_em: prof.atualizado_em
-    }));
+    return professores.map(
+      (prof) =>
+        new UserEntity({
+          id: prof.id,
+          name: prof.nome,
+          nome: prof.nome,
+          email: prof.email,
+          password: '',
+          senha: '',
+          role: prof.role,
+          registrationNumber: null,
+          matricula: null,
+          createdAt: prof.criado_em,
+          criado_em: prof.criado_em,
+          updatedAt: prof.atualizado_em,
+          atualizado_em: prof.atualizado_em,
+        }),
+    );
   }
 
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Atualizar professor',
-    description: 'Atualiza os dados de um professor. Apenas administradores podem realizar esta operação.'
+    description:
+      'Atualiza os dados de um professor. Apenas administradores podem realizar esta operação.',
   })
   @ApiOkResponse({
     type: UserEntity,
-    description: 'Professor atualizado com sucesso'
+    description: 'Professor atualizado com sucesso',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token de acesso inválido ou não fornecido'
+    description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem atualizar professores'
+    description:
+      'Acesso negado. Apenas administradores podem atualizar professores',
   })
   @ApiBadRequestResponse({
-    description: 'Dados inválidos fornecidos'
+    description: 'Dados inválidos fornecidos',
   })
   @ApiNotFoundResponse({
-    description: 'Professor não encontrado'
+    description: 'Professor não encontrado',
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() request: any
+    @Req() request: any,
   ) {
     try {
       const adminId = request.user.sub;
-      const professor = await this.usersService.updateProfessor(id, updateUserDto, adminId);
+      const professor = await this.usersService.updateProfessor(
+        id,
+        updateUserDto,
+        adminId,
+      );
       return new UserEntity({
         id: professor.id,
         name: professor.nome,
@@ -171,7 +187,7 @@ export class ProfessoresController {
         createdAt: professor.criado_em,
         criado_em: professor.criado_em,
         updatedAt: professor.atualizado_em,
-        atualizado_em: professor.atualizado_em
+        atualizado_em: professor.atualizado_em,
       });
     } catch (error) {
       if (error.status === 401) {

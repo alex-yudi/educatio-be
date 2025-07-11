@@ -19,6 +19,7 @@ Este é o backend do Sistema Educatio, uma aplicação REST para gerenciamento a
 ## ⚙️ Configuração do Projeto
 
 ### Pré-requisitos
+
 - Node.js (versão 18 ou superior)
 - Docker e Docker Compose
 - npm (gerenciador de pacotes do Node.js)
@@ -26,12 +27,14 @@ Este é o backend do Sistema Educatio, uma aplicação REST para gerenciamento a
 ### Instalação
 
 1. **Clone o repositório**
+
    ```bash
    git clone [url-do-repositorio]
    cd educatio-be
    ```
 
 2. **Instale as dependências**
+
    ```bash
    npm install
    ```
@@ -41,23 +44,26 @@ Este é o backend do Sistema Educatio, uma aplicação REST para gerenciamento a
    cp example.env .env
    # Edite o arquivo .env com suas configurações
    ```
-   
 4. **Inicie o banco de dados PostgreSQL com Docker**
+
    ```bash
    docker compose up -d
    ```
 
 5. **Execute as migrações do Prisma**
+
    ```bash
    npx prisma migrate dev
    ```
 
 6. **Popule o banco de dados com dados iniciais**
+
    ```bash
    npm run seed
    ```
 
 7. **Inicie o servidor de desenvolvimento**
+
    ```bash
    npm run start:dev
    ```
@@ -72,15 +78,18 @@ Este é o backend do Sistema Educatio, uma aplicação REST para gerenciamento a
 Após executar o seed, você terá os seguintes usuários disponíveis:
 
 ### 👨‍💼 Administradores
+
 - **Email:** `admin@uni.edu` - **Senha:** `Admin@123`
 - **Email:** `roberto.admin@uni.edu` - **Senha:** `Admin@456`
 
 ### 👨‍🏫 Professores
+
 - **Email:** `carlos.prof@uni.edu` - **Senha:** `Professor@123`
 - **Email:** `ana.prof@uni.edu` - **Senha:** `Professor@456`
 - **Email:** `pedro.prof@uni.edu` - **Senha:** `Professor@789`
 
 ### 🎓 Alunos
+
 - **Email:** `joao.aluno@uni.edu` - **Senha:** `Aluno@123`
 - **Email:** `maria.aluna@uni.edu` - **Senha:** `Aluno@456`
 - **Email:** `lucas.aluno@uni.edu` - **Senha:** `Aluno@789`
@@ -88,15 +97,19 @@ Após executar o seed, você terá os seguintes usuários disponíveis:
 ## 🛠 Estrutura da API
 
 ### Autenticação
+
 - `POST /auth/login` - Login do usuário
 
 ### Alunos (Requer Admin)
+
 - `POST /alunos` - Cadastrar novo aluno
 
 ### Disciplinas (Requer Admin)
+
 - `POST /disciplinas` - Cadastrar nova disciplina
 
 ### Matrículas (Requer Admin)
+
 - `POST /matriculas` - Realizar matrícula de aluno
 
 ## 📋 Scripts Disponíveis
@@ -200,6 +213,7 @@ npm run start:prod
 ## Swagger API
 
 Após iniciar a aplicação, você pode acessar a documentação Swagger em:
+
 ```
 http://localhost:3000/api
 ```
@@ -207,6 +221,7 @@ http://localhost:3000/api
 ## Estrutura do Projeto
 
 - src - Código fonte da aplicação
+
   - prisma - Serviço de acesso ao banco de dados
   - `users/` - Módulo de usuários
   - `prisma-client-exception/` - Tratamento de exceções do Prisma
@@ -234,14 +249,17 @@ npm run test:cov
 Após executar o seed, os seguintes usuários estarão disponíveis:
 
 - **Chefe de Departamento**
+
   - Email: chefe.dcomp@uni.edu
   - Senha: Chefe@123
 
 - **Professor**
+
   - Email: carlos.prof@uni.edu
   - Senha: Professor@123
 
 - **Aluno**
   - Email: joao.aluno@uni.edu
   - Senha: Aluno@123
+
 # educatio-be

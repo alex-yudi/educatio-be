@@ -9,7 +9,7 @@ import { Request } from 'express';
 
 @Injectable()
 export class AdminProfessorGuard implements CanActivate {
-  constructor(private jwtService: JwtService) { }
+  constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -26,7 +26,9 @@ export class AdminProfessorGuard implements CanActivate {
 
       // Verifica se o usuário é admin ou professor
       if (payload.role !== 'admin' && payload.role !== 'professor') {
-        throw new UnauthorizedException('Acesso restrito a administradores e professores');
+        throw new UnauthorizedException(
+          'Acesso restrito a administradores e professores',
+        );
       }
 
       request['user'] = payload;

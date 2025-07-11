@@ -4,7 +4,7 @@ import { CursoEntity } from './curso.entity';
 export class CursoCreatedEntity {
   @ApiProperty({
     description: 'Dados do curso criado',
-    type: CursoEntity
+    type: CursoEntity,
   })
   curso: CursoEntity;
 
@@ -12,13 +12,13 @@ export class CursoCreatedEntity {
     example: ['Programação I', 'Programação II', 'Banco de Dados'],
     description: 'Lista de disciplinas vinculadas ao curso',
     type: [String],
-    required: false
+    required: false,
   })
   disciplinas?: string[];
 
   @ApiProperty({
     example: 'Maria Silva',
-    description: 'Nome do administrador que criou o curso'
+    description: 'Nome do administrador que criou o curso',
   })
   criado_por: string;
 

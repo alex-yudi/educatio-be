@@ -39,25 +39,25 @@ export class AlterarFrequenciaResponseEntity {
 
   @ApiProperty({
     example: 3,
-    description: 'Total de alunos que tiveram a frequência alterada'
+    description: 'Total de alunos que tiveram a frequência alterada',
   })
   total_alteracoes: number;
 
   @ApiProperty({
     example: 2,
-    description: 'Quantidade de alunos presentes após as alterações'
+    description: 'Quantidade de alunos presentes após as alterações',
   })
   presentes_final: number;
 
   @ApiProperty({
     example: 1,
-    description: 'Quantidade de alunos ausentes após as alterações'
+    description: 'Quantidade de alunos ausentes após as alterações',
   })
   ausentes_final: number;
 
   @ApiProperty({
     type: [AlteracaoFrequenciaEntity],
-    description: 'Detalhes das alterações realizadas para cada aluno'
+    description: 'Detalhes das alterações realizadas para cada aluno',
   })
   detalhes_alteracoes: AlteracaoFrequenciaEntity[];
 

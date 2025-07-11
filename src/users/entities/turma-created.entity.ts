@@ -4,19 +4,19 @@ import { TurmaEntity } from './turma.entity';
 export class TurmaCreatedEntity {
   @ApiProperty({
     description: 'Dados da turma criada',
-    type: TurmaEntity
+    type: TurmaEntity,
   })
   turma: TurmaEntity;
 
   @ApiProperty({
     example: 'Programação I',
-    description: 'Nome da disciplina associada'
+    description: 'Nome da disciplina associada',
   })
   disciplina_nome: string;
 
   @ApiProperty({
     example: 'Carlos Andrade',
-    description: 'Nome do professor responsável'
+    description: 'Nome do professor responsável',
   })
   professor_nome: string;
 

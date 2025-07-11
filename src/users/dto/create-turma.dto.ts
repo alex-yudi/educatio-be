@@ -4,7 +4,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 export class CreateTurmaDto {
   @ApiProperty({
     example: 'PROG1-2025-1A',
-    description: 'Código único da turma'
+    description: 'Código único da turma',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class CreateTurmaDto {
 
   @ApiProperty({
     example: 'PROG1',
-    description: 'Código da disciplina associada à turma'
+    description: 'Código da disciplina associada à turma',
   })
   @IsString()
   @IsNotEmpty()
@@ -20,7 +20,7 @@ export class CreateTurmaDto {
 
   @ApiProperty({
     example: 'carlos.prof@uni.edu',
-    description: 'Email do professor responsável pela turma'
+    description: 'Email do professor responsável pela turma',
   })
   @IsString()
   @IsNotEmpty()
@@ -28,7 +28,7 @@ export class CreateTurmaDto {
 
   @ApiProperty({
     example: 2025,
-    description: 'Ano da turma'
+    description: 'Ano da turma',
   })
   @IsInt()
   @IsNotEmpty()
@@ -36,7 +36,7 @@ export class CreateTurmaDto {
 
   @ApiProperty({
     example: 1,
-    description: 'Semestre da turma (1 ou 2)'
+    description: 'Semestre da turma (1 ou 2)',
   })
   @IsInt()
   @IsNotEmpty()
@@ -46,7 +46,7 @@ export class CreateTurmaDto {
   @ApiProperty({
     example: 'Sala A-101',
     description: 'Sala onde as aulas são ministradas',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -56,7 +56,7 @@ export class CreateTurmaDto {
     example: 35,
     description: 'Número de vagas disponíveis na turma',
     required: false,
-    default: 30
+    default: 30,
   })
   @IsInt()
   @IsOptional()

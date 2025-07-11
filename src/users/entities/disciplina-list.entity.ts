@@ -4,13 +4,13 @@ import { DisciplinaEntity } from './disciplina.entity';
 export class DisciplinaListEntity {
   @ApiProperty({
     description: 'Lista de disciplinas',
-    type: [DisciplinaEntity]
+    type: [DisciplinaEntity],
   })
   disciplinas: DisciplinaEntity[];
 
   @ApiProperty({
     example: 15,
-    description: 'Total de disciplinas encontradas'
+    description: 'Total de disciplinas encontradas',
   })
   total: number;
 

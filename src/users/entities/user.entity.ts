@@ -31,7 +31,7 @@ export class UserEntity implements Usuario {
   @ApiProperty({
     enum: EnumPerfil,
     example: EnumPerfil.aluno,
-    description: 'Tipo de perfil do usuário'
+    description: 'Tipo de perfil do usuário',
   })
   role: EnumPerfil;
 

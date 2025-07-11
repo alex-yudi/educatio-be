@@ -4,7 +4,7 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 export class CreateAlunoDto {
   @ApiProperty({
     example: 'João Silva',
-    description: 'Nome completo do aluno'
+    description: 'Nome completo do aluno',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class CreateAlunoDto {
 
   @ApiProperty({
     example: '2025001',
-    description: 'Número de matrícula do aluno'
+    description: 'Número de matrícula do aluno',
   })
   @IsString()
   @IsNotEmpty()
@@ -20,7 +20,7 @@ export class CreateAlunoDto {
 
   @ApiProperty({
     example: 'joao.silva@uni.edu',
-    description: 'E-mail institucional do aluno'
+    description: 'E-mail institucional do aluno',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -28,7 +28,7 @@ export class CreateAlunoDto {
 
   @ApiProperty({
     example: 'ESOFT',
-    description: 'Código do curso que o aluno está matriculado'
+    description: 'Código do curso que o aluno está matriculado',
   })
   @IsString()
   @IsNotEmpty()

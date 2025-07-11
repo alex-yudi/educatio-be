@@ -13,6 +13,7 @@ O sistema de frequência permite que professores lancem e consultem a presença 
 ## 📡 Endpoints Disponíveis
 
 ### 1. 📝 Lançar Frequência
+
 ```
 POST /frequencia
 ```
@@ -22,6 +23,7 @@ POST /frequencia
 **Autenticação:** Bearer Token (Professor da turma)
 
 **Body (JSON):**
+
 ```json
 {
   "turma_id": 6,
@@ -31,17 +33,20 @@ POST /frequencia
 ```
 
 **Campos:**
+
 - `turma_id` (number): ID da turma onde será lançada a frequência
 - `data_aula` (string): Data e hora da aula no formato ISO 8601
 - `alunos_presentes` (array): **IDs dos alunos que estiveram PRESENTES**
 
 **⚠️ IMPORTANTE:**
+
 - Use o **ID do usuário** (campo `id` da tabela `Usuario`)
 - **NÃO** use matrícula nem ID da matrícula
 - Alunos **não informados** serão marcados como **AUSENTES** automaticamente
 - Não é possível lançar frequência duas vezes para a mesma data
 
 **Resposta de Sucesso (201):**
+
 ```json
 {
   "message": "Frequência lançada com sucesso",
@@ -58,6 +63,7 @@ POST /frequencia
 ```
 
 ### 2. 📊 Consultar Frequência
+
 ```
 GET /frequencia/turma/:id
 ```
@@ -67,18 +73,22 @@ GET /frequencia/turma/:id
 **Autenticação:** Bearer Token (Professor da turma)
 
 **Parâmetros:**
+
 - `id` (number): ID da turma
 
 **Query Params (opcionais):**
+
 - `dataInicio` (string): Data de início do período (formato: YYYY-MM-DD)
 - `dataFim` (string): Data de fim do período (formato: YYYY-MM-DD)
 
 **Exemplo de uso:**
+
 ```
 GET /frequencia/turma/6?dataInicio=2024-06-01&dataFim=2024-06-30
 ```
 
 **Resposta de Sucesso (200):**
+
 ```json
 {
   "turma": {
@@ -121,21 +131,26 @@ GET /frequencia/turma/6?dataInicio=2024-06-01&dataFim=2024-06-30
 ## 🚨 Códigos de Erro
 
 ### 400 - Bad Request
+
 - Dados inválidos fornecidos
 - Alunos não matriculados na turma
 - Formato de data inválido
 
 ### 401 - Unauthorized
+
 - Token de acesso inválido ou expirado
 - Usuário não é professor
 
 ### 403 - Forbidden
+
 - Professor não é responsável pela turma
 
 ### 404 - Not Found
+
 - Turma não encontrada
 
 ### 409 - Conflict
+
 - Frequência já foi lançada para esta data
 
 ## 📋 Exemplos Práticos
@@ -143,12 +158,14 @@ GET /frequencia/turma/6?dataInicio=2024-06-01&dataFim=2024-06-30
 ### Como descobrir os IDs dos alunos?
 
 1. **Listar turmas do professor:**
+
 ```bash
 curl -X GET http://localhost:3000/turmas \
   -H "Authorization: Bearer SEU_TOKEN"
 ```
 
 2. **A resposta mostra alunos matriculados:**
+
 ```json
 {
   "id": 6,
@@ -158,6 +175,7 @@ curl -X GET http://localhost:3000/turmas \
 ```
 
 3. **Para ver detalhes dos alunos, use o histórico de frequência:**
+
 ```bash
 curl -X GET http://localhost:3000/frequencia/turma/6 \
   -H "Authorization: Bearer SEU_TOKEN"
@@ -189,17 +207,20 @@ curl -X GET http://localhost:3000/frequencia/turma/6 \
 ## 🔍 Validações Implementadas
 
 ✅ **Segurança:**
+
 - Token JWT válido
 - Usuário é professor
 - Professor é responsável pela turma
 
 ✅ **Dados:**
+
 - Turma existe
 - Data de aula é válida
 - Alunos informados estão matriculados na turma
 - Frequência não foi lançada anteriormente para a mesma data
 
 ✅ **Automatização:**
+
 - Alunos não informados marcados como ausentes
 - Cálculo automático de estatísticas
 - Histórico ordenado por data (mais recente primeiro)
@@ -207,6 +228,7 @@ curl -X GET http://localhost:3000/frequencia/turma/6 \
 ## 📚 Documentação da API
 
 Para ver a documentação interativa completa, acesse:
+
 ```
 http://localhost:3000/api
 ```

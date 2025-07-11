@@ -4,7 +4,7 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateProfessorDto {
   @ApiProperty({
     example: 'Maria Silva',
-    description: 'Nome completo do professor'
+    description: 'Nome completo do professor',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class CreateProfessorDto {
 
   @ApiProperty({
     example: 'maria.silva@uni.edu',
-    description: 'E-mail institucional do professor'
+    description: 'E-mail institucional do professor',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -21,7 +21,7 @@ export class CreateProfessorDto {
   @ApiProperty({
     example: 'COMP101',
     description: 'Código da disciplina ministrada (opcional)',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
