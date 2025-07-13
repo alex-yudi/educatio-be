@@ -1,40 +1,56 @@
-Coletando informações do workspace# Sistema Educatio - Backend
+# Sistema Educatio - Backend
 
-## 📋 Descrição
+## 📋 Descrição do Projeto
 
-Este é o backend do Sistema Educatio, uma aplicação REST para gerenciamento acadêmico desenvolvida com **NestJS**, **Prisma** e **PostgreSQL**. O sistema permite o cadastro e gerenciamento de usuários (admins, professores e alunos), disciplinas, turmas, matrículas, notas e frequências.
+O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento acadêmico, desenvolvida com tecnologias modernas e escaláveis. O sistema oferece uma API REST completa para administração de instituições de ensino.
 
-## 🚀 Funcionalidades
+### 🛠️ Tecnologias Utilizadas
+- **NestJS** - Framework Node.js para aplicações backend escaláveis
+- **Prisma ORM** - Ferramenta de mapeamento objeto-relacional moderna
+- **PostgreSQL** - Banco de dados relacional robusto
+- **TypeScript** - Linguagem com tipagem estática
+- **JWT** - Autenticação segura com tokens
+- **Swagger** - Documentação automática da API
+- **Docker** - Containerização para desenvolvimento e produção
 
-- **Autenticação JWT** com perfis de usuário (Admin, Professor, Aluno)
-- **Cadastro de Alunos** com geração de matrícula automática
-- **Gestão de Disciplinas** com carga horária e ementa
-- **Criação de Turmas** com horários e controle de vagas
-- **Sistema de Matrículas** com validações
-- **Controle de Acesso** por perfil de usuário
-- **Documentação Swagger** completa
-- **Validação de Dados** com class-validator
-- **Estrutura REST** bem organizada
+## 🚀 Funcionalidades Principais
 
-## ⚙️ Configuração do Projeto
+### Gestão de Usuários
+- **Autenticação JWT** com diferentes perfis (Admin, Professor, Aluno)
+- **Controle de acesso** baseado em roles
+- **Cadastro automatizado** de usuários com validações
+
+### Gestão Acadêmica
+- **Cursos** - Criação e organização de cursos
+- **Disciplinas** - Gestão com carga horária, ementa e pré-requisitos
+- **Turmas** - Controle de vagas, horários e salas
+- **Matrículas** - Sistema completo de inscrições
+- **Notas** - Lançamento e acompanhamento de notas
+- **Frequências** - Controle de presença dos alunos
+
+### Recursos Técnicos
+- **Documentação Swagger** automática e interativa
+- **Validação de dados** robusta com class-validator
+- **Estrutura modular** bem organizada
+- **Tratamento de erros** personalizado
+- **Seeds** para dados de desenvolvimento
+
+## ⚙️ Instalação e Configuração
 
 ### Pré-requisitos
-
 - Node.js (versão 18 ou superior)
-- Docker e Docker Compose
-- npm (gerenciador de pacotes do Node.js)
+- npm (gerenciador de pacotes)
+- Docker e Docker Compose (recomendado)
 
-### Instalação
+### Opção 1: Instalação com Docker (Recomendado)
 
 1. **Clone o repositório**
-
    ```bash
-   git clone [url-do-repositorio]
+   git clone https://github.com/alex-yudi/educatio-be.git
    cd educatio-be
    ```
 
 2. **Instale as dependências**
-
    ```bash
    npm install
    ```
@@ -42,224 +58,220 @@ Este é o backend do Sistema Educatio, uma aplicação REST para gerenciamento a
 3. **Configure as variáveis de ambiente**
    ```bash
    cp example.env .env
-   # Edite o arquivo .env com suas configurações
    ```
-4. **Inicie o banco de dados PostgreSQL com Docker**
+   
+   **Configuração do .env para Docker:**
+   ```env
+   # Configuração do Container PostgreSQL
+   CONTAINER_NAME="educatio-db"
+   POSTGRES_USER="postgres"
+   POSTGRES_PASSWORD="postgres"
+   POSTGRES_DB="educatio"
+   DB_PORT="5432"
 
+   # String de conexão para Docker
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/educatio?schema=public"
+
+   # Autenticação JWT
+   JWT_SECRET="seu-jwt-secret-super-seguro"
+   JWT_EXPIRES_IN="24h"
+   ```
+
+4. **Inicie o banco PostgreSQL**
    ```bash
    docker compose up -d
    ```
 
 5. **Execute as migrações do Prisma**
-
    ```bash
+   npx prisma generate
    npx prisma migrate dev
    ```
 
-6. **Popule o banco de dados com dados iniciais**
-
+6. **Popule o banco com dados iniciais**
    ```bash
    npm run seed
    ```
 
-7. **Inicie o servidor de desenvolvimento**
-
+7. **Inicie o servidor**
    ```bash
    npm run start:dev
    ```
 
-8. **Acesse a documentação Swagger**
+### Opção 2: Instalação com PostgreSQL Local
+
+1. **Instale PostgreSQL** em sua máquina local
+
+2. **Configure o banco de dados**
+   ```sql
+   CREATE DATABASE educatio;
+   CREATE USER educatio_user WITH PASSWORD 'sua_senha';
+   GRANT ALL PRIVILEGES ON DATABASE educatio TO educatio_user;
    ```
-   http://localhost:3000/api
+
+3. **Configure as variáveis de ambiente**
+   ```env
+   # Configuração do PostgreSQL Local
+   DATABASE_URL="postgresql://educatio_user:sua_senha@localhost:5432/educatio?schema=public"
+
+   # Autenticação JWT
+   JWT_SECRET="seu-jwt-secret-super-seguro"
+   JWT_EXPIRES_IN="24h"
    ```
 
-## 📊 Dados de Teste
+4. **Execute as migrações e seed**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev
+   npm run seed
+   ```
 
-Após executar o seed, você terá os seguintes usuários disponíveis:
+5. **Inicie o servidor**
+   ```bash
+   npm run start:dev
+   ```
 
-### 👨‍💼 Administradores
+## 📋 Comandos Disponíveis
 
-- **Email:** `admin@uni.edu` - **Senha:** `Admin@123`
-- **Email:** `roberto.admin@uni.edu` - **Senha:** `Admin@456`
+### Desenvolvimento
+```bash
+npm run start:dev          # Servidor em modo desenvolvimento com hot-reload
+npm run start:debug        # Servidor em modo debug
+npm run start:prod         # Servidor em modo produção
+```
+
+### Build e Deploy
+```bash
+npm run build              # Compilar o projeto TypeScript
+npm run format             # Formatar código com Prettier
+npm run lint               # Executar ESLint
+```
+
+### Banco de Dados
+```bash
+npm run seed               # Popular banco com dados de teste
+npx prisma generate        # Gerar cliente Prisma
+npx prisma migrate dev     # Executar migrações
+npx prisma studio          # Interface visual do banco
+npx prisma db push         # Sincronizar schema sem migração
+```
+
+### Testes
+```bash
+npm run test               # Testes unitários
+npm run test:watch         # Testes em modo watch
+npm run test:cov           # Testes com cobertura
+npm run test:e2e           # Testes end-to-end
+```
+
+## 👥 Usuários de Teste
+
+Após executar o comando `npm run seed`, os seguintes usuários estarão disponíveis:
+
+### 🔑 Administradores
+| Nome | Email | Senha |
+|------|-------|-------|
+| Maria Fernandes Silva | `admin@uni.edu` | `Admin@123` |
+| Roberto Santos Oliveira | `roberto.admin@uni.edu` | `Admin@456` |
 
 ### 👨‍🏫 Professores
-
-- **Email:** `carlos.prof@uni.edu` - **Senha:** `Professor@123`
-- **Email:** `ana.prof@uni.edu` - **Senha:** `Professor@456`
-- **Email:** `pedro.prof@uni.edu` - **Senha:** `Professor@789`
+| Nome | Email | Senha |
+|------|-------|-------|
+| Carlos Andrade | `carlos.prof@uni.edu` | `Professor@123` |
+| Ana Paula Oliveira | `ana.prof@uni.edu` | `Professor@456` |
+| Pedro Henrique Costa | `pedro.prof@uni.edu` | `Professor@789` |
+| Luciana Ferreira Silva | `luciana.prof@uni.edu` | `Professor@101` |
 
 ### 🎓 Alunos
+| Nome | Email | Senha | Matrícula |
+|------|-------|-------|-----------|
+| João da Silva | `joao.aluno@uni.edu` | `Aluno@123` | 20240001 |
+| Maria José Santos | `maria.aluna@uni.edu` | `Aluno@456` | 20240002 |
+| Lucas Ferreira | `lucas.aluno@uni.edu` | `Aluno@789` | 20240003 |
+| Julia Ribeiro | `julia.aluna@uni.edu` | `Aluno@101` | 20240004 |
+| Rafael Sousa | `rafael.aluno@uni.edu` | `Aluno@102` | 20240005 |
 
-- **Email:** `joao.aluno@uni.edu` - **Senha:** `Aluno@123`
-- **Email:** `maria.aluna@uni.edu` - **Senha:** `Aluno@456`
-- **Email:** `lucas.aluno@uni.edu` - **Senha:** `Aluno@789`
+## 📁 Estrutura do Projeto
 
-## 🛠 Estrutura da API
+```
+educatio-be/
+├── prisma/                    # Configuração do banco de dados
+│   ├── migrations/           # Migrações do banco
+│   ├── schema.prisma         # Schema do banco de dados
+│   └── seed.ts              # Script de população inicial
+├── src/                      # Código fonte da aplicação
+│   ├── alunos/              # Módulo de gestão de alunos
+│   ├── auth/                # Módulo de autenticação
+│   ├── cursos/              # Módulo de gestão de cursos
+│   ├── disciplinas/         # Módulo de gestão de disciplinas
+│   ├── frequencia/          # Módulo de controle de frequência
+│   ├── matriculas/          # Módulo de gestão de matrículas
+│   ├── prisma/              # Configuração do cliente Prisma
+│   ├── prisma-client-exception/ # Tratamento de exceções
+│   ├── professores/         # Módulo de gestão de professores
+│   ├── turmas/              # Módulo de gestão de turmas
+│   ├── users/               # Módulo base de usuários
+│   ├── utils/               # Utilitários (hash, validações)
+│   ├── app.module.ts        # Módulo principal da aplicação
+│   └── main.ts              # Ponto de entrada da aplicação
+├── test/                     # Testes end-to-end
+├── docs/                     # Documentação adicional
+├── docker-compose.yaml       # Configuração Docker
+├── example.env              # Exemplo de variáveis de ambiente
+└── package.json             # Dependências e scripts
+```
 
-### Autenticação
+## 📖 Documentação da API
 
-- `POST /auth/login` - Login do usuário
+A documentação completa e interativa da API está disponível através do **Swagger UI**.
 
-### Alunos (Requer Admin)
+**Acesse:** http://localhost:3000/api
 
+### Principais Endpoints
+
+#### Autenticação
+- `POST /auth/login` - Realizar login
+
+#### Gestão (Acesso Admin)
 - `POST /alunos` - Cadastrar novo aluno
-
-### Disciplinas (Requer Admin)
-
 - `POST /disciplinas` - Cadastrar nova disciplina
+- `POST /cursos` - Cadastrar novo curso
+- `POST /turmas` - Criar nova turma
+- `POST /matriculas` - Realizar matrícula
 
-### Matrículas (Requer Admin)
+### Como Testar a API
 
-- `POST /matriculas` - Realizar matrícula de aluno
-
-## 📋 Scripts Disponíveis
-
-```bash
-# Desenvolvimento
-npm run start:dev          # Inicia o servidor em modo desenvolvimento
-npm run start:debug        # Inicia o servidor em modo debug
-npm run start:prod         # Inicia o servidor em modo produção
-
-# Build
-npm run build              # Compila o projeto
-
-# Testes
-npm run test               # Executa os testes unitários
-npm run test:e2e           # Executa os testes e2e
-npm run test:cov           # Executa os testes com cobertura
-
-# Prisma
-npm run seed               # Popula o banco com dados iniciais
-npx prisma studio          # Abre interface visual do banco
-npx prisma migrate dev     # Executa migrações
-```
-
-## 🗄️ Estrutura do Banco de Dados
-
-O sistema utiliza PostgreSQL com as seguintes entidades principais:
-
-- **Usuario** - Administradores, Professores e Alunos
-- **Curso** - Cursos oferecidos pela instituição
-- **Disciplina** - Disciplinas dos cursos
-- **Turma** - Turmas específicas de disciplinas
-- **Matricula** - Matrículas dos alunos nas turmas
-- **Nota** - Notas dos alunos
-- **Frequencia** - Controle de presença
-- **HorarioAula** - Horários das turmas
-
-## 🏗️ Arquitetura
-
-```
-src/
-├── auth/           # Módulo de autenticação
-├── users/          # Gestão de usuários e DTOs
-├── alunos/         # Endpoints de alunos
-├── disciplinas/    # Endpoints de disciplinas
-├── matriculas/     # Endpoints de matrículas
-├── prisma/         # Configuração do Prisma
-└── utils/          # Utilitários (hash de senha, etc.)
-```
-
-## 🔒 Autorização
-
-- **Endpoints públicos:** Login
-- **Endpoints protegidos (Admin apenas):** Cadastros de alunos, disciplinas e matrículas
-- **Sistema de roles:** admin, professor, aluno
-
-## 📖 Documentação
-
-A documentação completa da API está disponível via Swagger em:
-`http://localhost:3000/api`
+1. Acesse a documentação Swagger: http://localhost:3000/api
+2. Utilize o endpoint `/auth/login` com um dos usuários listados
+3. Copie o token JWT retornado
+4. Use o botão "Authorize" no Swagger para adicionar o token
+5. Teste os endpoints protegidos
 
 ## 🐳 Docker
 
-O projeto inclui configuração Docker Compose para PostgreSQL:
+### Comandos Docker Úteis
 
 ```bash
-# Iniciar o banco
+# Iniciar apenas o banco PostgreSQL
 docker compose up -d
 
-# Parar o banco
+# Parar os serviços
 docker compose down
 
-# Ver logs
-docker compose logs
+# Ver logs do banco
+docker compose logs db
+
+# Reconstruir e iniciar
+docker compose up -d --build
+
+# Limpar volumes (cuidado: apaga dados)
+docker compose down -v
 ```
 
-## 📝 Modelo de Dados
+## 📄 Licença
 
-Consulte o arquivo `docs/diagrama-uml.puml` para ver o diagrama UML completo das entidades e relacionamentos do sistema.
+Este projeto está sob a licença [MIT](LICENSE).
 
-## 🛣️ Roadmap
+---
 
-- [ ] Endpoints de listagem e consulta
-- [ ] Sistema de turmas e horários
-- [ ] Controle de notas e frequência
-- [ ] Relatórios acadêmicos
-- [ ] API de notificações
-- [ ] Dashboard administrativo
-
-## Executando a Aplicação
-
-```bash
-# modo de desenvolvimento
-npm run start:dev
-
-# modo de produção
-npm run build
-npm run start:prod
-```
-
-## Swagger API
-
-Após iniciar a aplicação, você pode acessar a documentação Swagger em:
-
-```
-http://localhost:3000/api
-```
-
-## Estrutura do Projeto
-
-- src - Código fonte da aplicação
-
-  - prisma - Serviço de acesso ao banco de dados
-  - `users/` - Módulo de usuários
-  - `prisma-client-exception/` - Tratamento de exceções do Prisma
-
-- prisma - Definição do esquema do banco de dados e migrações
-  - schema.prisma - Modelo de dados
-  - `migrations/` - Migrações do banco de dados
-  - seed.ts - Script para população inicial do banco
-
-## Testes
-
-```bash
-# testes unitários
-npm run test
-
-# testes e2e
-npm run test:e2e
-
-# cobertura de testes
-npm run test:cov
-```
-
-## Usuários de Teste
-
-Após executar o seed, os seguintes usuários estarão disponíveis:
-
-- **Chefe de Departamento**
-
-  - Email: chefe.dcomp@uni.edu
-  - Senha: Chefe@123
-
-- **Professor**
-
-  - Email: carlos.prof@uni.edu
-  - Senha: Professor@123
-
-- **Aluno**
-  - Email: joao.aluno@uni.edu
-  - Senha: Aluno@123
-
-# educatio-be
+**Sistema Educatio** - Transformando a gestão acadêmica através da tecnologia 🎓
