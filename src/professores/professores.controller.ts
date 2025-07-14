@@ -100,24 +100,7 @@ export class ProfessoresController {
   })
   async findAll() {
     const professores = await this.usersService.findAllProfessores();
-    return professores.map(
-      (prof) =>
-        new UserEntity({
-          id: prof.id,
-          name: prof.nome,
-          nome: prof.nome,
-          email: prof.email,
-          password: '',
-          senha: '',
-          role: prof.role,
-          registrationNumber: null,
-          matricula: null,
-          createdAt: prof.criado_em,
-          criado_em: prof.criado_em,
-          updatedAt: prof.atualizado_em,
-          atualizado_em: prof.atualizado_em,
-        }),
-    );
+    return UserEntityMapper.toEntities(professores);
   }
 
   @Get(':id')
@@ -140,35 +123,15 @@ export class ProfessoresController {
   @ApiNotFoundResponse({
     description: 'Professor não encontrado',
   })
+  @HandleErrors('Acesso restrito a administradores e professores')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      const professor = await this.usersService.findOne(id);
+    const professor = await this.usersService.findOne(id);
 
-      if (!professor || professor.role !== 'professor') {
-        throw new ForbiddenException('Professor não encontrado');
-      }
-
-      return new UserEntity({
-        id: professor.id,
-        name: professor.nome,
-        nome: professor.nome,
-        email: professor.email,
-        password: '',
-        senha: '',
-        role: professor.role,
-        registrationNumber: null,
-        matricula: null,
-        createdAt: professor.criado_em,
-        criado_em: professor.criado_em,
-        updatedAt: professor.atualizado_em,
-        atualizado_em: professor.atualizado_em,
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores e professores');
-      }
-      throw error;
+    if (!professor || professor.role !== 'professor') {
+      throw new ForbiddenException('Professor não encontrado');
     }
+
+    return UserEntityMapper.toEntity(professor);
   }
 
   @Put(':id')
@@ -195,38 +158,18 @@ export class ProfessoresController {
   @ApiNotFoundResponse({
     description: 'Professor não encontrado',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const professor = await this.usersService.updateProfessor(
-        id,
-        updateUserDto,
-        adminId,
-      );
-      return new UserEntity({
-        id: professor.id,
-        name: professor.nome,
-        nome: professor.nome,
-        email: professor.email,
-        password: '',
-        senha: '',
-        role: professor.role,
-        registrationNumber: null,
-        matricula: null,
-        createdAt: professor.criado_em,
-        criado_em: professor.criado_em,
-        updatedAt: professor.atualizado_em,
-        atualizado_em: professor.atualizado_em,
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    const adminId = request.user.sub;
+    const professor = await this.usersService.updateProfessor(
+      id,
+      updateUserDto,
+      adminId,
+    );
+    return UserEntityMapper.toEntity(professor);
   }
 }

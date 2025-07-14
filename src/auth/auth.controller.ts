@@ -16,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
+import { UserEntityMapper } from '../common/mappers/user-entity.mapper';
 import { LoginDto } from '../users/dto/login.dto';
 import { LoginResponseEntity } from '../users/entities/login-response.entity';
 import { Headers } from '@nestjs/common';
@@ -23,7 +24,7 @@ import { Headers } from '@nestjs/common';
 @Controller('auth')
 @ApiTags('Autenticação')
 export class AuthController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -46,7 +47,7 @@ export class AuthController {
     const { accessToken, user } = await this.usersService.login(loginDto);
     return new LoginResponseEntity({
       accessToken,
-      user: new UserEntity({ ...user, name: user.nome ?? '' }),
+      user: UserEntityMapper.toEntity(user),
     });
   }
 
@@ -76,6 +77,6 @@ export class AuthController {
     const user = await this.usersService.verifyToken(token);
 
     // We return a UserEntity, just like the login response, for consistency.
-    return new UserEntity({ ...user, name: user.nome ?? '' });
+    return UserEntityMapper.toEntity(user);
   }
 }

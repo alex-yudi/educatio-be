@@ -28,6 +28,7 @@ import { TurmaCreatedEntity } from '../users/entities/turma-created.entity';
 import { TurmaEntity } from '../users/entities/turma.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
+import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('turmas')
 @ApiTags('Turmas')
@@ -61,36 +62,30 @@ export class TurmasController {
   @ApiNotFoundResponse({
     description: 'Disciplina ou professor não encontrados',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async create(@Body() createTurmaDto: CreateTurmaDto, @Req() request: any) {
-    try {
-      const adminId = request.user.sub;
-      const result = await this.usersService.createTurma(
-        createTurmaDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const result = await this.usersService.createTurma(
+      createTurmaDto,
+      adminId,
+    );
 
-      return new TurmaCreatedEntity({
-        turma: {
-          id: result.id,
-          codigo: result.codigo,
-          disciplina_id: result.disciplina_id,
-          professor_id: result.professor_id,
-          ano: result.ano,
-          semestre: result.semestre,
-          sala: result.sala,
-          vagas: result.vagas,
-          criado_em: result.criado_em,
-          atualizado_em: result.atualizado_em,
-        },
-        disciplina_nome: result.disciplina.nome,
-        professor_nome: result.professor.nome,
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new TurmaCreatedEntity({
+      turma: {
+        id: result.id,
+        codigo: result.codigo,
+        disciplina_id: result.disciplina_id,
+        professor_id: result.professor_id,
+        ano: result.ano,
+        semestre: result.semestre,
+        sala: result.sala,
+        vagas: result.vagas,
+        criado_em: result.criado_em,
+        atualizado_em: result.atualizado_em,
+      },
+      disciplina_nome: result.disciplina.nome,
+      professor_nome: result.professor.nome,
+    });
   }
 
   @Get()
@@ -150,38 +145,32 @@ export class TurmasController {
   @ApiNotFoundResponse({
     description: 'Turma não encontrada',
   })
+  @HandleErrors('Acesso restrito a administradores e professores')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      const turma = await this.usersService.findTurmaById(id);
+    const turma = await this.usersService.findTurmaById(id);
 
-      if (!turma) {
-        throw new ForbiddenException('Turma não encontrada');
-      }
-
-      return {
-        id: turma.id,
-        codigo: turma.codigo,
-        disciplina_id: turma.disciplina_id,
-        professor_id: turma.professor_id,
-        disciplina_nome: turma.disciplina.nome,
-        disciplina_codigo: turma.disciplina.codigo,
-        professor_nome: turma.professor.nome,
-        professor_email: turma.professor.email,
-        ano: turma.ano,
-        semestre: turma.semestre,
-        sala: turma.sala,
-        vagas: turma.vagas,
-        matriculados: turma._count.matriculas,
-        horarios: turma.horarios,
-        criado_em: turma.criado_em,
-        atualizado_em: turma.atualizado_em,
-      };
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores e professores');
-      }
-      throw error;
+    if (!turma) {
+      throw new ForbiddenException('Turma não encontrada');
     }
+
+    return {
+      id: turma.id,
+      codigo: turma.codigo,
+      disciplina_id: turma.disciplina_id,
+      professor_id: turma.professor_id,
+      disciplina_nome: turma.disciplina.nome,
+      disciplina_codigo: turma.disciplina.codigo,
+      professor_nome: turma.professor.nome,
+      professor_email: turma.professor.email,
+      ano: turma.ano,
+      semestre: turma.semestre,
+      sala: turma.sala,
+      vagas: turma.vagas,
+      matriculados: turma._count.matriculas,
+      horarios: turma.horarios,
+      criado_em: turma.criado_em,
+      atualizado_em: turma.atualizado_em,
+    };
   }
 
   @Put(':id')
@@ -207,40 +196,34 @@ export class TurmasController {
   @ApiNotFoundResponse({
     description: 'Turma não encontrada',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTurmaDto: Partial<CreateTurmaDto>,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const turma = await this.usersService.updateTurma(
-        id,
-        updateTurmaDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const turma = await this.usersService.updateTurma(
+      id,
+      updateTurmaDto,
+      adminId,
+    );
 
-      return new TurmaCreatedEntity({
-        turma: {
-          id: turma.id,
-          codigo: turma.codigo,
-          disciplina_id: turma.disciplina_id,
-          professor_id: turma.professor_id,
-          ano: turma.ano,
-          semestre: turma.semestre,
-          sala: turma.sala,
-          vagas: turma.vagas,
-          criado_em: turma.criado_em,
-          atualizado_em: turma.atualizado_em,
-        },
-        disciplina_nome: turma.disciplina.nome,
-        professor_nome: turma.professor.nome,
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new TurmaCreatedEntity({
+      turma: {
+        id: turma.id,
+        codigo: turma.codigo,
+        disciplina_id: turma.disciplina_id,
+        professor_id: turma.professor_id,
+        ano: turma.ano,
+        semestre: turma.semestre,
+        sala: turma.sala,
+        vagas: turma.vagas,
+        criado_em: turma.criado_em,
+        atualizado_em: turma.atualizado_em,
+      },
+      disciplina_nome: turma.disciplina.nome,
+      professor_nome: turma.professor.nome,
+    });
   }
 }

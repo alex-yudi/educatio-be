@@ -21,13 +21,14 @@ import { UsersService } from '../users/users.service';
 import { CreateMatriculaDto } from '../users/dto/create-matricula.dto';
 import { MatriculaResponseEntity } from '../users/entities/matricula-response.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('matriculas')
 @ApiTags('Matrículas')
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class MatriculasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
@@ -56,23 +57,17 @@ export class MatriculasController {
   @ApiConflictResponse({
     description: 'Aluno já matriculado nesta turma',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async create(
     @Body() createMatriculaDto: CreateMatriculaDto,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const result = await this.usersService.createMatricula(
-        createMatriculaDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const result = await this.usersService.createMatricula(
+      createMatriculaDto,
+      adminId,
+    );
 
-      return new MatriculaResponseEntity(result);
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new MatriculaResponseEntity(result);
   }
 }

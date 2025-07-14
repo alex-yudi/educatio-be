@@ -122,21 +122,15 @@ export class AlunosController {
   @ApiNotFoundResponse({
     description: 'Aluno não encontrado',
   })
+  @HandleErrors('Acesso restrito a administradores e professores')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    try {
-      const aluno = await this.usersService.findOne(id);
+    const aluno = await this.usersService.findOne(id);
 
-      if (!aluno || aluno.role !== 'aluno') {
-        throw new ForbiddenException('Aluno não encontrado');
-      }
-
-      return UserEntityMapper.toEntity(aluno);
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores e professores');
-      }
-      throw error;
+    if (!aluno || aluno.role !== 'aluno') {
+      throw new ForbiddenException('Aluno não encontrado');
     }
+
+    return UserEntityMapper.toEntity(aluno);
   }
 
   @Put(':id')

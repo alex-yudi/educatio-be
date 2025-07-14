@@ -121,26 +121,20 @@ export class FrequenciaController {
     description: 'Data de fim do período (formato: YYYY-MM-DD)',
     example: '2024-06-30',
   })
+  @HandleErrors('Acesso restrito a professores')
   async consultarFrequencia(
     @Param('id', ParseIntPipe) turmaId: number,
     @Query('dataInicio') dataInicio?: string,
     @Query('dataFim') dataFim?: string,
     @Req() request?: any,
   ) {
-    try {
-      const professorId = request.user.sub;
-      return await this.usersService.consultarFrequencia(
-        turmaId,
-        professorId,
-        dataInicio,
-        dataFim,
-      );
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a professores');
-      }
-      throw error;
-    }
+    const professorId = request.user.sub;
+    return await this.usersService.consultarFrequencia(
+      turmaId,
+      professorId,
+      dataInicio,
+      dataFim,
+    );
   }
 
   @Put('alterar')
@@ -180,23 +174,17 @@ export class FrequenciaController {
     description:
       'Turma não encontrada ou frequência não registrada para a data informada',
   })
+  @HandleErrors('Acesso restrito a professores')
   async alterarFrequencia(
     @Body() alterarFrequenciaDto: AlterarFrequenciaDto,
     @Req() request: any,
   ) {
-    try {
-      const professorId = request.user.sub;
-      const result = await this.usersService.alterarFrequencia(
-        alterarFrequenciaDto,
-        professorId,
-      );
+    const professorId = request.user.sub;
+    const result = await this.usersService.alterarFrequencia(
+      alterarFrequenciaDto,
+      professorId,
+    );
 
-      return new AlterarFrequenciaResponseEntity(result);
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a professores');
-      }
-      throw error;
-    }
+    return new AlterarFrequenciaResponseEntity(result);
   }
 }

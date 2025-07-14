@@ -29,12 +29,13 @@ import { CursoCreatedEntity } from '../users/entities/curso-created.entity';
 import { CursoListEntity } from '../users/entities/curso-list.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
+import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('cursos')
 @ApiTags('Cursos')
 @ApiBearerAuth()
 export class CursosController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AdminGuard)
@@ -62,33 +63,27 @@ export class CursosController {
   @ApiNotFoundResponse({
     description: 'Uma ou mais disciplinas especificadas não foram encontradas',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async create(@Body() createCursoDto: CreateCursoDto, @Req() request: any) {
-    try {
-      const adminId = request.user.sub;
-      const result = await this.usersService.createCurso(
-        createCursoDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const result = await this.usersService.createCurso(
+      createCursoDto,
+      adminId,
+    );
 
-      return new CursoCreatedEntity({
-        curso: new CursoEntity({
-          id: result.id,
-          nome: result.nome,
-          codigo: result.codigo,
-          descricao: result.descricao || undefined,
-          criado_por_id: result.criado_por_id,
-          criado_em: result.criado_em,
-          atualizado_em: result.atualizado_em,
-        }),
-        disciplinas: result.disciplinas_nomes,
-        criado_por: result.criado_por?.nome || 'Administrador',
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new CursoCreatedEntity({
+      curso: new CursoEntity({
+        id: result.id,
+        nome: result.nome,
+        codigo: result.codigo,
+        descricao: result.descricao || undefined,
+        criado_por_id: result.criado_por_id,
+        criado_em: result.criado_em,
+        atualizado_em: result.atualizado_em,
+      }),
+      disciplinas: result.disciplinas_nomes,
+      criado_por: result.criado_por?.nome || 'Administrador',
+    });
   }
 
   @Get()
@@ -171,37 +166,31 @@ export class CursosController {
   @ApiConflictResponse({
     description: 'Código do curso já existe',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCursoDto: Partial<CreateCursoDto>,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const result = await this.usersService.updateCurso(
-        id,
-        updateCursoDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const result = await this.usersService.updateCurso(
+      id,
+      updateCursoDto,
+      adminId,
+    );
 
-      return new CursoCreatedEntity({
-        curso: new CursoEntity({
-          id: result.id,
-          nome: result.nome,
-          codigo: result.codigo,
-          descricao: result.descricao || undefined,
-          criado_por_id: result.criado_por_id,
-          criado_em: result.criado_em,
-          atualizado_em: result.atualizado_em,
-        }),
-        disciplinas: result.disciplinas_nomes,
-        criado_por: result.criado_por?.nome || 'Administrador',
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new CursoCreatedEntity({
+      curso: new CursoEntity({
+        id: result.id,
+        nome: result.nome,
+        codigo: result.codigo,
+        descricao: result.descricao || undefined,
+        criado_por_id: result.criado_por_id,
+        criado_em: result.criado_em,
+        atualizado_em: result.atualizado_em,
+      }),
+      disciplinas: result.disciplinas_nomes,
+      criado_por: result.criado_por?.nome || 'Administrador',
+    });
   }
 }

@@ -27,13 +27,14 @@ import { CreateDisciplinaDto } from '../users/dto/create-disciplina.dto';
 import { DisciplinaEntity } from '../users/entities/disciplina.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
+import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('disciplinas')
 @ApiTags('Disciplinas')
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class DisciplinasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
@@ -58,24 +59,18 @@ export class DisciplinasController {
   @ApiConflictResponse({
     description: 'Código da disciplina já existe no sistema',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async create(
     @Body() createDisciplinaDto: CreateDisciplinaDto,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const disciplina = await this.usersService.createDisciplina(
-        createDisciplinaDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const disciplina = await this.usersService.createDisciplina(
+      createDisciplinaDto,
+      adminId,
+    );
 
-      return new DisciplinaEntity(disciplina);
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new DisciplinaEntity(disciplina);
   }
 
   @Get()
@@ -95,13 +90,10 @@ export class DisciplinasController {
     description:
       'Acesso negado. Apenas administradores podem acessar esta rota',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async findAll(@Req() request: any) {
-    try {
-      const disciplinas = await this.usersService.findAllDisciplinas();
-      return disciplinas.map((disciplina) => new DisciplinaEntity(disciplina));
-    } catch (error) {
-      throw error;
-    }
+    const disciplinas = await this.usersService.findAllDisciplinas();
+    return disciplinas.map((disciplina) => new DisciplinaEntity(disciplina));
   }
 
   @Get(':id')
@@ -146,25 +138,19 @@ export class DisciplinasController {
   @ApiNotFoundResponse({
     description: 'Disciplina não encontrada',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDisciplinaDto: CreateDisciplinaDto,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const disciplina = await this.usersService.updateDisciplina(
-        id,
-        updateDisciplinaDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const disciplina = await this.usersService.updateDisciplina(
+      id,
+      updateDisciplinaDto,
+      adminId,
+    );
 
-      return new DisciplinaEntity(disciplina);
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new DisciplinaEntity(disciplina);
   }
 }
