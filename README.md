@@ -231,13 +231,43 @@ A documentação completa e interativa da API está disponível através do **Sw
 
 #### Autenticação
 - `POST /auth/login` - Realizar login
+- `GET /auth/verificar` - Verificar token JWT
 
-#### Gestão (Acesso Admin)
+#### Gestão de Usuários (Acesso Admin)
 - `POST /alunos` - Cadastrar novo aluno
+- `GET /alunos` - Listar todos os alunos
+- `GET /alunos/:id` - Buscar aluno por ID
+- `PUT /alunos/:id` - Atualizar dados do aluno
+- `DELETE /alunos/:id` - Excluir aluno (sem matrículas ativas)
+
+- `POST /professores` - Cadastrar novo professor (com senha temporária)
+- `GET /professores` - Listar todos os professores
+- `GET /professores/:id` - Buscar professor por ID
+- `PUT /professores/:id` - Atualizar dados do professor
+- `DELETE /professores/:id` - Excluir professor (sem turmas ativas)
+
+#### Gestão Acadêmica (Acesso Admin)
 - `POST /disciplinas` - Cadastrar nova disciplina
+- `GET /disciplinas` - Listar todas as disciplinas
+- `PUT /disciplinas/:id` - Atualizar disciplina
+- `DELETE /disciplinas/:id` - Excluir disciplina (sem turmas/cursos)
+
 - `POST /cursos` - Cadastrar novo curso
+- `GET /cursos` - Listar todos os cursos
+- `PUT /cursos/:id` - Atualizar curso
+- `DELETE /cursos/:id` - Excluir curso (sem turmas ativas nas disciplinas)
+
 - `POST /turmas` - Criar nova turma
+- `GET /turmas` - Listar todas as turmas
+- `PUT /turmas/:id` - Atualizar turma
+- `DELETE /turmas/:id` - Excluir turma (sem matrículas ativas)
+
 - `POST /matriculas` - Realizar matrícula
+
+#### Sistema de Frequência (Acesso Professor)
+- `POST /frequencia` - Lançar frequência de uma aula
+- `GET /frequencia/turma/:id` - Consultar frequências de uma turma
+- `PUT /frequencia/alterar` - Alterar frequência já registrada
 
 ### Como Testar a API
 

@@ -1,52 +1,216 @@
-# Diagrama UML do Sistema Educatio
+# 🗃️ Modelo de Dados - Sistema Educatio
 
-Este documento contém o diagrama UML que representa o modelo de dados do Sistema Educatio, baseado no schema do Prisma.
+## 📋 Visão Geral
 
-## Diagrama
+Este documento descreve o modelo de dados completo do Sistema Educatio, baseado no schema Prisma atualizado. O sistema suporta gestão completa de usuários, cursos, disciplinas, turmas, matrículas, notas e frequências.
 
-O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Você pode visualizá-lo usando ferramentas como:
+## 🔗 Diagrama UML
+
+O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para visualizar:
 
 - [PlantUML Online Server](https://www.plantuml.com/plantuml/uml/)
 - [PlantText](https://www.planttext.com/)
 - Extensão PlantUML para VS Code
 
-## Entidades
+## 📊 Entidades Principais
 
-### Usuário
+### 👤 Usuario
+**Descrição:** Entidade central que representa todos os tipos de usuários do sistema
 
-- Representa os três tipos de usuários do sistema: admin, professor e aluno
-- Atributos principais: id, nome, email, senha, role (perfil)
-- Um usuário pode ministrar turmas (se for professor), ter matrículas (se for aluno) e criar cursos/disciplinas (se for admin)
+**Campos:**
+- `id` (Int): Identificador único
+- `nome` (String): Nome completo do usuário
+- `email` (String): Email único para login
+- `senha` (String): Senha hash para autenticação
+- `role` (EnumPerfil): Tipo de usuário (admin, professor, aluno)
+- `matricula` (String?): Número de matrícula (apenas para alunos)
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
 
-### Curso
+**Relacionamentos:**
+- `turmasMinistradas`: Turmas que o usuário ministra (se professor)
+- `matriculas`: Matrículas do usuário (se aluno)
+- `cursosCriados`: Cursos criados pelo usuário (se admin)
+- `Nota`: Notas lançadas pelo usuário
+- `Frequencia`: Frequências registradas pelo usuário
 
-- Representa um curso oferecido pela instituição
-- Atributos principais: id, nome, código, descrição
-- Um curso contém várias disciplinas
+### 🎓 Curso
+**Descrição:** Representa um curso oferecido pela instituição
 
-### Disciplina
+**Campos:**
+- `id` (Int): Identificador único
+- `nome` (String): Nome do curso
+- `codigo` (String): Código único do curso
+- `descricao` (String?): Descrição detalhada
+- `criado_por_id` (Int): ID do usuário que criou
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
 
-- Representa uma disciplina que pode fazer parte de vários cursos
-- Atributos principais: id, nome, código, carga horária, ementa
-- Uma disciplina pode ter pré-requisitos (outras disciplinas) e várias turmas
+**Relacionamentos:**
+- `disciplinas`: Disciplinas associadas ao curso (via CursoDisciplina)
+- `criado_por`: Usuário que criou o curso
 
-### Turma
+### 📚 Disciplina
+**Descrição:** Representa uma disciplina que pode fazer parte de vários cursos
 
-- Representa uma oferta específica de uma disciplina em um período
-- Atributos principais: id, código, ano, semestre, sala, vagas
-- Uma turma possui horários de aula e pode ter vários alunos matriculados
+**Campos:**
+- `id` (Int): Identificador único
+- `nome` (String): Nome da disciplina
+- `codigo` (String): Código único da disciplina
+- `descricao` (String?): Descrição da disciplina
+- `carga_horaria` (Int): Carga horária em horas
+- `ementa` (String?): Ementa detalhada
+- `criado_por_id` (Int): ID do usuário que criou
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
+
+**Relacionamentos:**
+- `turmas`: Turmas da disciplina
+- `cursos`: Cursos que incluem a disciplina (via CursoDisciplina)
+- `pre_requisitos`: Pré-requisitos da disciplina
+- `criado_por`: Usuário que criou a disciplina
+
+### 🏫 Turma
+**Descrição:** Representa uma oferta específica de uma disciplina em um período
+
+**Campos:**
+- `id` (Int): Identificador único
+- `codigo` (String): Código único da turma
+- `disciplina_id` (Int): ID da disciplina
+- `professor_id` (Int): ID do professor responsável
+- `ano` (Int): Ano letivo
+- `semestre` (Int): Semestre (1 ou 2)
+- `sala` (String?): Sala onde ocorrem as aulas
+- `vagas` (Int): Número de vagas (padrão: 30)
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
+
+**Relacionamentos:**
+- `disciplina`: Disciplina da turma
+- `professor`: Professor responsável
+- `horarios`: Horários de aula
+- `matriculas`: Matrículas na turma
+
+### 📝 Matricula
+**Descrição:** Relaciona um aluno a uma turma específica
+
+**Campos:**
+- `id` (Int): Identificador único
+- `estudante_id` (Int): ID do aluno
+- `turma_id` (Int): ID da turma
+- `status` (String): Status da matrícula (padrão: "ATIVA")
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
+
+**Relacionamentos:**
+- `estudante`: Aluno matriculado
+- `turma`: Turma da matrícula
+- `notas`: Notas da matrícula
+- `frequencias`: Frequências da matrícula
+
+**Restrições:**
+- Chave única: `(estudante_id, turma_id)` - um aluno não pode se matricular duas vezes na mesma turma
+
+### 📊 Frequencia
+**Descrição:** Registra a presença/ausência de um aluno em uma aula
+
+**Campos:**
+- `id` (Int): Identificador único
+- `matricula_id` (Int): ID da matrícula
+- `data_aula` (DateTime): Data e hora da aula
+- `presente` (Boolean): Status de presença (padrão: true)
+- `registrado_por_id` (Int): ID do professor que registrou
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
+
+**Relacionamentos:**
+- `matricula`: Matrícula do aluno
+- `registrado_por`: Professor que registrou a frequência
+
+### 📋 Nota
+**Descrição:** Armazena as notas dos alunos
+
+**Campos:**
+- `id` (Int): Identificador único
+- `matricula_id` (Int): ID da matrícula
+- `tipo` (String): Tipo de avaliação (P1, P2, Projeto, etc.)
+- `valor` (Float): Valor da nota
+- `criado_por_id` (Int): ID do professor que lançou
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
+
+**Relacionamentos:**
+- `matricula`: Matrícula do aluno
+- `criado_por`: Professor que lançou a nota
+
+## 🔗 Entidades de Relacionamento
+
+### CursoDisciplina
+**Descrição:** Relaciona cursos com suas disciplinas (Many-to-Many)
+
+**Campos:**
+- `curso_id` (Int): ID do curso
+- `disciplina_id` (Int): ID da disciplina
+- `criado_em` (DateTime): Data de criação
+
+**Chave Primária:** Composta por `(curso_id, disciplina_id)`
+
+### PreRequisito
+**Descrição:** Define pré-requisitos entre disciplinas
+
+**Campos:**
+- `disciplina_id` (Int): ID da disciplina
+- `disciplina_pre_requisito_id` (Int): ID da disciplina pré-requisito
+- `criado_em` (DateTime): Data de criação
+
+**Chave Primária:** Composta por `(disciplina_id, disciplina_pre_requisito_id)`
 
 ### HorarioAula
+**Descrição:** Define os horários de uma turma
 
-- Armazena os horários específicos de uma turma
-- Atributos principais: id, dia da semana, hora de início, hora de fim
-- Cada turma pode ter múltiplos horários em diferentes dias da semana
+**Campos:**
+- `id` (Int): Identificador único
+- `turma_id` (Int): ID da turma
+- `dia_semana` (DiaSemana): Dia da semana (SEGUNDA, TERCA, etc.)
+- `hora_inicio` (String): Hora de início (formato HH:MM)
+- `hora_fim` (String): Hora de fim (formato HH:MM)
+- `criado_em` (DateTime): Data de criação
+- `atualizado_em` (DateTime): Data da última atualização
 
-### Matricula
+## 📋 Enums
 
-- Relaciona um aluno a uma turma específica
-- Atributos principais: id, status
-- Cada matrícula pode ter várias notas e registros de frequência
+### EnumPerfil
+- `admin`: Administrador do sistema
+- `professor`: Professor da instituição
+- `aluno`: Aluno matriculado
+
+### DiaSemana
+- `SEGUNDA`, `TERCA`, `QUARTA`, `QUINTA`, `SEXTA`, `SABADO`
+
+## 🔒 Regras de Integridade
+
+### Exclusões com Restrições:
+1. **Aluno**: Não pode ser excluído se tiver matrículas ativas
+2. **Professor**: Não pode ser excluído se tiver turmas ativas
+3. **Disciplina**: Não pode ser excluída se tiver turmas ativas ou estar associada a cursos
+4. **Turma**: Não pode ser excluída se tiver matrículas ativas
+5. **Curso**: Não pode ser excluído se suas disciplinas tiverem turmas ativas
+
+### Unicidade:
+- Email de usuário deve ser único
+- Matrícula de aluno deve ser única
+- Código de curso deve ser único
+- Código de disciplina deve ser único
+- Código de turma deve ser único
+- Combinação (estudante_id, turma_id) deve ser única
+
+## 🎯 Considerações de Design
+
+1. **Flexibilidade**: O modelo suporta múltiplos cursos, disciplinas compartilhadas e pré-requisitos complexos
+2. **Auditoria**: Todas as entidades possuem timestamps de criação e atualização
+3. **Segurança**: Senhas são armazenadas como hash, nunca em texto plano
+4. **Escalabilidade**: Relacionamentos bem definidos permitem crescimento sem reestruturação major
+5. **Integridade**: Restrições de chave estrangeira garantem consistência dos dados
 
 ### Nota
 
