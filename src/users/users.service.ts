@@ -30,6 +30,34 @@ export class UsersService {
     private jwtService: JwtService,
   ) { }
 
+  /**
+   * Valida se o usuário é um administrador
+   * @param adminId ID do usuário que deve ser admin
+   * @throws UnauthorizedException se o usuário não for admin
+   */
+  private async validateAdmin(adminId: number): Promise<void> {
+    const admin = await this.findOne(adminId);
+    if (!admin || admin.role !== EnumPerfil.admin) {
+      throw new UnauthorizedException(
+        'Apenas administradores podem realizar esta operação',
+      );
+    }
+  }
+
+  /**
+   * Valida se o usuário é um professor
+   * @param professorId ID do usuário que deve ser professor
+   * @throws UnauthorizedException se o usuário não for professor
+   */
+  private async validateProfessor(professorId: number): Promise<void> {
+    const professor = await this.findOne(professorId);
+    if (!professor || professor.role !== EnumPerfil.professor) {
+      throw new UnauthorizedException(
+        'Apenas professores podem realizar esta operação',
+      );
+    }
+  }
+
   findByEmail(email: string) {
     return this.prisma.usuario.findUnique({ where: { email } });
   }
@@ -90,12 +118,7 @@ export class UsersService {
 
   async createAluno(createAlunoDto: CreateAlunoDto, adminId: number) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem cadastrar alunos',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se já existe um usuário com este e-mail
     const existingUserByEmail = await this.findByEmail(createAlunoDto.email);
@@ -206,12 +229,7 @@ export class UsersService {
 
   async updateUser(id: number, updateUserDto: UpdateUserDto, adminId: number) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem atualizar usuários',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se o usuário existe
     const user = await this.findOne(id);
@@ -238,12 +256,7 @@ export class UsersService {
     adminId: number,
   ) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem cadastrar disciplinas',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se já existe uma disciplina com este código
     const existingDisciplina = await this.prisma.disciplina.findUnique({
@@ -278,12 +291,7 @@ export class UsersService {
     adminId: number,
   ) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem realizar matrículas',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se o aluno existe
     const aluno = await this.findByMatricula(
@@ -360,12 +368,7 @@ export class UsersService {
     adminId: number,
   ) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem cadastrar professores',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se já existe um usuário com este email
     const existingUser = await this.findByEmail(createProfessorDto.email);
@@ -413,12 +416,7 @@ export class UsersService {
     adminId: number,
   ) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem atualizar professores',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se o professor existe
     const professor = await this.findOne(id);
@@ -480,12 +478,7 @@ export class UsersService {
 
   async updateAluno(id: number, updateUserDto: UpdateUserDto, adminId: number) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem atualizar alunos',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se o aluno existe
     const aluno = await this.findOne(id);
