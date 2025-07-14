@@ -544,6 +544,28 @@ export class UsersService {
     });
   }
 
+  async findDisciplinaById(id: number) {
+    const disciplina = await this.prisma.disciplina.findUnique({
+      where: { id },
+      include: {
+        criado_por: {
+          select: {
+            nome: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!disciplina) {
+      throw new NotFoundException('Curso não encontrado');
+    }
+
+    return {
+      ...disciplina,
+    };
+  }
+
   async updateDisciplina(
     id: number,
     updateData: Partial<CreateDisciplinaDto>,

@@ -104,6 +104,26 @@ export class DisciplinasController {
     }
   }
 
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Busca disciplina por ID',
+    description: 'Retorna a disciplina com ID especificado.',
+  })
+  @ApiOkResponse({
+    type: [DisciplinaEntity],
+    description: 'Disciplina',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Acesso negado. Apenas administradores podem acessar esta rota',
+  })
+  async findById(@Param('id', ParseIntPipe) id: number, @Req() request: any) {
+    return this.usersService.findDisciplinaById(id);
+  }
+
   @Put(':id')
   @ApiOperation({
     summary: 'Atualizar disciplina',
