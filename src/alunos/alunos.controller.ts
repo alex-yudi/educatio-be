@@ -34,7 +34,7 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 @ApiTags('Alunos')
 @ApiBearerAuth()
 export class AlunosController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AdminGuard)
@@ -155,7 +155,7 @@ export class AlunosController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
       const aluno = await this.usersService.findOne(id);
-      
+
       if (!aluno || aluno.role !== 'aluno') {
         throw new ForbiddenException('Aluno não encontrado');
       }

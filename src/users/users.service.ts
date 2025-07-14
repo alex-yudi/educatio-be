@@ -28,7 +28,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   findByEmail(email: string) {
     return this.prisma.usuario.findUnique({ where: { email } });

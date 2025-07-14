@@ -33,7 +33,7 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 @ApiTags('Turmas')
 @ApiBearerAuth()
 export class TurmasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AdminGuard)
@@ -153,7 +153,7 @@ export class TurmasController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
       const turma = await this.usersService.findTurmaById(id);
-      
+
       if (!turma) {
         throw new ForbiddenException('Turma não encontrada');
       }
