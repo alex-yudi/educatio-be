@@ -1408,4 +1408,211 @@ export class UsersService {
       data_alteracao: new Date(),
     };
   }
+
+  // Métodos de deleção
+  async deleteAluno(id: number, adminId: number) {
+    await this.validateAdmin(adminId);
+
+    const aluno = await this.prisma.usuario.findUnique({
+      where: { id },
+      include: { matriculas: true },
+    });
+
+    if (!aluno || aluno.role !== 'aluno') {
+      throw new NotFoundException('Aluno não encontrado');
+    }
+
+    // Verificar se o aluno possui matrículas ativas
+    if (aluno.matriculas.length > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir aluno com matrículas ativas. Remova as matrículas primeiro.',
+      );
+    }
+
+    await this.prisma.usuario.delete({
+      where: { id },
+    });
+
+    return {
+      message: 'Aluno excluído com sucesso',
+      aluno_excluido: {
+        id: aluno.id,
+        nome: aluno.nome,
+        email: aluno.email,
+      },
+    };
+  }
+
+  async deleteProfessor(id: number, adminId: number) {
+    await this.validateAdmin(adminId);
+
+    const professor = await this.prisma.usuario.findUnique({
+      where: { id },
+      include: { turmasMinistradas: true },
+    });
+
+    if (!professor || professor.role !== 'professor') {
+      throw new NotFoundException('Professor não encontrado');
+    }
+
+    // Verificar se o professor possui turmas ativas
+    if (professor.turmasMinistradas.length > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir professor com turmas ativas. Reatribua as turmas primeiro.',
+      );
+    }
+
+    await this.prisma.usuario.delete({
+      where: { id },
+    });
+
+    return {
+      message: 'Professor excluído com sucesso',
+      professor_excluido: {
+        id: professor.id,
+        nome: professor.nome,
+        email: professor.email,
+      },
+    };
+  }
+
+  async deleteDisciplina(id: number, adminId: number) {
+    await this.validateAdmin(adminId);
+
+    const disciplina = await this.prisma.disciplina.findUnique({
+      where: { id },
+      include: {
+        turmas: true,
+        cursos: true,
+      },
+    });
+
+    if (!disciplina) {
+      throw new NotFoundException('Disciplina não encontrada');
+    }
+
+    // Verificar se a disciplina possui turmas ativas
+    if (disciplina.turmas.length > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir disciplina com turmas ativas. Remova as turmas primeiro.',
+      );
+    }
+
+    // Verificar se a disciplina está associada a cursos
+    if (disciplina.cursos.length > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir disciplina associada a cursos. Remova a associação primeiro.',
+      );
+    }
+
+    await this.prisma.disciplina.delete({
+      where: { id },
+    });
+
+    return {
+      message: 'Disciplina excluída com sucesso',
+      disciplina_excluida: {
+        id: disciplina.id,
+        nome: disciplina.nome,
+        codigo: disciplina.codigo,
+      },
+    };
+  }
+
+  async deleteTurma(id: number, adminId: number) {
+    await this.validateAdmin(adminId);
+
+    const turma = await this.prisma.turma.findUnique({
+      where: { id },
+      include: {
+        matriculas: {
+          include: {
+            frequencias: true,
+          },
+        },
+        disciplina: { select: { nome: true, codigo: true } },
+        professor: { select: { nome: true, email: true } },
+      },
+    });
+
+    if (!turma) {
+      throw new NotFoundException('Turma não encontrada');
+    }
+
+    // Verificar se a turma possui matrículas ativas
+    if (turma.matriculas.length > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir turma com matrículas ativas. Remova as matrículas primeiro.',
+      );
+    }
+
+    await this.prisma.turma.delete({
+      where: { id },
+    });
+
+    return {
+      message: 'Turma excluída com sucesso',
+      turma_excluida: {
+        id: turma.id,
+        codigo: turma.codigo,
+        disciplina: turma.disciplina.nome,
+        professor: turma.professor.nome,
+        ano: turma.ano,
+        semestre: turma.semestre,
+      },
+    };
+  }
+
+  async deleteCurso(id: number, adminId: number) {
+    await this.validateAdmin(adminId);
+
+    const curso = await this.prisma.curso.findUnique({
+      where: { id },
+      include: {
+        disciplinas: {
+          include: {
+            disciplina: {
+              include: {
+                turmas: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!curso) {
+      throw new NotFoundException('Curso não encontrado');
+    }
+
+    // Verificar se alguma disciplina do curso possui turmas ativas
+    const disciplinasComTurmas = curso.disciplinas.filter(
+      (cd) => cd.disciplina.turmas.length > 0,
+    );
+
+    if (disciplinasComTurmas.length > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir curso com disciplinas que possuem turmas ativas. Remova as turmas primeiro.',
+      );
+    }
+
+    // Remover relacionamentos com disciplinas
+    await this.prisma.cursoDisciplina.deleteMany({
+      where: { curso_id: id },
+    });
+
+    await this.prisma.curso.delete({
+      where: { id },
+    });
+
+    return {
+      message: 'Curso excluído com sucesso',
+      curso_excluido: {
+        id: curso.id,
+        nome: curso.nome,
+        codigo: curso.codigo,
+        descricao: curso.descricao,
+      },
+    };
+  }
 }

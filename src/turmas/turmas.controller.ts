@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -225,5 +226,36 @@ export class TurmasController {
       disciplina_nome: turma.disciplina.nome,
       professor_nome: turma.professor.nome,
     });
+  }
+
+  @Delete(':id')
+  @UseGuards(AdminGuard)
+  @ApiOperation({
+    summary: 'Excluir turma',
+    description:
+      'Exclui uma turma do sistema. Apenas administradores podem realizar esta operação. A turma não pode ser excluída se possuir matrículas ativas.',
+  })
+  @ApiOkResponse({
+    description: 'Turma excluída com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores podem excluir turmas',
+  })
+  @ApiNotFoundResponse({
+    description: 'Turma não encontrada',
+  })
+  @ApiBadRequestResponse({
+    description: 'Turma possui matrículas ativas e não pode ser excluída',
+  })
+  @HandleErrors('Acesso restrito a administradores')
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: any,
+  ) {
+    const adminId = request.user.sub;
+    return await this.usersService.deleteTurma(id, adminId);
   }
 }

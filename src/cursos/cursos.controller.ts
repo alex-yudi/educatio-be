@@ -9,6 +9,7 @@ import {
   Req,
   ForbiddenException,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -192,5 +193,36 @@ export class CursosController {
       disciplinas: result.disciplinas_nomes,
       criado_por: result.criado_por?.nome || 'Administrador',
     });
+  }
+
+  @Delete(':id')
+  @UseGuards(AdminGuard)
+  @ApiOperation({
+    summary: 'Excluir curso',
+    description:
+      'Exclui um curso do sistema. Apenas administradores podem realizar esta operação. O curso não pode ser excluído se suas disciplinas possuírem turmas ativas.',
+  })
+  @ApiOkResponse({
+    description: 'Curso excluído com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores podem excluir cursos',
+  })
+  @ApiNotFoundResponse({
+    description: 'Curso não encontrado',
+  })
+  @ApiBadRequestResponse({
+    description: 'Curso possui disciplinas com turmas ativas e não pode ser excluído',
+  })
+  @HandleErrors('Acesso restrito a administradores')
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: any,
+  ) {
+    const adminId = request.user.sub;
+    return await this.usersService.deleteCurso(id, adminId);
   }
 }

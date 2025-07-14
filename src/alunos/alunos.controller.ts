@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -24,6 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
+import { DeleteResponseEntity } from '../users/entities/delete-response.entity';
 import { CreateAlunoDto } from '../users/dto/create-aluno.dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 import { AlunoCreatedEntity } from '../users/entities/aluno-created.entity';
@@ -170,5 +172,37 @@ export class AlunosController {
     );
 
     return UserEntityMapper.toEntity(result);
+  }
+
+  @Delete(':id')
+  @UseGuards(AdminGuard)
+  @ApiOperation({
+    summary: 'Excluir aluno',
+    description:
+      'Exclui um aluno do sistema. Apenas administradores podem realizar esta operação. O aluno não pode ser excluído se possuir matrículas ativas.',
+  })
+  @ApiOkResponse({
+    type: DeleteResponseEntity,
+    description: 'Aluno excluído com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores podem excluir alunos',
+  })
+  @ApiNotFoundResponse({
+    description: 'Aluno não encontrado',
+  })
+  @ApiBadRequestResponse({
+    description: 'Aluno possui matrículas ativas e não pode ser excluído',
+  })
+  @HandleErrors('Acesso restrito a administradores')
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: any,
+  ) {
+    const adminId = request.user.sub;
+    return await this.usersService.deleteAluno(id, adminId);
   }
 }

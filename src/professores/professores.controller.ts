@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -28,6 +29,7 @@ import { UpdateUserDto } from '../users/dto/update-user.dto';
 import { ProfessorCreatedEntity } from '../users/entities/professor-created.entity';
 import { ProfessorListEntity } from '../users/entities/professor-list.entity';
 import { UserEntity } from '../users/entities/user.entity';
+import { DeleteResponseEntity } from '../users/entities/delete-response.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 import { HandleErrors } from '../common/decorators/handle-errors.decorator';
@@ -171,5 +173,37 @@ export class ProfessoresController {
       adminId,
     );
     return UserEntityMapper.toEntity(professor);
+  }
+
+  @Delete(':id')
+  @UseGuards(AdminGuard)
+  @ApiOperation({
+    summary: 'Excluir professor',
+    description:
+      'Exclui um professor do sistema. Apenas administradores podem realizar esta operação. O professor não pode ser excluído se possuir turmas ativas.',
+  })
+  @ApiOkResponse({
+    type: DeleteResponseEntity,
+    description: 'Professor excluído com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores podem excluir professores',
+  })
+  @ApiNotFoundResponse({
+    description: 'Professor não encontrado',
+  })
+  @ApiBadRequestResponse({
+    description: 'Professor possui turmas ativas e não pode ser excluído',
+  })
+  @HandleErrors('Acesso restrito a administradores')
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: any,
+  ) {
+    const adminId = request.user.sub;
+    return await this.usersService.deleteProfessor(id, adminId);
   }
 }
