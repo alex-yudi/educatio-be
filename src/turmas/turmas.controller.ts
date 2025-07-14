@@ -130,6 +130,60 @@ export class TurmasController {
     }));
   }
 
+  @Get(':id')
+  @UseGuards(AdminProfessorGuard)
+  @ApiOperation({
+    summary: 'Buscar turma por ID',
+    description:
+      'Retorna os dados de uma turma específica pelo seu ID. Administradores e professores podem realizar esta operação.',
+  })
+  @ApiOkResponse({
+    type: TurmaEntity,
+    description: 'Dados da turma retornados com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+  })
+  @ApiNotFoundResponse({
+    description: 'Turma não encontrada',
+  })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const turma = await this.usersService.findTurmaById(id);
+      
+      if (!turma) {
+        throw new ForbiddenException('Turma não encontrada');
+      }
+
+      return {
+        id: turma.id,
+        codigo: turma.codigo,
+        disciplina_id: turma.disciplina_id,
+        professor_id: turma.professor_id,
+        disciplina_nome: turma.disciplina.nome,
+        disciplina_codigo: turma.disciplina.codigo,
+        professor_nome: turma.professor.nome,
+        professor_email: turma.professor.email,
+        ano: turma.ano,
+        semestre: turma.semestre,
+        sala: turma.sala,
+        vagas: turma.vagas,
+        matriculados: turma._count.matriculas,
+        horarios: turma.horarios,
+        criado_em: turma.criado_em,
+        atualizado_em: turma.atualizado_em,
+      };
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores e professores');
+      }
+      throw error;
+    }
+  }
+
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({

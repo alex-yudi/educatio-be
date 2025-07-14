@@ -639,6 +639,33 @@ export class UsersService {
     });
   }
 
+  // ===== MÉTODO PARA BUSCAR TURMA POR ID =====
+  async findTurmaById(id: number) {
+    return this.prisma.turma.findUnique({
+      where: { id },
+      include: {
+        disciplina: {
+          select: {
+            nome: true,
+            codigo: true,
+          },
+        },
+        professor: {
+          select: {
+            nome: true,
+            email: true,
+          },
+        },
+        horarios: true,
+        _count: {
+          select: {
+            matriculas: true,
+          },
+        },
+      },
+    });
+  }
+
   async updateTurma(
     id: number,
     updateData: Partial<CreateTurmaDto>,

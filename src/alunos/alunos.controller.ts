@@ -32,12 +32,12 @@ import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 
 @Controller('alunos')
 @ApiTags('Alunos')
-@UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class AlunosController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Cadastrar novo aluno',
     description:
@@ -87,6 +87,7 @@ export class AlunosController {
   }
 
   @Get()
+  @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Listar alunos',
     description:
@@ -131,7 +132,59 @@ export class AlunosController {
     }
   }
 
+  @Get(':id')
+  @UseGuards(AdminProfessorGuard)
+  @ApiOperation({
+    summary: 'Buscar aluno por ID',
+    description:
+      'Retorna os dados de um aluno específico pelo seu ID. Administradores e professores podem realizar esta operação.',
+  })
+  @ApiOkResponse({
+    type: UserEntity,
+    description: 'Dados do aluno retornados com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+  })
+  @ApiNotFoundResponse({
+    description: 'Aluno não encontrado',
+  })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const aluno = await this.usersService.findOne(id);
+      
+      if (!aluno || aluno.role !== 'aluno') {
+        throw new ForbiddenException('Aluno não encontrado');
+      }
+
+      return new UserEntity({
+        id: aluno.id,
+        name: aluno.nome,
+        nome: aluno.nome,
+        email: aluno.email,
+        password: '',
+        senha: '',
+        role: aluno.role,
+        registrationNumber: aluno.matricula,
+        matricula: aluno.matricula,
+        createdAt: aluno.criado_em,
+        criado_em: aluno.criado_em,
+        updatedAt: aluno.atualizado_em,
+        atualizado_em: aluno.atualizado_em,
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores e professores');
+      }
+      throw error;
+    }
+  }
+
   @Put(':id')
+  @UseGuards(AdminGuard)
   @ApiOperation({
     summary: 'Atualizar aluno',
     description:

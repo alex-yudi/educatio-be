@@ -138,6 +138,57 @@ export class ProfessoresController {
     );
   }
 
+  @Get(':id')
+  @UseGuards(AdminProfessorGuard)
+  @ApiOperation({
+    summary: 'Buscar professor por ID',
+    description:
+      'Retorna os dados de um professor específico pelo seu ID. Administradores e professores podem realizar esta operação.',
+  })
+  @ApiOkResponse({
+    type: UserEntity,
+    description: 'Dados do professor retornados com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+  })
+  @ApiNotFoundResponse({
+    description: 'Professor não encontrado',
+  })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const professor = await this.usersService.findOne(id);
+      
+      if (!professor || professor.role !== 'professor') {
+        throw new ForbiddenException('Professor não encontrado');
+      }
+
+      return new UserEntity({
+        id: professor.id,
+        name: professor.nome,
+        nome: professor.nome,
+        email: professor.email,
+        password: '',
+        senha: '',
+        role: professor.role,
+        registrationNumber: null,
+        matricula: null,
+        createdAt: professor.criado_em,
+        criado_em: professor.criado_em,
+        updatedAt: professor.atualizado_em,
+        atualizado_em: professor.atualizado_em,
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        throw new ForbiddenException('Acesso restrito a administradores e professores');
+      }
+      throw error;
+    }
+  }
+
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
