@@ -30,13 +30,14 @@ import { AlterarFrequenciaDto } from '../users/dto/alterar-frequencia.dto';
 import { FrequenciaResponseEntity } from '../users/entities/frequencia-response.entity';
 import { AlterarFrequenciaResponseEntity } from '../users/entities/alterar-frequencia-response.entity';
 import { ProfessorGuard } from '../auth/guards/professor.guard';
+import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('frequencia')
 @ApiTags('Frequência')
 @ApiBearerAuth()
 @UseGuards(ProfessorGuard)
 export class FrequenciaController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
@@ -69,24 +70,18 @@ export class FrequenciaController {
   @ApiNotFoundResponse({
     description: 'Turma não encontrada',
   })
+  @HandleErrors('Acesso restrito a professores')
   async lancarFrequencia(
     @Body() lancarFrequenciaDto: LancarFrequenciaDto,
     @Req() request: any,
   ) {
-    try {
-      const professorId = request.user.sub;
-      const result = await this.usersService.lancarFrequencia(
-        lancarFrequenciaDto,
-        professorId,
-      );
+    const professorId = request.user.sub;
+    const result = await this.usersService.lancarFrequencia(
+      lancarFrequenciaDto,
+      professorId,
+    );
 
-      return new FrequenciaResponseEntity(result);
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a professores');
-      }
-      throw error;
-    }
+    return new FrequenciaResponseEntity(result);
   }
 
   @Get('turma/:id')

@@ -565,12 +565,7 @@ export class UsersService {
     adminId: number,
   ) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem atualizar disciplinas',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se a disciplina existe
     const disciplina = await this.prisma.disciplina.findUnique({
@@ -665,12 +660,7 @@ export class UsersService {
     adminId: number,
   ) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem atualizar turmas',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se a turma existe
     const turma = await this.prisma.turma.findUnique({
@@ -742,12 +732,7 @@ export class UsersService {
   // ===== MÉTODOS PARA CURSOS =====
   async createCurso(createCursoDto: CreateCursoDto, adminId: number) {
     // Verificar se o admin existe
-    const admin = await this.findOne(adminId);
-    if (!admin || admin.role !== EnumPerfil.admin) {
-      throw new UnauthorizedException(
-        'Apenas administradores podem cadastrar cursos',
-      );
-    }
+    await this.validateAdmin(adminId);
 
     // Verificar se já existe um curso com este código
     const existingCurso = await this.prisma.curso.findUnique({
@@ -1057,12 +1042,8 @@ export class UsersService {
     professorId: number,
   ) {
     // Verificar se o professor existe
+    await this.validateProfessor(professorId);
     const professor = await this.findOne(professorId);
-    if (!professor || professor.role !== EnumPerfil.professor) {
-      throw new UnauthorizedException(
-        'Apenas professores podem lançar frequência',
-      );
-    }
 
     // Verificar se a turma existe e se o professor é responsável por ela
     const turma = await this.prisma.turma.findUnique({
@@ -1155,7 +1136,7 @@ export class UsersService {
       ausentes: alunosAusentes.length,
       alunos_presentes: alunosPresentes,
       alunos_ausentes: alunosAusentes,
-      registrado_por: professor.nome,
+      registrado_por: professor!.nome,
     };
   }
 

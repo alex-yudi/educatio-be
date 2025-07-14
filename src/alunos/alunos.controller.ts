@@ -29,6 +29,8 @@ import { UpdateUserDto } from '../users/dto/update-user.dto';
 import { AlunoCreatedEntity } from '../users/entities/aluno-created.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
+import { HandleErrors } from '../common/decorators/handle-errors.decorator';
+import { UserEntityMapper } from '../common/mappers/user-entity.mapper';
 
 @Controller('alunos')
 @ApiTags('Alunos')
@@ -62,28 +64,19 @@ export class AlunosController {
   @ApiNotFoundResponse({
     description: 'Curso especificado não encontrado',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async create(@Body() createAlunoDto: CreateAlunoDto, @Req() request: any) {
-    try {
-      const adminId = request.user.sub;
-      const result = await this.usersService.createAluno(
-        createAlunoDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const result = await this.usersService.createAluno(
+      createAlunoDto,
+      adminId,
+    );
 
-      return new AlunoCreatedEntity({
-        usuario: new UserEntity({
-          ...result.usuario,
-          name: result.usuario.nome,
-        }),
-        senha_temporaria: result.senha_temporaria,
-        curso: result.curso,
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new AlunoCreatedEntity({
+      usuario: UserEntityMapper.toEntity(result.usuario),
+      senha_temporaria: result.senha_temporaria,
+      curso: result.curso,
+    });
   }
 
   @Get()
@@ -103,33 +96,10 @@ export class AlunosController {
   @ApiForbiddenResponse({
     description: 'Acesso negado. Apenas administradores podem listar alunos',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async findAll(@Req() request: any) {
-    try {
-      const alunos = await this.usersService.findAllAlunos();
-      return alunos.map(
-        (aluno) =>
-          new UserEntity({
-            id: aluno.id,
-            name: aluno.nome,
-            nome: aluno.nome,
-            email: aluno.email,
-            password: '',
-            senha: '',
-            role: aluno.role,
-            registrationNumber: aluno.matricula,
-            matricula: aluno.matricula,
-            createdAt: aluno.criado_em,
-            criado_em: aluno.criado_em,
-            updatedAt: aluno.atualizado_em,
-            atualizado_em: aluno.atualizado_em,
-          }),
-      );
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    const alunos = await this.usersService.findAllAlunos();
+    return UserEntityMapper.toEntities(alunos);
   }
 
   @Get(':id')
@@ -160,21 +130,7 @@ export class AlunosController {
         throw new ForbiddenException('Aluno não encontrado');
       }
 
-      return new UserEntity({
-        id: aluno.id,
-        name: aluno.nome,
-        nome: aluno.nome,
-        email: aluno.email,
-        password: '',
-        senha: '',
-        role: aluno.role,
-        registrationNumber: aluno.matricula,
-        matricula: aluno.matricula,
-        createdAt: aluno.criado_em,
-        criado_em: aluno.criado_em,
-        updatedAt: aluno.atualizado_em,
-        atualizado_em: aluno.atualizado_em,
-      });
+      return UserEntityMapper.toEntity(aluno);
     } catch (error) {
       if (error.status === 401) {
         throw new ForbiddenException('Acesso restrito a administradores e professores');
@@ -206,39 +162,19 @@ export class AlunosController {
   @ApiNotFoundResponse({
     description: 'Aluno não encontrado',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const result = await this.usersService.updateAluno(
-        id,
-        updateUserDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const result = await this.usersService.updateAluno(
+      id,
+      updateUserDto,
+      adminId,
+    );
 
-      return new UserEntity({
-        id: result.id,
-        name: result.nome,
-        nome: result.nome,
-        email: result.email,
-        password: '',
-        senha: '',
-        role: result.role,
-        registrationNumber: result.matricula,
-        matricula: result.matricula,
-        createdAt: result.criado_em,
-        criado_em: result.criado_em,
-        updatedAt: result.atualizado_em,
-        atualizado_em: result.atualizado_em,
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return UserEntityMapper.toEntity(result);
   }
 }

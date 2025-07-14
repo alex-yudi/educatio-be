@@ -30,6 +30,8 @@ import { ProfessorListEntity } from '../users/entities/professor-list.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
+import { HandleErrors } from '../common/decorators/handle-errors.decorator';
+import { UserEntityMapper } from '../common/mappers/user-entity.mapper';
 
 @Controller('professores')
 @ApiTags('Professores')
@@ -61,41 +63,21 @@ export class ProfessoresController {
   @ApiConflictResponse({
     description: 'E-mail já cadastrado no sistema',
   })
+  @HandleErrors('Acesso restrito a administradores')
   async create(
     @Body() createProfessorDto: CreateProfessorDto,
     @Req() request: any,
   ) {
-    try {
-      const adminId = request.user.sub;
-      const result = await this.usersService.createProfessor(
-        createProfessorDto,
-        adminId,
-      );
+    const adminId = request.user.sub;
+    const result = await this.usersService.createProfessor(
+      createProfessorDto,
+      adminId,
+    );
 
-      return new ProfessorCreatedEntity({
-        usuario: new UserEntity({
-          id: result.id,
-          name: result.nome,
-          nome: result.nome,
-          email: result.email,
-          password: '',
-          senha: '',
-          role: result.role,
-          registrationNumber: null,
-          matricula: null,
-          createdAt: result.criado_em,
-          criado_em: result.criado_em,
-          updatedAt: result.atualizado_em,
-          atualizado_em: result.atualizado_em,
-        }),
-        senha_temporaria: result.senha_temporaria,
-      });
-    } catch (error) {
-      if (error.status === 401) {
-        throw new ForbiddenException('Acesso restrito a administradores');
-      }
-      throw error;
-    }
+    return new ProfessorCreatedEntity({
+      usuario: UserEntityMapper.toEntity(result),
+      senha_temporaria: result.senha_temporaria,
+    });
   }
 
   @Get()
