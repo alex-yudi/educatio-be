@@ -120,15 +120,15 @@ export class TurmaCompletaEntity {
   @ApiProperty({ type: ProfessorTurmaEntity, description: 'Dados do professor responsável' })
   professor: ProfessorTurmaEntity;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: [AlunoMatriculaEntity],
-    description: 'Lista de alunos matriculados na turma' 
+    description: 'Lista de alunos matriculados na turma'
   })
   matriculas: AlunoMatriculaEntity[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: [HorarioTurmaEntity],
-    description: 'Horários das aulas da turma' 
+    description: 'Horários das aulas da turma'
   })
   horarios: HorarioTurmaEntity[];
 

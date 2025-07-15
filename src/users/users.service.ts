@@ -571,8 +571,94 @@ export class UsersService {
         role: true,
         criado_em: true,
         atualizado_em: true,
+        matriculas: {
+          select: {
+            id: true,
+            status: true,
+            criado_em: true,
+            turma: {
+              select: {
+                id: true,
+                codigo: true,
+                ano: true,
+                semestre: true,
+                sala: true,
+                disciplina: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    codigo: true,
+                    carga_horaria: true,
+                  },
+                },
+                professor: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
+  }
+
+  async findAlunoById(id: number) {
+    const aluno = await this.prisma.usuario.findUnique({
+      where: {
+        id,
+        role: EnumPerfil.aluno
+      },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        matricula: true,
+        role: true,
+        criado_em: true,
+        atualizado_em: true,
+        matriculas: {
+          select: {
+            id: true,
+            status: true,
+            criado_em: true,
+            turma: {
+              select: {
+                id: true,
+                codigo: true,
+                ano: true,
+                semestre: true,
+                sala: true,
+                disciplina: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    codigo: true,
+                    carga_horaria: true,
+                  },
+                },
+                professor: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!aluno) {
+      throw new NotFoundException('Aluno não encontrado');
+    }
+
+    return aluno;
   }
 
   async updateAluno(id: number, updateUserDto: UpdateUserDto, adminId: number) {

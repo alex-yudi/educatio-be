@@ -34,6 +34,8 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 import { UserEntityMapper } from '../common/mappers/user-entity.mapper';
+import { AlunoComMatriculasEntity } from '../users/entities/aluno-com-matriculas.entity';
+import { AlunoComMatriculasMapper } from '../common/mappers/aluno-com-matriculas.mapper';
 
 @Controller('alunos')
 @ApiTags('Alunos')
@@ -106,8 +108,8 @@ export class AlunosController {
       'Retorna uma lista de alunos cadastrados no sistema. Apenas administradores podem realizar esta operação.',
   })
   @ApiOkResponse({
-    type: [UserEntity],
-    description: 'Lista de alunos retornada com sucesso',
+    type: [AlunoComMatriculasEntity],
+    description: 'Lista de alunos com suas matrículas retornada com sucesso',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -118,7 +120,7 @@ export class AlunosController {
   @HandleErrors('Acesso restrito a administradores')
   async findAll(@Req() request: any) {
     const alunos = await this.usersService.findAllAlunos();
-    return UserEntityMapper.toEntities(alunos);
+    return AlunoComMatriculasMapper.toEntities(alunos);
   }
 
   @Get(':id')
@@ -129,8 +131,8 @@ export class AlunosController {
       'Retorna os dados de um aluno específico pelo seu ID. Administradores e professores podem realizar esta operação.',
   })
   @ApiOkResponse({
-    type: UserEntity,
-    description: 'Dados do aluno retornados com sucesso',
+    type: AlunoComMatriculasEntity,
+    description: 'Dados do aluno com suas matrículas retornados com sucesso',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -143,13 +145,8 @@ export class AlunosController {
   })
   @HandleErrors('Acesso restrito a administradores e professores')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const aluno = await this.usersService.findOne(id);
-
-    if (!aluno || aluno.role !== 'aluno') {
-      throw new ForbiddenException('Aluno não encontrado');
-    }
-
-    return UserEntityMapper.toEntity(aluno);
+    const aluno = await this.usersService.findAlunoById(id);
+    return AlunoComMatriculasMapper.toEntity(aluno);
   }
 
   @Put(':id')
