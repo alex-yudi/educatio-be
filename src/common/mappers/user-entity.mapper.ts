@@ -8,17 +8,13 @@ export class UserEntityMapper {
   static toEntity(user: any): UserEntity {
     return new UserEntity({
       id: user.id,
-      name: user.nome,
       nome: user.nome,
       email: user.email,
-      password: '',
       role: user.role,
-      registrationNumber: user.matricula || null,
       matricula: user.matricula || null,
-      createdAt: user.criado_em,
       criado_em: user.criado_em,
-      updatedAt: user.atualizado_em,
       atualizado_em: user.atualizado_em,
+      senha: '', // Campo excluído pela anotação @Exclude
     });
   }
 

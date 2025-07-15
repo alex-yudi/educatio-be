@@ -18,12 +18,4 @@ export class ProfessorCreatedEntity {
     description: 'Senha temporária gerada para o primeiro acesso',
   })
   senha_temporaria: string;
-
-  @ApiProperty({
-    example: 'Programação I',
-    description: 'Nome da disciplina ministrada (se informada)',
-    required: false,
-  })
-  @Expose()
-  disciplina?: string;
 }

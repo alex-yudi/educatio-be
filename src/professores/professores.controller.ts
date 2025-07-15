@@ -60,8 +60,7 @@ export class ProfessoresController {
         description: 'Exemplo de cadastro de professor',
         value: {
           nome: 'Dr. Carlos Silva',
-          email: 'carlos.silva@uni.edu',
-          area_especializacao: 'Engenharia de Software'
+          email: 'carlos.silva@uni.edu'
         }
       }
     }
