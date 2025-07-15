@@ -9,13 +9,14 @@ export class LoginResponseEntity {
   }
 
   @ApiProperty({
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    description: 'Token de autenticação',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiYWRtaW5AdW5pLmVkdSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY5ODc2ODAwMCwiZXhwIjoxNjk4ODU0NDAwfQ.example',
+    description: 'Token JWT para autenticação. Válido por 24 horas. Use no header: Authorization: Bearer {token}',
   })
   accessToken: string;
 
   @ApiProperty({
-    description: 'Dados do usuário autenticado',
+    description: 'Dados completos do usuário autenticado, incluindo perfil e permissões',
+    type: UserEntity,
   })
   user: UserEntity;
 }

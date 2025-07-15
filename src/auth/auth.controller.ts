@@ -13,6 +13,7 @@ import {
   ApiOperation,
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
@@ -29,19 +30,49 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Realizar login',
+    summary: 'Realizar login no sistema',
     description:
-      'Autentica um usuário no sistema utilizando e-mail e senha, retornando um token JWT para acesso às rotas protegidas',
+      'Autentica um usuário no sistema utilizando e-mail e senha. Retorna um token JWT que deve ser usado no header Authorization (Bearer token) para acessar rotas protegidas. O token expira em 24 horas.',
+  })
+  @ApiBody({
+    type: LoginDto,
+    description: 'Credenciais de login',
+    examples: {
+      admin: {
+        summary: 'Login de Administrador',
+        description: 'Exemplo de login para usuário administrador',
+        value: {
+          email: 'admin@uni.edu',
+          senha: 'admin123'
+        }
+      },
+      professor: {
+        summary: 'Login de Professor',
+        description: 'Exemplo de login para professor',
+        value: {
+          email: 'maria.silva@uni.edu',
+          senha: 'prof123'
+        }
+      },
+      aluno: {
+        summary: 'Login de Aluno',
+        description: 'Exemplo de login para aluno',
+        value: {
+          email: 'joao.silva@uni.edu',
+          senha: 'aluno123'
+        }
+      }
+    }
   })
   @ApiOkResponse({
     type: LoginResponseEntity,
-    description: 'Login realizado com sucesso, token gerado',
+    description: 'Login realizado com sucesso. Token JWT gerado para autenticação.',
   })
   @ApiUnauthorizedResponse({
     description: 'Credenciais inválidas - e-mail ou senha incorretos',
   })
   @ApiBadRequestResponse({
-    description: 'Dados de entrada inválidos',
+    description: 'Dados de entrada inválidos - formato de e-mail incorreto ou senha muito curta',
   })
   async login(@Body() loginDto: LoginDto) {
     const { accessToken, user } = await this.usersService.login(loginDto);
@@ -52,18 +83,18 @@ export class AuthController {
   }
 
   @Get('verificar')
-  @ApiBearerAuth() // This tells Swagger UI to show an "Authorize" button
+  @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Verificar token e obter dados do usuário',
+    summary: 'Verificar token JWT e obter dados do usuário',
     description:
-      'Verifica a validade de um token JWT e retorna os dados do usuário autenticado. Deve ser usado para validar a sessão do usuário no frontend.',
+      'Verifica a validade de um token JWT e retorna os dados completos do usuário autenticado. Use este endpoint para: 1) Validar se o token ainda é válido, 2) Obter dados atualizados do usuário, 3) Verificar o papel/perfil do usuário para controle de acesso no frontend.',
   })
   @ApiOkResponse({
     type: UserEntity,
-    description: 'Token válido. Dados do usuário retornados com sucesso.',
+    description: 'Token válido. Dados completos do usuário retornados com sucesso.',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token não fornecido, inválido ou expirado.',
+    description: 'Token não fornecido, inválido ou expirado. Redirecionar para tela de login.',
   })
   async verificar(@Headers('Authorization') authorization?: string) {
     const authWords = authorization?.split(' ');
@@ -72,11 +103,7 @@ export class AuthController {
       token += authWords[1];
     }
 
-    // If the code reaches here, the JwtAuthGuard has already validated the token
-    // and attached its payload to the request object as `req.user`.
     const user = await this.usersService.verifyToken(token);
-
-    // We return a UserEntity, just like the login response, for consistency.
     return UserEntityMapper.toEntity(user);
   }
 }

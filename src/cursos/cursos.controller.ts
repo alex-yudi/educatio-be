@@ -48,19 +48,28 @@ export class CursosController {
   })
   @ApiBody({
     type: CreateCursoDto,
-    description: 'Dados para criação do curso',
+    description: 'Dados para criação do curso. Disciplinas podem ser vinculadas opcionalmente.',
     examples: {
       exemplo1: {
         summary: 'Curso de Engenharia de Software',
         description: 'Exemplo de cadastro de curso com disciplinas',
         value: {
           nome: 'Engenharia de Software',
-          descricao: 'Curso focado no desenvolvimento de software',
-          carga_horaria: 3200,
-          disciplinas_ids: [1, 2, 3],
-        },
+          codigo: 'ESOFT',
+          descricao: 'Curso focado no desenvolvimento de software e metodologias ágeis',
+          disciplinas_codigos: ['PROG1', 'PROG2', 'BD', 'ENGSW']
+        }
       },
-    },
+      exemplo2: {
+        summary: 'Curso básico sem disciplinas',
+        description: 'Exemplo de cadastro de curso sem vincular disciplinas inicialmente',
+        value: {
+          nome: 'Ciência da Computação',
+          codigo: 'CC',
+          descricao: 'Curso de graduação em Ciência da Computação'
+        }
+      }
+    }
   })
   @ApiCreatedResponse({
     type: CursoCreatedEntity,
@@ -107,13 +116,13 @@ export class CursosController {
   @Get()
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
-    summary: 'Listar cursos',
+    summary: 'Listar todos os cursos disponíveis',
     description:
-      'Lista todos os cursos cadastrados no sistema com informações resumidas. Administradores e professores podem acessar.',
+      'Lista todos os cursos cadastrados no sistema com informações resumidas (ID, nome, código). Ideal para popular dropdowns/selects no frontend. Administradores e professores podem acessar.',
   })
   @ApiOkResponse({
     type: [CursoListEntity],
-    description: 'Lista de cursos',
+    description: 'Lista de cursos com informações básicas para seleção',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -131,6 +140,42 @@ export class CursosController {
           descricao: curso.descricao || undefined,
         }),
     );
+  }
+
+  @Get('dropdown/options')
+  @UseGuards(AdminProfessorGuard)
+  @ApiOperation({
+    summary: 'Listar cursos para dropdown/select',
+    description:
+      'Retorna lista simplificada de cursos (apenas ID, código e nome) especificamente otimizada para popular dropdowns e selects no frontend.',
+  })
+  @ApiOkResponse({
+    description: 'Lista simplificada de cursos para dropdowns',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'number', example: 1, description: 'ID do curso' },
+          codigo: { type: 'string', example: 'ESOFT', description: 'Código do curso' },
+          nome: { type: 'string', example: 'Engenharia de Software', description: 'Nome do curso' }
+        }
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+  })
+  async findDropdownOptions() {
+    const cursos = await this.usersService.findAllCursos();
+    return cursos.map(curso => ({
+      id: curso.id,
+      codigo: curso.codigo,
+      nome: curso.nome
+    }));
   }
 
   @Get(':id')

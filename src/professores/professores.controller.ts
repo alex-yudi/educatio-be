@@ -102,13 +102,13 @@ export class ProfessoresController {
   @Get()
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
-    summary: 'Listar professores',
+    summary: 'Listar todos os professores cadastrados',
     description:
-      'Lista todos os professores cadastrados no sistema com suas turmas associadas. Administradores e professores podem acessar.',
+      'Lista todos os professores cadastrados no sistema com informações básicas e suas turmas associadas. Útil para popular dropdowns de professores e visualizar quais turmas cada professor leciona. Administradores e professores podem acessar.',
   })
   @ApiOkResponse({
     type: [ProfessorComTurmasEntity],
-    description: 'Lista de professores com turmas associadas',
+    description: 'Lista de professores com dados pessoais e turmas que lecionam',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -120,6 +120,42 @@ export class ProfessoresController {
   async findAll() {
     const professores = await this.usersService.findAllProfessores();
     return ProfessorComTurmasMapper.toEntities(professores);
+  }
+
+  @Get('dropdown/options')
+  @UseGuards(AdminProfessorGuard)
+  @ApiOperation({
+    summary: 'Listar professores para dropdown/select',
+    description:
+      'Retorna lista simplificada de professores (apenas ID, email e nome) especificamente otimizada para popular dropdowns e selects no frontend.',
+  })
+  @ApiOkResponse({
+    description: 'Lista simplificada de professores para dropdowns',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'number', example: 1, description: 'ID do professor' },
+          email: { type: 'string', example: 'carlos.silva@uni.edu', description: 'Email do professor' },
+          nome: { type: 'string', example: 'Dr. Carlos Silva', description: 'Nome do professor' }
+        }
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+  })
+  async findDropdownOptions() {
+    const professores = await this.usersService.findAllProfessores();
+    return professores.map(professor => ({
+      id: professor.id,
+      email: professor.email,
+      nome: professor.nome
+    }));
   }
 
   @Get(':id')

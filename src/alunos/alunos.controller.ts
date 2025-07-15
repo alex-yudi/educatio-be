@@ -52,16 +52,26 @@ export class AlunosController {
   })
   @ApiBody({
     type: CreateAlunoDto,
-    description: 'Dados para criação do aluno',
+    description: 'Dados para criação do aluno. Senha será gerada automaticamente.',
     examples: {
       exemplo1: {
         summary: 'Aluno de Engenharia de Software',
         description: 'Exemplo de cadastro de aluno no curso de Engenharia de Software',
         value: {
           nome: 'João Silva Santos',
-          email: 'joao.silva@email.com',
-          matricula: '20240010',
-          curso_id: 1
+          email: 'joao.silva@uni.edu',
+          matricula: '2025001',
+          curso_codigo: 'ESOFT'
+        }
+      },
+      exemplo2: {
+        summary: 'Aluno de Ciência da Computação',
+        description: 'Exemplo de cadastro de aluno no curso de Ciência da Computação',
+        value: {
+          nome: 'Maria Oliveira',
+          email: 'maria.oliveira@uni.edu',
+          matricula: '2025002',
+          curso_codigo: 'CC'
         }
       }
     }
@@ -103,13 +113,13 @@ export class AlunosController {
   @Get()
   @UseGuards(AdminGuard)
   @ApiOperation({
-    summary: 'Listar alunos',
+    summary: 'Listar todos os alunos cadastrados',
     description:
-      'Retorna uma lista de alunos cadastrados no sistema. Apenas administradores podem realizar esta operação.',
+      'Retorna uma lista completa de todos os alunos cadastrados no sistema, incluindo suas informações pessoais, curso e matrículas em turmas. Apenas administradores podem realizar esta operação.',
   })
   @ApiOkResponse({
     type: [AlunoComMatriculasEntity],
-    description: 'Lista de alunos com suas matrículas retornada com sucesso',
+    description: 'Lista de alunos com informações detalhadas: dados pessoais, curso e turmas matriculadas',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',

@@ -148,6 +148,46 @@ export class TurmasController {
     }));
   }
 
+  @Get('dropdown/options')
+  @UseGuards(AdminProfessorGuard)
+  @ApiOperation({
+    summary: 'Listar turmas para dropdown/select',
+    description:
+      'Retorna lista simplificada de turmas (ID, código, disciplina e professor) especificamente otimizada para popular dropdowns e selects no frontend.',
+  })
+  @ApiOkResponse({
+    description: 'Lista simplificada de turmas para dropdowns',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'number', example: 1, description: 'ID da turma' },
+          codigo: { type: 'string', example: 'PROG1-2025-1A', description: 'Código da turma' },
+          disciplina_nome: { type: 'string', example: 'Programação I', description: 'Nome da disciplina' },
+          professor_nome: { type: 'string', example: 'Dr. Carlos Silva', description: 'Nome do professor' },
+          vagas_disponiveis: { type: 'number', example: 15, description: 'Vagas disponíveis' }
+        }
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+  })
+  async findDropdownOptions() {
+    const turmas = await this.usersService.findAllTurmas();
+    return turmas.map(turma => ({
+      id: turma.id,
+      codigo: turma.codigo,
+      disciplina_nome: turma.disciplina.nome,
+      professor_nome: turma.professor.nome,
+      vagas_disponiveis: turma.vagas - turma._count.matriculas
+    }));
+  }
+
   @Get(':id')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({

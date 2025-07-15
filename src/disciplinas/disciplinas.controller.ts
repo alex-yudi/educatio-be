@@ -93,13 +93,13 @@ export class DisciplinasController {
 
   @Get()
   @ApiOperation({
-    summary: 'Listar disciplinas',
+    summary: 'Listar todas as disciplinas disponíveis',
     description:
-      'Retorna uma lista de todas as disciplinas cadastradas no sistema.',
+      'Retorna uma lista completa de todas as disciplinas cadastradas no sistema com informações detalhadas (código, nome, carga horária, ementa). Ideal para popular dropdowns de disciplinas e visualizar disciplinas disponíveis.',
   })
   @ApiOkResponse({
     type: [DisciplinaEntity],
-    description: 'Lista de disciplinas',
+    description: 'Lista completa de disciplinas com todos os detalhes',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -112,6 +112,43 @@ export class DisciplinasController {
   async findAll(@Req() request: any) {
     const disciplinas = await this.usersService.findAllDisciplinas();
     return disciplinas.map((disciplina) => new DisciplinaEntity(disciplina));
+  }
+
+  @Get('dropdown/options')
+  @UseGuards(AdminGuard)
+  @ApiOperation({
+    summary: 'Listar disciplinas para dropdown/select',
+    description:
+      'Retorna lista simplificada de disciplinas (apenas ID, código e nome) especificamente otimizada para popular dropdowns e selects no frontend.',
+  })
+  @ApiOkResponse({
+    description: 'Lista simplificada de disciplinas para dropdowns',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'number', example: 1, description: 'ID da disciplina' },
+          codigo: { type: 'string', example: 'PROG1', description: 'Código da disciplina' },
+          nome: { type: 'string', example: 'Programação I', description: 'Nome da disciplina' }
+        }
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description: 'Acesso negado. Apenas administradores podem acessar',
+  })
+  @HandleErrors('Acesso restrito a administradores')
+  async findDropdownOptions(@Req() request: any) {
+    const disciplinas = await this.usersService.findAllDisciplinas();
+    return disciplinas.map(disciplina => ({
+      id: disciplina.id,
+      codigo: disciplina.codigo,
+      nome: disciplina.nome
+    }));
   }
 
   @Get(':id')

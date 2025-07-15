@@ -39,14 +39,22 @@ export class MatriculasController {
   })
   @ApiBody({
     type: CreateMatriculaDto,
-    description: 'Dados para realização da matrícula',
+    description: 'Dados para realização da matrícula. Use matrícula do aluno e código da turma.',
     examples: {
       exemplo1: {
         summary: 'Matrícula em turma de Programação',
         description: 'Exemplo de matrícula de aluno em turma',
         value: {
-          aluno_id: 5,
-          turma_id: 1
+          matricula_aluno: '2025001',
+          codigo_turma: 'PROG1-2025-1A'
+        }
+      },
+      exemplo2: {
+        summary: 'Matrícula em turma de Banco de Dados',
+        description: 'Outro exemplo de matrícula',
+        value: {
+          matricula_aluno: '2025002',
+          codigo_turma: 'BD-2025-1A'
         }
       }
     }
