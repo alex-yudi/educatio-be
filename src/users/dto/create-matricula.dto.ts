@@ -1,21 +1,30 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  Matches,
+  IsArray,
+} from 'class-validator';
 
 export class CreateMatriculaDto {
   @ApiProperty({
-    example: '2025001',
-    description: 'Matrícula do aluno a ser matriculado (7 dígitos)',
-    pattern: '^[0-9]{7}$',
+    example: ['2025001', '2025002', '2025003'],
+    description:
+      'Lista completa de matrículas dos alunos que devem estar na turma. Alunos não listados serão desmatriculados. Alunos listados que não estão na turma serão matriculados.',
+    type: [String],
     required: true,
   })
-  @IsString()
-  @IsNotEmpty()
-  @Matches(/^[0-9]{7}$/, { message: 'Matrícula deve conter exatamente 7 dígitos numéricos' })
-  matricula_aluno: string;
+  @IsArray()
+  @IsString({ each: true })
+  // @Matches(/^[0-9]{7}$/, {
+  //   each: true,
+  //   message: 'Cada matrícula deve conter exatamente 7 dígitos numéricos',
+  // })
+  matriculas_alunos: string[];
 
   @ApiProperty({
     example: 'BD-2025-1A',
-    description: 'Código da turma onde o aluno será matriculado',
+    description: 'Código da turma onde os alunos serão matriculados',
     required: true,
   })
   @IsString()

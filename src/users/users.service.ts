@@ -290,75 +290,111 @@ export class UsersService {
     createMatriculaDto: CreateMatriculaDto,
     adminId: number,
   ) {
-    // Verificar se o admin existe
+    // 1. Validar se o usuário é um administrador
     await this.validateAdmin(adminId);
 
-    // Verificar se o aluno existe
-    const aluno = await this.findByMatricula(
-      createMatriculaDto.matricula_aluno,
-    );
-    if (!aluno) {
-      throw new NotFoundException(
-        `Aluno com matrícula ${createMatriculaDto.matricula_aluno} não encontrado`,
-      );
-    }
+    const { codigo_turma, matriculas_alunos } = createMatriculaDto;
 
-    // Verificar se o aluno tem o perfil correto
-    if (aluno.role !== EnumPerfil.aluno) {
-      throw new BadRequestException('O usuário informado não é um aluno');
-    }
+    // Garante que não há matrículas duplicadas na requisição
+    const matriculasDesejadasUnicas = [...new Set(matriculas_alunos)];
 
-    // Verificar se a turma existe
+    // 2. Buscar a turma e suas matrículas atuais
     const turma = await this.prisma.turma.findUnique({
-      where: { codigo: createMatriculaDto.codigo_turma },
+      where: { codigo: codigo_turma },
       include: {
-        disciplina: true,
-        professor: true,
-        matriculas: true,
+        matriculas: {
+          select: {
+            id: true,
+            estudante_id: true,
+          },
+        },
       },
     });
 
     if (!turma) {
       throw new NotFoundException(
-        `Turma com código ${createMatriculaDto.codigo_turma} não encontrada`,
+        `Turma com código ${codigo_turma} não encontrada`,
       );
     }
 
-    // Verificar se há vagas disponíveis na turma
-    if (turma.matriculas.length >= turma.vagas) {
-      throw new BadRequestException(
-        `A turma ${turma.codigo} não possui vagas disponíveis`,
-      );
-    }
-
-    // Verificar se o aluno já está matriculado nesta turma
-    const matriculaExistente = await this.prisma.matricula.findFirst({
+    // 3. Validar os alunos da lista de entrada e obter seus IDs
+    const alunosDesejados = await this.prisma.usuario.findMany({
       where: {
-        estudante_id: aluno.id,
-        turma_id: turma.id,
+        matricula: { in: matriculasDesejadasUnicas },
+        role: EnumPerfil.aluno,
       },
+      select: { id: true, matricula: true },
     });
 
-    if (matriculaExistente) {
-      throw new ConflictException(`O aluno já está matriculado nesta turma`);
+    // Verificar se todas as matrículas fornecidas correspondem a alunos válidos
+    if (alunosDesejados.length !== matriculasDesejadasUnicas.length) {
+      const matriculasEncontradas = new Set(
+        alunosDesejados.map((a) => a.matricula!),
+      );
+      const matriculasFaltantes = matriculasDesejadasUnicas.filter(
+        (m) => !matriculasEncontradas.has(m),
+      );
+      throw new NotFoundException(
+        `Os seguintes alunos não foram encontrados ou não são válidos: ${matriculasFaltantes.join(
+          ', ',
+        )}`,
+      );
     }
 
-    // Criar a matrícula
-    const novaMatricula = await this.prisma.matricula.create({
-      data: {
-        estudante_id: aluno.id,
-        turma_id: turma.id,
-        status: 'ATIVA',
-      },
-    });
+    const idsAlunosDesejados = new Set(alunosDesejados.map((aluno) => aluno.id));
+    const idsAlunosAtuais = new Set(
+      turma.matriculas.map((m) => m.estudante_id),
+    );
 
-    // Retornar os dados da matrícula com informações adicionais
+    // 4. Determinar quais alunos matricular e quais desmatricular
+    // Alunos para matricular: estão na lista desejada mas não na atual
+    const idsAlunosParaMatricular = [...idsAlunosDesejados].filter(
+      (id) => !idsAlunosAtuais.has(id),
+    );
+
+    // Matrículas para remover: alunos na lista atual que não estão na desejada
+    const matriculasParaRemover = turma.matriculas.filter(
+      (m) => !idsAlunosDesejados.has(m.estudante_id),
+    );
+    const idsMatriculasParaRemover = matriculasParaRemover.map((m) => m.id);
+
+    // 5. Verificar a capacidade da turma
+    const numMatriculasFinal =
+      idsAlunosAtuais.size -
+      idsMatriculasParaRemover.length +
+      idsAlunosParaMatricular.length;
+
+    if (numMatriculasFinal > turma.vagas) {
+      throw new BadRequestException(
+        `A operação excede o número de vagas (${turma.vagas}) da turma. O número final de alunos seria ${numMatriculasFinal}.`,
+      );
+    }
+
+    // 6. Executar as operações de remoção e criação em uma transação
+    const [criadas] = await this.prisma.$transaction([
+      // Desmatricular alunos que não estão na lista
+      // this.prisma.matricula.deleteMany({
+      //   where: {
+      //     id: { in: idsMatriculasParaRemover },
+      //   },
+      // }),
+      // Matricular novos alunos
+      this.prisma.matricula.createMany({
+        data: idsAlunosParaMatricular.map((alunoId) => ({
+          estudante_id: alunoId,
+          turma_id: turma.id,
+          status: 'ATIVA',
+        })),
+      }),
+    ]);
+
+    // 7. Retornar um resumo da operação
     return {
-      matricula: novaMatricula,
-      aluno: aluno.nome,
-      disciplina: turma.disciplina.nome,
-      turma: turma.codigo,
-      professor: turma.professor.nome,
+      message: 'Matrículas sincronizadas com sucesso.',
+      turma: codigo_turma,
+      matriculas_adicionadas: criadas.count,
+      // matriculas_removidas: removidas.count,
+      total_alunos_turma: numMatriculasFinal,
     };
   }
 
