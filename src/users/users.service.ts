@@ -733,17 +733,43 @@ export class UsersService {
       include: {
         disciplina: {
           select: {
+            id: true,
             nome: true,
             codigo: true,
+            carga_horaria: true,
+            descricao: true,
           },
         },
         professor: {
           select: {
+            id: true,
             nome: true,
             email: true,
           },
         },
-        horarios: true,
+        matriculas: {
+          select: {
+            id: true,
+            status: true,
+            estudante: {
+              select: {
+                id: true,
+                nome: true,
+                email: true,
+                matricula: true,
+              },
+            },
+            criado_em: true,
+          },
+        },
+        horarios: {
+          select: {
+            id: true,
+            dia_semana: true,
+            hora_inicio: true,
+            hora_fim: true,
+          },
+        },
         _count: {
           select: {
             matriculas: true,

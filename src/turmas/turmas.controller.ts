@@ -28,9 +28,11 @@ import { UsersService } from '../users/users.service';
 import { CreateTurmaDto } from '../users/dto/create-turma.dto';
 import { TurmaCreatedEntity } from '../users/entities/turma-created.entity';
 import { TurmaEntity } from '../users/entities/turma.entity';
+import { TurmaCompletaEntity } from '../users/entities/turma-completa.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminProfessorGuard } from '../auth/guards/admin-professor.guard';
 import { HandleErrors } from '../common/decorators/handle-errors.decorator';
+import { TurmaCompletaMapper } from '../common/mappers/turma-completa.mapper';
 
 @Controller('turmas')
 @ApiTags('Turmas')
@@ -160,11 +162,11 @@ export class TurmasController {
   @ApiOperation({
     summary: 'Buscar turma por ID',
     description:
-      'Retorna os dados de uma turma específica pelo seu ID. Administradores e professores podem realizar esta operação.',
+      'Retorna os dados completos de uma turma específica pelo seu ID, incluindo professor, disciplina e alunos matriculados. Administradores e professores podem realizar esta operação.',
   })
   @ApiOkResponse({
-    type: TurmaEntity,
-    description: 'Dados da turma retornados com sucesso',
+    type: TurmaCompletaEntity,
+    description: 'Dados completos da turma retornados com sucesso',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -183,24 +185,7 @@ export class TurmasController {
       throw new ForbiddenException('Turma não encontrada');
     }
 
-    return {
-      id: turma.id,
-      codigo: turma.codigo,
-      disciplina_id: turma.disciplina_id,
-      professor_id: turma.professor_id,
-      disciplina_nome: turma.disciplina.nome,
-      disciplina_codigo: turma.disciplina.codigo,
-      professor_nome: turma.professor.nome,
-      professor_email: turma.professor.email,
-      ano: turma.ano,
-      semestre: turma.semestre,
-      sala: turma.sala,
-      vagas: turma.vagas,
-      matriculados: turma._count.matriculas,
-      horarios: turma.horarios,
-      criado_em: turma.criado_em,
-      atualizado_em: turma.atualizado_em,
-    };
+    return TurmaCompletaMapper.toEntity(turma);
   }
 
   @Put(':id')
