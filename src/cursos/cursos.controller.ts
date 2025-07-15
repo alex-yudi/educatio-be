@@ -22,6 +22,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateCursoDto } from '../users/dto/create-curso.dto';
@@ -44,6 +45,22 @@ export class CursosController {
     summary: 'Cadastrar novo curso',
     description:
       'Cria um novo curso no sistema e pode vincular disciplinas existentes. Apenas administradores podem realizar esta operação.',
+  })
+  @ApiBody({
+    type: CreateCursoDto,
+    description: 'Dados para criação do curso',
+    examples: {
+      exemplo1: {
+        summary: 'Curso de Engenharia de Software',
+        description: 'Exemplo de cadastro de curso com disciplinas',
+        value: {
+          nome: 'Engenharia de Software',
+          descricao: 'Curso focado no desenvolvimento de software',
+          carga_horaria: 3200,
+          disciplinas_ids: [1, 2, 3],
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: CursoCreatedEntity,

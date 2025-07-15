@@ -22,6 +22,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateProfessorDto } from '../users/dto/create-professor.dto';
@@ -47,6 +48,21 @@ export class ProfessoresController {
     summary: 'Cadastrar novo professor',
     description:
       'Cria um novo professor no sistema. Apenas administradores podem realizar esta operação.',
+  })
+  @ApiBody({
+    type: CreateProfessorDto,
+    description: 'Dados para criação do professor',
+    examples: {
+      exemplo1: {
+        summary: 'Professor de Programação',
+        description: 'Exemplo de cadastro de professor',
+        value: {
+          nome: 'Dr. Carlos Silva',
+          email: 'carlos.silva@uni.edu',
+          area_especializacao: 'Engenharia de Software'
+        }
+      }
+    }
   })
   @ApiCreatedResponse({
     type: ProfessorCreatedEntity,

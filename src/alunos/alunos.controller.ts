@@ -22,6 +22,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
@@ -46,6 +47,22 @@ export class AlunosController {
     summary: 'Cadastrar novo aluno',
     description:
       'Cria um novo aluno no sistema com senha temporária gerada automaticamente. Apenas administradores podem realizar esta operação.',
+  })
+  @ApiBody({
+    type: CreateAlunoDto,
+    description: 'Dados para criação do aluno',
+    examples: {
+      exemplo1: {
+        summary: 'Aluno de Engenharia de Software',
+        description: 'Exemplo de cadastro de aluno no curso de Engenharia de Software',
+        value: {
+          nome: 'João Silva Santos',
+          email: 'joao.silva@email.com',
+          matricula: '20240010',
+          curso_id: 1
+        }
+      }
+    }
   })
   @ApiCreatedResponse({
     type: AlunoCreatedEntity,

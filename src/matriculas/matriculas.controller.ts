@@ -16,6 +16,7 @@ import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiConflictResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateMatriculaDto } from '../users/dto/create-matricula.dto';
@@ -35,6 +36,20 @@ export class MatriculasController {
     summary: 'Realizar matrícula de aluno',
     description:
       'Matricula um aluno em uma turma específica. Verifica disponibilidade de vagas e se o aluno já não está matriculado. Apenas administradores podem realizar esta operação.',
+  })
+  @ApiBody({
+    type: CreateMatriculaDto,
+    description: 'Dados para realização da matrícula',
+    examples: {
+      exemplo1: {
+        summary: 'Matrícula em turma de Programação',
+        description: 'Exemplo de matrícula de aluno em turma',
+        value: {
+          aluno_id: 5,
+          turma_id: 1
+        }
+      }
+    }
   })
   @ApiCreatedResponse({
     type: MatriculaResponseEntity,

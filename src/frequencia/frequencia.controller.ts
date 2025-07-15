@@ -23,6 +23,7 @@ import {
   ApiConflictResponse,
   ApiNotFoundResponse,
   ApiQuery,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { LancarFrequenciaDto } from '../users/dto/lancar-frequencia.dto';
@@ -50,6 +51,21 @@ export class FrequenciaController {
     - Os alunos matriculados que não estiverem no array serão marcados como AUSENTES automaticamente
     - Use o ID do usuário (campo "id" da entidade Usuario), não matrícula nem ID de matrícula
     - Não é possível lançar frequência duas vezes para a mesma data`,
+  })
+  @ApiBody({
+    type: LancarFrequenciaDto,
+    description: 'Dados para lançamento da frequência',
+    examples: {
+      exemplo1: {
+        summary: 'Lançamento de frequência',
+        description: 'Exemplo de lançamento de frequência para uma aula',
+        value: {
+          turma_id: 1,
+          data_aula: '2024-07-15',
+          alunos_presentes: [52, 53, 54]
+        }
+      }
+    }
   })
   @ApiCreatedResponse({
     type: FrequenciaResponseEntity,

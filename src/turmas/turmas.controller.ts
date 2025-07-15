@@ -22,6 +22,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateTurmaDto } from '../users/dto/create-turma.dto';
@@ -43,6 +44,34 @@ export class TurmasController {
     summary: 'Cadastrar nova turma',
     description:
       'Cria uma nova turma no sistema. Apenas administradores podem realizar esta operação.',
+  })
+  @ApiBody({
+    type: CreateTurmaDto,
+    description: 'Dados para criação da turma',
+    examples: {
+      exemplo1: {
+        summary: 'Turma de Programação 2024',
+        description: 'Exemplo de cadastro de turma para disciplina',
+        value: {
+          codigo: 'PROG101-2024-1A',
+          disciplina_id: 1,
+          professor_id: 2,
+          periodo: '2024.1',
+          horarios: [
+            {
+              dia_semana: 'SEGUNDA',
+              hora_inicio: '08:00',
+              hora_fim: '10:00'
+            },
+            {
+              dia_semana: 'QUARTA',
+              hora_inicio: '08:00',
+              hora_fim: '10:00'
+            }
+          ]
+        }
+      }
+    }
   })
   @ApiCreatedResponse({
     type: TurmaCreatedEntity,

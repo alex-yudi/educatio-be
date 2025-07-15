@@ -22,6 +22,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateDisciplinaDto } from '../users/dto/create-disciplina.dto';
@@ -42,6 +43,22 @@ export class DisciplinasController {
     summary: 'Cadastrar nova disciplina',
     description:
       'Cria uma nova disciplina no sistema com código único. Apenas administradores podem realizar esta operação.',
+  })
+  @ApiBody({
+    type: CreateDisciplinaDto,
+    description: 'Dados para criação da disciplina',
+    examples: {
+      exemplo1: {
+        summary: 'Disciplina de Programação',
+        description: 'Exemplo de cadastro de disciplina básica',
+        value: {
+          codigo: 'PROG101',
+          nome: 'Introdução à Programação',
+          carga_horaria: 80,
+          descricao: 'Disciplina introdutória de programação'
+        }
+      }
+    }
   })
   @ApiCreatedResponse({
     type: DisciplinaEntity,
