@@ -33,12 +33,20 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
+  // Configure CORS for production and development
+  const corsOrigin = process.env.NODE_ENV === 'production'
+    ? true // Allow all origins in production (adjust as needed)
+    : 'http://localhost:3001';
+
   app.enableCors({
-    origin: 'http://localhost:3001',
+    origin: corsOrigin,
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`🚀 Application is running on: http://localhost:${port}`);
+  console.log(`📚 Swagger documentation: http://localhost:${port}/api`);
 }
 bootstrap();
