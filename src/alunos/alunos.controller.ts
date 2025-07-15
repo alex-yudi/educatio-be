@@ -41,7 +41,7 @@ import { AlunoComMatriculasMapper } from '../common/mappers/aluno-com-matriculas
 @ApiTags('Alunos')
 @ApiBearerAuth()
 export class AlunosController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AdminGuard)
@@ -52,29 +52,32 @@ export class AlunosController {
   })
   @ApiBody({
     type: CreateAlunoDto,
-    description: 'Dados para criação do aluno. Senha será gerada automaticamente.',
+    description:
+      'Dados para criação do aluno. Senha será gerada automaticamente.',
     examples: {
       exemplo1: {
         summary: 'Aluno de Engenharia de Software',
-        description: 'Exemplo de cadastro de aluno no curso de Engenharia de Software',
+        description:
+          'Exemplo de cadastro de aluno no curso de Engenharia de Software',
         value: {
           nome: 'João Silva Santos',
           email: 'joao.silva@uni.edu',
           matricula: '2025001',
-          curso_codigo: 'ESOFT'
-        }
+          curso_codigo: 'ESOFT',
+        },
       },
       exemplo2: {
         summary: 'Aluno de Ciência da Computação',
-        description: 'Exemplo de cadastro de aluno no curso de Ciência da Computação',
+        description:
+          'Exemplo de cadastro de aluno no curso de Ciência da Computação',
         value: {
           nome: 'Maria Oliveira',
           email: 'maria.oliveira@uni.edu',
           matricula: '2025002',
-          curso_codigo: 'CC'
-        }
-      }
-    }
+          curso_codigo: 'CC',
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: AlunoCreatedEntity,
@@ -98,10 +101,7 @@ export class AlunosController {
   @HandleErrors('Acesso restrito a administradores')
   async create(@Body() createAlunoDto: CreateAlunoDto, @Req() request: any) {
     const adminId = request.user.sub;
-    const result = await this.usersService.createAluno(
-      createAlunoDto,
-      adminId,
-    );
+    const result = await this.usersService.createAluno(createAlunoDto, adminId);
 
     return new AlunoCreatedEntity({
       usuario: UserEntityMapper.toEntity(result.usuario),
@@ -119,7 +119,8 @@ export class AlunosController {
   })
   @ApiOkResponse({
     type: [AlunoComMatriculasEntity],
-    description: 'Lista de alunos com informações detalhadas: dados pessoais, curso e turmas matriculadas',
+    description:
+      'Lista de alunos com informações detalhadas: dados pessoais, curso e turmas matriculadas',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -148,7 +149,8 @@ export class AlunosController {
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+    description:
+      'Acesso negado. Apenas administradores e professores podem acessar',
   })
   @ApiNotFoundResponse({
     description: 'Aluno não encontrado',
@@ -222,10 +224,7 @@ export class AlunosController {
     description: 'Aluno possui matrículas ativas e não pode ser excluído',
   })
   @HandleErrors('Acesso restrito a administradores')
-  async remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: any,
-  ) {
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() request: any) {
     const adminId = request.user.sub;
     return await this.usersService.deleteAluno(id, adminId);
   }

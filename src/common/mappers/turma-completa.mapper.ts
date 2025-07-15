@@ -27,23 +27,25 @@ export class TurmaCompletaMapper {
         nome: turma.professor.nome,
         email: turma.professor.email,
       },
-      matriculas: turma.matriculas?.map((matricula: any) => ({
-        id: matricula.id,
-        status: matricula.status,
-        criado_em: matricula.criado_em,
-        estudante: {
-          id: matricula.estudante.id,
-          nome: matricula.estudante.nome,
-          email: matricula.estudante.email,
-          matricula: matricula.estudante.matricula,
-        },
-      })) || [],
-      horarios: turma.horarios?.map((horario: any) => ({
-        id: horario.id,
-        dia_semana: horario.dia_semana,
-        hora_inicio: horario.hora_inicio,
-        hora_fim: horario.hora_fim,
-      })) || [],
+      matriculas:
+        turma.matriculas?.map((matricula: any) => ({
+          id: matricula.id,
+          status: matricula.status,
+          criado_em: matricula.criado_em,
+          estudante: {
+            id: matricula.estudante.id,
+            nome: matricula.estudante.nome,
+            email: matricula.estudante.email,
+            matricula: matricula.estudante.matricula,
+          },
+        })) || [],
+      horarios:
+        turma.horarios?.map((horario: any) => ({
+          id: horario.id,
+          dia_semana: horario.dia_semana,
+          hora_inicio: horario.hora_inicio,
+          hora_fim: horario.hora_fim,
+        })) || [],
     });
   }
 }

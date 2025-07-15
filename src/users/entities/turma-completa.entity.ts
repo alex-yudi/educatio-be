@@ -13,7 +13,11 @@ export class DisciplinaTurmaEntity {
   @ApiProperty({ example: 80, description: 'Carga horária da disciplina' })
   carga_horaria: number;
 
-  @ApiProperty({ example: 'Disciplina introdutória de programação', description: 'Descrição da disciplina', required: false })
+  @ApiProperty({
+    example: 'Disciplina introdutória de programação',
+    description: 'Descrição da disciplina',
+    required: false,
+  })
   descricao?: string;
 
   constructor(partial: Partial<DisciplinaTurmaEntity>) {
@@ -25,10 +29,16 @@ export class ProfessorTurmaEntity {
   @ApiProperty({ example: 1, description: 'ID do professor' })
   id: number;
 
-  @ApiProperty({ example: 'Dr. Carlos Silva', description: 'Nome do professor' })
+  @ApiProperty({
+    example: 'Dr. Carlos Silva',
+    description: 'Nome do professor',
+  })
   nome: string;
 
-  @ApiProperty({ example: 'carlos@uni.edu', description: 'E-mail do professor' })
+  @ApiProperty({
+    example: 'carlos@uni.edu',
+    description: 'E-mail do professor',
+  })
   email: string;
 
   constructor(partial: Partial<ProfessorTurmaEntity>) {
@@ -43,7 +53,10 @@ export class AlunoMatriculaEntity {
   @ApiProperty({ example: 'ATIVA', description: 'Status da matrícula' })
   status: string;
 
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z', description: 'Data da matrícula' })
+  @ApiProperty({
+    example: '2024-01-01T00:00:00.000Z',
+    description: 'Data da matrícula',
+  })
   criado_em: Date;
 
   @ApiProperty({
@@ -53,8 +66,8 @@ export class AlunoMatriculaEntity {
       id: 5,
       nome: 'João Silva',
       email: 'joao@email.com',
-      matricula: '20240001'
-    }
+      matricula: '20240001',
+    },
   })
   estudante: {
     id: number;
@@ -102,33 +115,49 @@ export class TurmaCompletaEntity {
   @ApiProperty({ example: 30, description: 'Número de vagas da turma' })
   vagas: number;
 
-  @ApiProperty({ example: 'Sala A101', description: 'Sala da turma', required: false })
+  @ApiProperty({
+    example: 'Sala A101',
+    description: 'Sala da turma',
+    required: false,
+  })
   sala?: string;
 
   @ApiProperty({ example: 15, description: 'Número de alunos matriculados' })
   total_matriculados: number;
 
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z', description: 'Data de criação' })
+  @ApiProperty({
+    example: '2024-01-01T00:00:00.000Z',
+    description: 'Data de criação',
+  })
   criado_em: Date;
 
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z', description: 'Data de atualização' })
+  @ApiProperty({
+    example: '2024-01-01T00:00:00.000Z',
+    description: 'Data de atualização',
+  })
   atualizado_em: Date;
 
-  @ApiProperty({ type: DisciplinaTurmaEntity, description: 'Dados da disciplina' })
+  @ApiProperty({
+    type: DisciplinaTurmaEntity,
+    description: 'Dados da disciplina',
+  })
   disciplina: DisciplinaTurmaEntity;
 
-  @ApiProperty({ type: ProfessorTurmaEntity, description: 'Dados do professor responsável' })
+  @ApiProperty({
+    type: ProfessorTurmaEntity,
+    description: 'Dados do professor responsável',
+  })
   professor: ProfessorTurmaEntity;
 
   @ApiProperty({
     type: [AlunoMatriculaEntity],
-    description: 'Lista de alunos matriculados na turma'
+    description: 'Lista de alunos matriculados na turma',
   })
   matriculas: AlunoMatriculaEntity[];
 
   @ApiProperty({
     type: [HorarioTurmaEntity],
-    description: 'Horários das aulas da turma'
+    description: 'Horários das aulas da turma',
   })
   horarios: HorarioTurmaEntity[];
 
@@ -141,10 +170,14 @@ export class TurmaCompletaEntity {
       this.professor = new ProfessorTurmaEntity(partial.professor);
     }
     if (partial.matriculas) {
-      this.matriculas = partial.matriculas.map(matricula => new AlunoMatriculaEntity(matricula));
+      this.matriculas = partial.matriculas.map(
+        (matricula) => new AlunoMatriculaEntity(matricula),
+      );
     }
     if (partial.horarios) {
-      this.horarios = partial.horarios.map(horario => new HorarioTurmaEntity(horario));
+      this.horarios = partial.horarios.map(
+        (horario) => new HorarioTurmaEntity(horario),
+      );
     }
   }
 }

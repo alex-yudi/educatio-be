@@ -42,7 +42,7 @@ import { ProfessorComTurmasMapper } from '../common/mappers/professor-com-turmas
 @ApiTags('Professores')
 @ApiBearerAuth()
 export class ProfessoresController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AdminGuard)
@@ -60,10 +60,10 @@ export class ProfessoresController {
         description: 'Exemplo de cadastro de professor',
         value: {
           nome: 'Dr. Carlos Silva',
-          email: 'carlos.silva@uni.edu'
-        }
-      }
-    }
+          email: 'carlos.silva@uni.edu',
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: ProfessorCreatedEntity,
@@ -108,7 +108,8 @@ export class ProfessoresController {
   })
   @ApiOkResponse({
     type: [ProfessorComTurmasEntity],
-    description: 'Lista de professores com dados pessoais e turmas que lecionam',
+    description:
+      'Lista de professores com dados pessoais e turmas que lecionam',
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -137,24 +138,33 @@ export class ProfessoresController {
         type: 'object',
         properties: {
           id: { type: 'number', example: 1, description: 'ID do professor' },
-          email: { type: 'string', example: 'carlos.silva@uni.edu', description: 'Email do professor' },
-          nome: { type: 'string', example: 'Dr. Carlos Silva', description: 'Nome do professor' }
-        }
-      }
-    }
+          email: {
+            type: 'string',
+            example: 'carlos.silva@uni.edu',
+            description: 'Email do professor',
+          },
+          nome: {
+            type: 'string',
+            example: 'Dr. Carlos Silva',
+            description: 'Nome do professor',
+          },
+        },
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+    description:
+      'Acesso negado. Apenas administradores e professores podem acessar',
   })
   async findDropdownOptions() {
     const professores = await this.usersService.findAllProfessores();
-    return professores.map(professor => ({
+    return professores.map((professor) => ({
       id: professor.id,
       email: professor.email,
-      nome: professor.nome
+      nome: professor.nome,
     }));
   }
 
@@ -173,7 +183,8 @@ export class ProfessoresController {
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+    description:
+      'Acesso negado. Apenas administradores e professores podem acessar',
   })
   @ApiNotFoundResponse({
     description: 'Professor não encontrado',
@@ -238,7 +249,8 @@ export class ProfessoresController {
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem excluir professores',
+    description:
+      'Acesso negado. Apenas administradores podem excluir professores',
   })
   @ApiNotFoundResponse({
     description: 'Professor não encontrado',
@@ -247,10 +259,7 @@ export class ProfessoresController {
     description: 'Professor possui turmas ativas e não pode ser excluído',
   })
   @HandleErrors('Acesso restrito a administradores')
-  async remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: any,
-  ) {
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() request: any) {
     const adminId = request.user.sub;
     return await this.usersService.deleteProfessor(id, adminId);
   }

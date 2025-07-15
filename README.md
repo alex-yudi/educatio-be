@@ -5,6 +5,7 @@
 O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento acadêmico, desenvolvida com tecnologias modernas e escaláveis. O sistema oferece uma API REST completa para administração de instituições de ensino.
 
 ### 🛠️ Tecnologias Utilizadas
+
 - **NestJS** - Framework Node.js para aplicações backend escaláveis
 - **Prisma ORM** - Ferramenta de mapeamento objeto-relacional moderna
 - **PostgreSQL** - Banco de dados relacional robusto
@@ -16,11 +17,13 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
 ## 🚀 Funcionalidades Principais
 
 ### Gestão de Usuários
+
 - **Autenticação JWT** com diferentes perfis (Admin, Professor, Aluno)
 - **Controle de acesso** baseado em roles
 - **Cadastro automatizado** de usuários com validações
 
 ### Gestão Acadêmica
+
 - **Cursos** - Criação e organização de cursos
 - **Disciplinas** - Gestão com carga horária, ementa e pré-requisitos
 - **Turmas** - Controle de vagas, horários e salas
@@ -29,6 +32,7 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
 - **Frequências** - Controle de presença dos alunos
 
 ### Recursos Técnicos
+
 - **Documentação Swagger** automática e interativa
 - **Validação de dados** robusta com class-validator
 - **Estrutura modular** bem organizada
@@ -38,6 +42,7 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
 ## ⚙️ Instalação e Configuração
 
 ### Pré-requisitos
+
 - Node.js (versão 18 ou superior)
 - npm (gerenciador de pacotes)
 - Docker e Docker Compose (recomendado)
@@ -45,22 +50,26 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
 ### Opção 1: Instalação com Docker (Recomendado)
 
 1. **Clone o repositório**
+
    ```bash
    git clone https://github.com/alex-yudi/educatio-be.git
    cd educatio-be
    ```
 
 2. **Instale as dependências**
+
    ```bash
    npm install
    ```
 
 3. **Configure as variáveis de ambiente**
+
    ```bash
    cp example.env .env
    ```
-   
+
    **Configuração do .env para Docker:**
+
    ```env
    # Configuração do Container PostgreSQL
    CONTAINER_NAME="educatio-db"
@@ -78,17 +87,20 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
    ```
 
 4. **Inicie o banco PostgreSQL**
+
    ```bash
    docker compose up -d
    ```
 
 5. **Execute as migrações do Prisma**
+
    ```bash
    npx prisma generate
    npx prisma migrate dev
    ```
 
 6. **Popule o banco com dados iniciais**
+
    ```bash
    npm run seed
    ```
@@ -103,6 +115,7 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
 1. **Instale PostgreSQL** em sua máquina local
 
 2. **Configure o banco de dados**
+
    ```sql
    CREATE DATABASE educatio;
    CREATE USER educatio_user WITH PASSWORD 'sua_senha';
@@ -110,6 +123,7 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
    ```
 
 3. **Configure as variáveis de ambiente**
+
    ```env
    # Configuração do PostgreSQL Local
    DATABASE_URL="postgresql://educatio_user:sua_senha@localhost:5432/educatio?schema=public"
@@ -120,6 +134,7 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
    ```
 
 4. **Execute as migrações e seed**
+
    ```bash
    npx prisma generate
    npx prisma migrate dev
@@ -134,6 +149,7 @@ O **Sistema Educatio** é uma aplicação backend robusta para gerenciamento aca
 ## 📋 Comandos Disponíveis
 
 ### Desenvolvimento
+
 ```bash
 npm run start:dev          # Servidor em modo desenvolvimento com hot-reload
 npm run start:debug        # Servidor em modo debug
@@ -141,6 +157,7 @@ npm run start:prod         # Servidor em modo produção
 ```
 
 ### Build e Deploy
+
 ```bash
 npm run build              # Compilar o projeto TypeScript
 npm run format             # Formatar código com Prettier
@@ -148,6 +165,7 @@ npm run lint               # Executar ESLint
 ```
 
 ### Banco de Dados
+
 ```bash
 npm run seed               # Popular banco com dados de teste
 npx prisma generate        # Gerar cliente Prisma
@@ -157,6 +175,7 @@ npx prisma db push         # Sincronizar schema sem migração
 ```
 
 ### Testes
+
 ```bash
 npm run test               # Testes unitários
 npm run test:watch         # Testes em modo watch
@@ -169,27 +188,30 @@ npm run test:e2e           # Testes end-to-end
 Após executar o comando `npm run seed`, os seguintes usuários estarão disponíveis:
 
 ### 🔑 Administradores
-| Nome | Email | Senha |
-|------|-------|-------|
-| Maria Fernandes Silva | `admin@uni.edu` | `Admin@123` |
+
+| Nome                    | Email                   | Senha       |
+| ----------------------- | ----------------------- | ----------- |
+| Maria Fernandes Silva   | `admin@uni.edu`         | `Admin@123` |
 | Roberto Santos Oliveira | `roberto.admin@uni.edu` | `Admin@456` |
 
 ### 👨‍🏫 Professores
-| Nome | Email | Senha |
-|------|-------|-------|
-| Carlos Andrade | `carlos.prof@uni.edu` | `Professor@123` |
-| Ana Paula Oliveira | `ana.prof@uni.edu` | `Professor@456` |
-| Pedro Henrique Costa | `pedro.prof@uni.edu` | `Professor@789` |
+
+| Nome                   | Email                  | Senha           |
+| ---------------------- | ---------------------- | --------------- |
+| Carlos Andrade         | `carlos.prof@uni.edu`  | `Professor@123` |
+| Ana Paula Oliveira     | `ana.prof@uni.edu`     | `Professor@456` |
+| Pedro Henrique Costa   | `pedro.prof@uni.edu`   | `Professor@789` |
 | Luciana Ferreira Silva | `luciana.prof@uni.edu` | `Professor@101` |
 
 ### 🎓 Alunos
-| Nome | Email | Senha | Matrícula |
-|------|-------|-------|-----------|
-| João da Silva | `joao.aluno@uni.edu` | `Aluno@123` | 20240001 |
-| Maria José Santos | `maria.aluna@uni.edu` | `Aluno@456` | 20240002 |
-| Lucas Ferreira | `lucas.aluno@uni.edu` | `Aluno@789` | 20240003 |
-| Julia Ribeiro | `julia.aluna@uni.edu` | `Aluno@101` | 20240004 |
-| Rafael Sousa | `rafael.aluno@uni.edu` | `Aluno@102` | 20240005 |
+
+| Nome              | Email                  | Senha       | Matrícula |
+| ----------------- | ---------------------- | ----------- | --------- |
+| João da Silva     | `joao.aluno@uni.edu`   | `Aluno@123` | 20240001  |
+| Maria José Santos | `maria.aluna@uni.edu`  | `Aluno@456` | 20240002  |
+| Lucas Ferreira    | `lucas.aluno@uni.edu`  | `Aluno@789` | 20240003  |
+| Julia Ribeiro     | `julia.aluna@uni.edu`  | `Aluno@101` | 20240004  |
+| Rafael Sousa      | `rafael.aluno@uni.edu` | `Aluno@102` | 20240005  |
 
 ## 📁 Estrutura do Projeto
 
@@ -230,10 +252,12 @@ A documentação completa e interativa da API está disponível através do **Sw
 ### Principais Endpoints
 
 #### Autenticação
+
 - `POST /auth/login` - Realizar login
 - `GET /auth/verificar` - Verificar token JWT
 
 #### Gestão de Usuários (Acesso Admin)
+
 - `POST /alunos` - Cadastrar novo aluno
 - `GET /alunos` - Listar todos os alunos
 - `GET /alunos/:id` - Buscar aluno por ID
@@ -247,6 +271,7 @@ A documentação completa e interativa da API está disponível através do **Sw
 - `DELETE /professores/:id` - Excluir professor (sem turmas ativas)
 
 #### Gestão Acadêmica (Acesso Admin)
+
 - `POST /disciplinas` - Cadastrar nova disciplina
 - `GET /disciplinas` - Listar todas as disciplinas
 - `PUT /disciplinas/:id` - Atualizar disciplina
@@ -265,6 +290,7 @@ A documentação completa e interativa da API está disponível através do **Sw
 - `POST /matriculas` - Realizar matrícula
 
 #### Sistema de Frequência (Acesso Professor)
+
 - `POST /frequencia` - Lançar frequência de uma aula
 - `GET /frequencia/turma/:id` - Consultar frequências de uma turma
 - `PUT /frequencia/alterar` - Alterar frequência já registrada

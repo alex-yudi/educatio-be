@@ -28,7 +28,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   /**
    * Valida se o usuário é um administrador
@@ -341,7 +341,9 @@ export class UsersService {
       );
     }
 
-    const idsAlunosDesejados = new Set(alunosDesejados.map((aluno) => aluno.id));
+    const idsAlunosDesejados = new Set(
+      alunosDesejados.map((aluno) => aluno.id),
+    );
     const idsAlunosAtuais = new Set(
       turma.matriculas.map((m) => m.estudante_id),
     );
@@ -488,7 +490,7 @@ export class UsersService {
     const professor = await this.prisma.usuario.findUnique({
       where: {
         id,
-        role: EnumPerfil.professor
+        role: EnumPerfil.professor,
       },
       select: {
         id: true,
@@ -646,7 +648,7 @@ export class UsersService {
     const aluno = await this.prisma.usuario.findUnique({
       where: {
         id,
-        role: EnumPerfil.aluno
+        role: EnumPerfil.aluno,
       },
       select: {
         id: true,

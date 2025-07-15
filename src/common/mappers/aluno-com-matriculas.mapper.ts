@@ -5,29 +5,30 @@ import { AlunoComMatriculasEntity } from '../../users/entities/aluno-com-matricu
  */
 export class AlunoComMatriculasMapper {
   static toEntity(aluno: any): AlunoComMatriculasEntity {
-    const matriculasFormatadas = aluno.matriculas?.map((matricula: any) => ({
-      id: matricula.id,
-      status: matricula.status,
-      criado_em: matricula.criado_em,
-      turma: {
-        id: matricula.turma.id,
-        codigo: matricula.turma.codigo,
-        ano: matricula.turma.ano,
-        semestre: matricula.turma.semestre,
-        sala: matricula.turma.sala,
-        disciplina: {
-          id: matricula.turma.disciplina.id,
-          nome: matricula.turma.disciplina.nome,
-          codigo: matricula.turma.disciplina.codigo,
-          carga_horaria: matricula.turma.disciplina.carga_horaria,
+    const matriculasFormatadas =
+      aluno.matriculas?.map((matricula: any) => ({
+        id: matricula.id,
+        status: matricula.status,
+        criado_em: matricula.criado_em,
+        turma: {
+          id: matricula.turma.id,
+          codigo: matricula.turma.codigo,
+          ano: matricula.turma.ano,
+          semestre: matricula.turma.semestre,
+          sala: matricula.turma.sala,
+          disciplina: {
+            id: matricula.turma.disciplina.id,
+            nome: matricula.turma.disciplina.nome,
+            codigo: matricula.turma.disciplina.codigo,
+            carga_horaria: matricula.turma.disciplina.carga_horaria,
+          },
+          professor: {
+            id: matricula.turma.professor.id,
+            nome: matricula.turma.professor.nome,
+            email: matricula.turma.professor.email,
+          },
         },
-        professor: {
-          id: matricula.turma.professor.id,
-          nome: matricula.turma.professor.nome,
-          email: matricula.turma.professor.email,
-        },
-      },
-    })) || [];
+      })) || [];
 
     return new AlunoComMatriculasEntity({
       id: aluno.id,
@@ -42,6 +43,6 @@ export class AlunoComMatriculasMapper {
   }
 
   static toEntities(alunos: any[]): AlunoComMatriculasEntity[] {
-    return alunos.map(aluno => this.toEntity(aluno));
+    return alunos.map((aluno) => this.toEntity(aluno));
   }
 }

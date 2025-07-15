@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  Matches,
-  IsArray,
-} from 'class-validator';
+import { IsNotEmpty, IsString, Matches, IsArray } from 'class-validator';
 
 export class CreateMatriculaDto {
   @ApiProperty({

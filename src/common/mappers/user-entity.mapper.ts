@@ -19,6 +19,6 @@ export class UserEntityMapper {
   }
 
   static toEntities(users: any[]): UserEntity[] {
-    return users.map(user => this.toEntity(user));
+    return users.map((user) => this.toEntity(user));
   }
 }

@@ -37,7 +37,7 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 @ApiTags('Cursos')
 @ApiBearerAuth()
 export class CursosController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AdminGuard)
@@ -48,7 +48,8 @@ export class CursosController {
   })
   @ApiBody({
     type: CreateCursoDto,
-    description: 'Dados para criação do curso. Disciplinas podem ser vinculadas opcionalmente.',
+    description:
+      'Dados para criação do curso. Disciplinas podem ser vinculadas opcionalmente.',
     examples: {
       exemplo1: {
         summary: 'Curso de Engenharia de Software',
@@ -56,20 +57,22 @@ export class CursosController {
         value: {
           nome: 'Engenharia de Software',
           codigo: 'ESOFT',
-          descricao: 'Curso focado no desenvolvimento de software e metodologias ágeis',
-          disciplinas_codigos: ['PROG1', 'PROG2', 'BD', 'ENGSW']
-        }
+          descricao:
+            'Curso focado no desenvolvimento de software e metodologias ágeis',
+          disciplinas_codigos: ['PROG1', 'PROG2', 'BD', 'ENGSW'],
+        },
       },
       exemplo2: {
         summary: 'Curso básico sem disciplinas',
-        description: 'Exemplo de cadastro de curso sem vincular disciplinas inicialmente',
+        description:
+          'Exemplo de cadastro de curso sem vincular disciplinas inicialmente',
         value: {
           nome: 'Ciência da Computação',
           codigo: 'CC',
-          descricao: 'Curso de graduação em Ciência da Computação'
-        }
-      }
-    }
+          descricao: 'Curso de graduação em Ciência da Computação',
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: CursoCreatedEntity,
@@ -93,10 +96,7 @@ export class CursosController {
   @HandleErrors('Acesso restrito a administradores')
   async create(@Body() createCursoDto: CreateCursoDto, @Req() request: any) {
     const adminId = request.user.sub;
-    const result = await this.usersService.createCurso(
-      createCursoDto,
-      adminId,
-    );
+    const result = await this.usersService.createCurso(createCursoDto, adminId);
 
     return new CursoCreatedEntity({
       curso: new CursoEntity({
@@ -157,24 +157,33 @@ export class CursosController {
         type: 'object',
         properties: {
           id: { type: 'number', example: 1, description: 'ID do curso' },
-          codigo: { type: 'string', example: 'ESOFT', description: 'Código do curso' },
-          nome: { type: 'string', example: 'Engenharia de Software', description: 'Nome do curso' }
-        }
-      }
-    }
+          codigo: {
+            type: 'string',
+            example: 'ESOFT',
+            description: 'Código do curso',
+          },
+          nome: {
+            type: 'string',
+            example: 'Engenharia de Software',
+            description: 'Nome do curso',
+          },
+        },
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+    description:
+      'Acesso negado. Apenas administradores e professores podem acessar',
   })
   async findDropdownOptions() {
     const cursos = await this.usersService.findAllCursos();
-    return cursos.map(curso => ({
+    return cursos.map((curso) => ({
       id: curso.id,
       codigo: curso.codigo,
-      nome: curso.nome
+      nome: curso.nome,
     }));
   }
 
@@ -277,13 +286,11 @@ export class CursosController {
     description: 'Curso não encontrado',
   })
   @ApiBadRequestResponse({
-    description: 'Curso possui disciplinas com turmas ativas e não pode ser excluído',
+    description:
+      'Curso possui disciplinas com turmas ativas e não pode ser excluído',
   })
   @HandleErrors('Acesso restrito a administradores')
-  async remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: any,
-  ) {
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() request: any) {
     const adminId = request.user.sub;
     return await this.usersService.deleteCurso(id, adminId);
   }

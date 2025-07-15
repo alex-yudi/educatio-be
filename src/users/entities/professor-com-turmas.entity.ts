@@ -6,10 +6,16 @@ export class ProfessorComTurmasEntity {
   @ApiProperty({ example: 1, description: 'ID do professor' })
   id: number;
 
-  @ApiProperty({ example: 'Dr. Carlos Silva', description: 'Nome do professor' })
+  @ApiProperty({
+    example: 'Dr. Carlos Silva',
+    description: 'Nome do professor',
+  })
   nome: string;
 
-  @ApiProperty({ example: 'carlos.silva@uni.edu', description: 'E-mail do professor' })
+  @ApiProperty({
+    example: 'carlos.silva@uni.edu',
+    description: 'E-mail do professor',
+  })
   email: string;
 
   @ApiProperty({
@@ -21,20 +27,20 @@ export class ProfessorComTurmasEntity {
 
   @ApiProperty({
     example: '2024-01-01T00:00:00.000Z',
-    description: 'Data de criação do professor'
+    description: 'Data de criação do professor',
   })
   criado_em: Date;
 
   @ApiProperty({
     example: '2024-01-01T00:00:00.000Z',
-    description: 'Data da última atualização'
+    description: 'Data da última atualização',
   })
   atualizado_em: Date;
 
   @ApiProperty({
     type: [TurmaResumidaEntity],
     description: 'Lista de turmas que o professor ministra',
-    example: []
+    example: [],
   })
   turmasMinistradas: TurmaResumidaEntity[];
 
@@ -42,7 +48,7 @@ export class ProfessorComTurmasEntity {
     Object.assign(this, partial);
     if (partial.turmasMinistradas) {
       this.turmasMinistradas = partial.turmasMinistradas.map(
-        turma => new TurmaResumidaEntity(turma)
+        (turma) => new TurmaResumidaEntity(turma),
       );
     }
   }

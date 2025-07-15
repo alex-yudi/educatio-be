@@ -11,12 +11,15 @@ Todos os endpoints protegidos exigem autenticação via **Bearer Token (JWT)**.
 ### Endpoints de Autenticação
 
 #### Login
+
 ```
 POST /auth/login
 ```
+
 **Descrição:** Autentica usuário e retorna JWT token
 
 **Body:**
+
 ```json
 {
   "email": "admin@educatio.com",
@@ -25,6 +28,7 @@ POST /auth/login
 ```
 
 **Resposta:**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -38,9 +42,11 @@ POST /auth/login
 ```
 
 #### Verificar Token
+
 ```
 GET /auth/verificar
 ```
+
 **Descrição:** Valida token JWT e retorna dados do usuário
 
 ## 👥 Gestão de Usuários
@@ -48,24 +54,31 @@ GET /auth/verificar
 ### 🎓 Alunos
 
 #### Listar Alunos
+
 ```
 GET /alunos
 ```
+
 **Acesso:** Admin, Professor
 **Retorna:** Lista de todos os alunos
 
 #### Buscar Aluno por ID
+
 ```
 GET /alunos/:id
 ```
+
 **Acesso:** Admin, Professor
 
 #### Cadastrar Aluno
+
 ```
 POST /alunos
 ```
+
 **Acesso:** Admin
 **Body:**
+
 ```json
 {
   "nome": "João Silva",
@@ -75,56 +88,72 @@ POST /alunos
 ```
 
 #### Atualizar Aluno
+
 ```
 PUT /alunos/:id
 ```
+
 **Acesso:** Admin
 
 #### Excluir Aluno
+
 ```
 DELETE /alunos/:id
 ```
+
 **Acesso:** Admin
 **Restrição:** Não pode ter matrículas ativas
 
 ### 👨‍🏫 Professores
 
 #### Listar Professores
+
 ```
 GET /professores
 ```
+
 **Acesso:** Admin, Professor
 
 #### Buscar Professor por ID
+
 ```
 GET /professores/:id
 ```
+
 **Acesso:** Admin, Professor
 
 #### Cadastrar Professor
+
 ```
 POST /professores
 ```
+
 **Acesso:** Admin
 **Body:**
+
 ```json
 {
   "nome": "Maria Santos",
   "email": "maria.santos@instituicao.edu.br"
 }
 ```
+
 **Resposta:** Inclui senha temporária gerada automaticamente
 
 #### Atualizar Professor
+
 ```
 PUT /professores/:id
 ```
+
 **Acesso:** Admin
 
 #### Excluir Professor
+
 ```
 DELETE /professores/:id
 ```
+
 **Acesso:** Admin
 **Restrição:** Não pode ter turmas ativas
 
@@ -133,23 +162,30 @@ DELETE /professores/:id
 ### 🎯 Cursos
 
 #### Listar Cursos
+
 ```
 GET /cursos
 ```
+
 **Acesso:** Admin
 
 #### Buscar Curso por ID
+
 ```
 GET /cursos/:id
 ```
+
 **Acesso:** Admin
 
 #### Cadastrar Curso
+
 ```
 POST /cursos
 ```
+
 **Acesso:** Admin
 **Body:**
+
 ```json
 {
   "nome": "Engenharia de Software",
@@ -160,38 +196,49 @@ POST /cursos
 ```
 
 #### Atualizar Curso
+
 ```
 PUT /cursos/:id
 ```
+
 **Acesso:** Admin
 
 #### Excluir Curso
+
 ```
 DELETE /cursos/:id
 ```
+
 **Acesso:** Admin
 **Restrição:** Disciplinas não podem ter turmas ativas
 
 ### 📖 Disciplinas
 
 #### Listar Disciplinas
+
 ```
 GET /disciplinas
 ```
+
 **Acesso:** Admin
 
 #### Buscar Disciplina por ID
+
 ```
 GET /disciplinas/:id
 ```
+
 **Acesso:** Admin
 
 #### Cadastrar Disciplina
+
 ```
 POST /disciplinas
 ```
+
 **Acesso:** Admin
 **Body:**
+
 ```json
 {
   "nome": "Programação Orientada a Objetos",
@@ -203,40 +250,52 @@ POST /disciplinas
 ```
 
 #### Atualizar Disciplina
+
 ```
 PUT /disciplinas/:id
 ```
+
 **Acesso:** Admin
 
 #### Excluir Disciplina
+
 ```
 DELETE /disciplinas/:id
 ```
+
 **Acesso:** Admin
-**Restrições:** 
+**Restrições:**
+
 - Não pode ter turmas ativas
 - Não pode estar associada a cursos
 
 ### 🏫 Turmas
 
 #### Listar Turmas
+
 ```
 GET /turmas
 ```
+
 **Acesso:** Admin, Professor
 
 #### Buscar Turma por ID
+
 ```
 GET /turmas/:id
 ```
+
 **Acesso:** Admin, Professor
 
 #### Cadastrar Turma
+
 ```
 POST /turmas
 ```
+
 **Acesso:** Admin
 **Body:**
+
 ```json
 {
   "codigo": "POO001-2025-1",
@@ -257,26 +316,33 @@ POST /turmas
 ```
 
 #### Atualizar Turma
+
 ```
 PUT /turmas/:id
 ```
+
 **Acesso:** Admin
 
 #### Excluir Turma
+
 ```
 DELETE /turmas/:id
 ```
+
 **Acesso:** Admin
 **Restrição:** Não pode ter matrículas ativas
 
 ### 📝 Matrículas
 
 #### Cadastrar Matrícula
+
 ```
 POST /matriculas
 ```
+
 **Acesso:** Admin
 **Body:**
+
 ```json
 {
   "estudante_id": 3,
@@ -287,11 +353,14 @@ POST /matriculas
 ## 📊 Sistema de Frequência
 
 ### Lançar Frequência
+
 ```
 POST /frequencia
 ```
+
 **Acesso:** Professor (apenas da turma)
 **Body:**
+
 ```json
 {
   "turma_id": 1,
@@ -301,20 +370,26 @@ POST /frequencia
 ```
 
 ### Consultar Frequência
+
 ```
 GET /frequencia/turma/:id
 ```
+
 **Acesso:** Professor (apenas da turma)
 **Query params opcionais:**
+
 - `data_inicio`: Filtro por data inicial
 - `data_fim`: Filtro por data final
 
 ### Alterar Frequência
+
 ```
 PUT /frequencia/alterar
 ```
+
 **Acesso:** Professor (apenas da turma)
 **Body:**
+
 ```json
 {
   "turma_id": 1,
@@ -333,11 +408,13 @@ PUT /frequencia/alterar
 ### Níveis de Acesso
 
 1. **Admin (Administrador)**
+
    - Acesso total ao sistema
    - CRUD completo para todos os recursos
    - Único que pode cadastrar professores e alunos
 
 2. **Professor**
+
    - Visualizar alunos e professores
    - Gerenciar frequência apenas das suas turmas
    - Consultar dados das suas turmas

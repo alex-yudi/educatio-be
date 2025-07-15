@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min, Max, IsEmail } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  Max,
+  IsEmail,
+} from 'class-validator';
 
 export class CreateTurmaDto {
   @ApiProperty({

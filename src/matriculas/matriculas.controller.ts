@@ -4,7 +4,6 @@ import {
   Body,
   UseGuards,
   Req,
-  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -29,7 +28,7 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class MatriculasController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({
@@ -39,25 +38,26 @@ export class MatriculasController {
   })
   @ApiBody({
     type: CreateMatriculaDto,
-    description: 'Dados para realização da matrícula. Use matrícula do aluno e código da turma.',
+    description:
+      'Dados para realização da matrícula. Use matrícula do aluno e código da turma.',
     examples: {
       exemplo1: {
         summary: 'Matrícula em turma de Programação',
         description: 'Exemplo de matrícula de aluno em turma',
         value: {
           matricula_aluno: '2025001',
-          codigo_turma: 'PROG1-2025-1A'
-        }
+          codigo_turma: 'PROG1-2025-1A',
+        },
       },
       exemplo2: {
         summary: 'Matrícula em turma de Banco de Dados',
         description: 'Outro exemplo de matrícula',
         value: {
           matricula_aluno: '2025002',
-          codigo_turma: 'BD-2025-1A'
-        }
-      }
-    }
+          codigo_turma: 'BD-2025-1A',
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: MatriculaResponseEntity,

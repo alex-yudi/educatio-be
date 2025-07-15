@@ -23,10 +23,16 @@ export class ProfessorMatriculaEntity {
   @ApiProperty({ example: 1, description: 'ID do professor' })
   id: number;
 
-  @ApiProperty({ example: 'Dr. Carlos Silva', description: 'Nome do professor' })
+  @ApiProperty({
+    example: 'Dr. Carlos Silva',
+    description: 'Nome do professor',
+  })
   nome: string;
 
-  @ApiProperty({ example: 'carlos@uni.edu', description: 'E-mail do professor' })
+  @ApiProperty({
+    example: 'carlos@uni.edu',
+    description: 'E-mail do professor',
+  })
   email: string;
 
   constructor(partial: Partial<ProfessorMatriculaEntity>) {
@@ -47,13 +53,23 @@ export class TurmaMatriculaEntity {
   @ApiProperty({ example: 1, description: 'Semestre da turma' })
   semestre: number;
 
-  @ApiProperty({ example: 'Lab A-101', description: 'Sala da turma', required: false })
+  @ApiProperty({
+    example: 'Lab A-101',
+    description: 'Sala da turma',
+    required: false,
+  })
   sala?: string;
 
-  @ApiProperty({ type: DisciplinaMatriculaEntity, description: 'Dados da disciplina' })
+  @ApiProperty({
+    type: DisciplinaMatriculaEntity,
+    description: 'Dados da disciplina',
+  })
   disciplina: DisciplinaMatriculaEntity;
 
-  @ApiProperty({ type: ProfessorMatriculaEntity, description: 'Dados do professor' })
+  @ApiProperty({
+    type: ProfessorMatriculaEntity,
+    description: 'Dados do professor',
+  })
   professor: ProfessorMatriculaEntity;
 
   constructor(partial: Partial<TurmaMatriculaEntity>) {
@@ -74,7 +90,10 @@ export class MatriculaAlunoEntity {
   @ApiProperty({ example: 'ATIVA', description: 'Status da matrícula' })
   status: string;
 
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z', description: 'Data da matrícula' })
+  @ApiProperty({
+    example: '2024-01-01T00:00:00.000Z',
+    description: 'Data da matrícula',
+  })
   criado_em: Date;
 
   @ApiProperty({ type: TurmaMatriculaEntity, description: 'Dados da turma' })
@@ -98,7 +117,10 @@ export class AlunoComMatriculasEntity {
   @ApiProperty({ example: 'joao@email.com', description: 'E-mail do aluno' })
   email: string;
 
-  @ApiProperty({ example: '20240001', description: 'Número de matrícula do aluno' })
+  @ApiProperty({
+    example: '20240001',
+    description: 'Número de matrícula do aluno',
+  })
   matricula: string;
 
   @ApiProperty({
@@ -110,20 +132,20 @@ export class AlunoComMatriculasEntity {
 
   @ApiProperty({
     example: '2024-01-01T00:00:00.000Z',
-    description: 'Data de criação do aluno'
+    description: 'Data de criação do aluno',
   })
   criado_em: Date;
 
   @ApiProperty({
     example: '2024-01-01T00:00:00.000Z',
-    description: 'Data da última atualização'
+    description: 'Data da última atualização',
   })
   atualizado_em: Date;
 
   @ApiProperty({
     type: [MatriculaAlunoEntity],
     description: 'Lista de matrículas do aluno',
-    example: []
+    example: [],
   })
   matriculas: MatriculaAlunoEntity[];
 
@@ -131,7 +153,7 @@ export class AlunoComMatriculasEntity {
     Object.assign(this, partial);
     if (partial.matriculas) {
       this.matriculas = partial.matriculas.map(
-        matricula => new MatriculaAlunoEntity(matricula)
+        (matricula) => new MatriculaAlunoEntity(matricula),
       );
     }
   }

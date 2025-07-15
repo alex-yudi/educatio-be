@@ -7,7 +7,7 @@ services:
     databaseName: educatio
     user: educatio_user
 
-  # API Web Service  
+  # API Web Service
   - type: web
     name: educatio-api
     env: node

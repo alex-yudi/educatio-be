@@ -15,9 +15,11 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 ## 📊 Entidades Principais
 
 ### 👤 Usuario
+
 **Descrição:** Entidade central que representa todos os tipos de usuários do sistema
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `nome` (String): Nome completo do usuário
 - `email` (String): Email único para login
@@ -28,6 +30,7 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `atualizado_em` (DateTime): Data da última atualização
 
 **Relacionamentos:**
+
 - `turmasMinistradas`: Turmas que o usuário ministra (se professor)
 - `matriculas`: Matrículas do usuário (se aluno)
 - `cursosCriados`: Cursos criados pelo usuário (se admin)
@@ -35,9 +38,11 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `Frequencia`: Frequências registradas pelo usuário
 
 ### 🎓 Curso
+
 **Descrição:** Representa um curso oferecido pela instituição
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `nome` (String): Nome do curso
 - `codigo` (String): Código único do curso
@@ -47,13 +52,16 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `atualizado_em` (DateTime): Data da última atualização
 
 **Relacionamentos:**
+
 - `disciplinas`: Disciplinas associadas ao curso (via CursoDisciplina)
 - `criado_por`: Usuário que criou o curso
 
 ### 📚 Disciplina
+
 **Descrição:** Representa uma disciplina que pode fazer parte de vários cursos
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `nome` (String): Nome da disciplina
 - `codigo` (String): Código único da disciplina
@@ -65,15 +73,18 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `atualizado_em` (DateTime): Data da última atualização
 
 **Relacionamentos:**
+
 - `turmas`: Turmas da disciplina
 - `cursos`: Cursos que incluem a disciplina (via CursoDisciplina)
 - `pre_requisitos`: Pré-requisitos da disciplina
 - `criado_por`: Usuário que criou a disciplina
 
 ### 🏫 Turma
+
 **Descrição:** Representa uma oferta específica de uma disciplina em um período
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `codigo` (String): Código único da turma
 - `disciplina_id` (Int): ID da disciplina
@@ -86,15 +97,18 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `atualizado_em` (DateTime): Data da última atualização
 
 **Relacionamentos:**
+
 - `disciplina`: Disciplina da turma
 - `professor`: Professor responsável
 - `horarios`: Horários de aula
 - `matriculas`: Matrículas na turma
 
 ### 📝 Matricula
+
 **Descrição:** Relaciona um aluno a uma turma específica
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `estudante_id` (Int): ID do aluno
 - `turma_id` (Int): ID da turma
@@ -103,18 +117,22 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `atualizado_em` (DateTime): Data da última atualização
 
 **Relacionamentos:**
+
 - `estudante`: Aluno matriculado
 - `turma`: Turma da matrícula
 - `notas`: Notas da matrícula
 - `frequencias`: Frequências da matrícula
 
 **Restrições:**
+
 - Chave única: `(estudante_id, turma_id)` - um aluno não pode se matricular duas vezes na mesma turma
 
 ### 📊 Frequencia
+
 **Descrição:** Registra a presença/ausência de um aluno em uma aula
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `matricula_id` (Int): ID da matrícula
 - `data_aula` (DateTime): Data e hora da aula
@@ -124,13 +142,16 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `atualizado_em` (DateTime): Data da última atualização
 
 **Relacionamentos:**
+
 - `matricula`: Matrícula do aluno
 - `registrado_por`: Professor que registrou a frequência
 
 ### 📋 Nota
+
 **Descrição:** Armazena as notas dos alunos
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `matricula_id` (Int): ID da matrícula
 - `tipo` (String): Tipo de avaliação (P1, P2, Projeto, etc.)
@@ -140,15 +161,18 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 - `atualizado_em` (DateTime): Data da última atualização
 
 **Relacionamentos:**
+
 - `matricula`: Matrícula do aluno
 - `criado_por`: Professor que lançou a nota
 
 ## 🔗 Entidades de Relacionamento
 
 ### CursoDisciplina
+
 **Descrição:** Relaciona cursos com suas disciplinas (Many-to-Many)
 
 **Campos:**
+
 - `curso_id` (Int): ID do curso
 - `disciplina_id` (Int): ID da disciplina
 - `criado_em` (DateTime): Data de criação
@@ -156,9 +180,11 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 **Chave Primária:** Composta por `(curso_id, disciplina_id)`
 
 ### PreRequisito
+
 **Descrição:** Define pré-requisitos entre disciplinas
 
 **Campos:**
+
 - `disciplina_id` (Int): ID da disciplina
 - `disciplina_pre_requisito_id` (Int): ID da disciplina pré-requisito
 - `criado_em` (DateTime): Data de criação
@@ -166,9 +192,11 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 **Chave Primária:** Composta por `(disciplina_id, disciplina_pre_requisito_id)`
 
 ### HorarioAula
+
 **Descrição:** Define os horários de uma turma
 
 **Campos:**
+
 - `id` (Int): Identificador único
 - `turma_id` (Int): ID da turma
 - `dia_semana` (DiaSemana): Dia da semana (SEGUNDA, TERCA, etc.)
@@ -180,16 +208,19 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 ## 📋 Enums
 
 ### EnumPerfil
+
 - `admin`: Administrador do sistema
 - `professor`: Professor da instituição
 - `aluno`: Aluno matriculado
 
 ### DiaSemana
+
 - `SEGUNDA`, `TERCA`, `QUARTA`, `QUINTA`, `SEXTA`, `SABADO`
 
 ## 🔒 Regras de Integridade
 
 ### Exclusões com Restrições:
+
 1. **Aluno**: Não pode ser excluído se tiver matrículas ativas
 2. **Professor**: Não pode ser excluído se tiver turmas ativas
 3. **Disciplina**: Não pode ser excluída se tiver turmas ativas ou estar associada a cursos
@@ -197,6 +228,7 @@ O diagrama UML completo está disponível no arquivo `diagrama-uml.puml`. Para v
 5. **Curso**: Não pode ser excluído se suas disciplinas tiverem turmas ativas
 
 ### Unicidade:
+
 - Email de usuário deve ser único
 - Matrícula de aluno deve ser única
 - Código de curso deve ser único

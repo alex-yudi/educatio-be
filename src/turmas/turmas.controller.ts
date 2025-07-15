@@ -38,7 +38,7 @@ import { TurmaCompletaMapper } from '../common/mappers/turma-completa.mapper';
 @ApiTags('Turmas')
 @ApiBearerAuth()
 export class TurmasController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AdminGuard)
@@ -61,10 +61,10 @@ export class TurmasController {
           ano: 2025,
           semestre: 1,
           sala: 'Lab A-101',
-          vagas: 35
-        }
-      }
-    }
+          vagas: 35,
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: TurmaCreatedEntity,
@@ -88,10 +88,7 @@ export class TurmasController {
   @HandleErrors('Acesso restrito a administradores')
   async create(@Body() createTurmaDto: CreateTurmaDto, @Req() request: any) {
     const adminId = request.user.sub;
-    const result = await this.usersService.createTurma(
-      createTurmaDto,
-      adminId,
-    );
+    const result = await this.usersService.createTurma(createTurmaDto, adminId);
 
     return new TurmaCreatedEntity({
       turma: {
@@ -163,28 +160,45 @@ export class TurmasController {
         type: 'object',
         properties: {
           id: { type: 'number', example: 1, description: 'ID da turma' },
-          codigo: { type: 'string', example: 'PROG1-2025-1A', description: 'Código da turma' },
-          disciplina_nome: { type: 'string', example: 'Programação I', description: 'Nome da disciplina' },
-          professor_nome: { type: 'string', example: 'Dr. Carlos Silva', description: 'Nome do professor' },
-          vagas_disponiveis: { type: 'number', example: 15, description: 'Vagas disponíveis' }
-        }
-      }
-    }
+          codigo: {
+            type: 'string',
+            example: 'PROG1-2025-1A',
+            description: 'Código da turma',
+          },
+          disciplina_nome: {
+            type: 'string',
+            example: 'Programação I',
+            description: 'Nome da disciplina',
+          },
+          professor_nome: {
+            type: 'string',
+            example: 'Dr. Carlos Silva',
+            description: 'Nome do professor',
+          },
+          vagas_disponiveis: {
+            type: 'number',
+            example: 15,
+            description: 'Vagas disponíveis',
+          },
+        },
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+    description:
+      'Acesso negado. Apenas administradores e professores podem acessar',
   })
   async findDropdownOptions() {
     const turmas = await this.usersService.findAllTurmas();
-    return turmas.map(turma => ({
+    return turmas.map((turma) => ({
       id: turma.id,
       codigo: turma.codigo,
       disciplina_nome: turma.disciplina.nome,
       professor_nome: turma.professor.nome,
-      vagas_disponiveis: turma.vagas - turma._count.matriculas
+      vagas_disponiveis: turma.vagas - turma._count.matriculas,
     }));
   }
 
@@ -203,7 +217,8 @@ export class TurmasController {
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores e professores podem acessar',
+    description:
+      'Acesso negado. Apenas administradores e professores podem acessar',
   })
   @ApiNotFoundResponse({
     description: 'Turma não encontrada',
@@ -296,10 +311,7 @@ export class TurmasController {
     description: 'Turma possui matrículas ativas e não pode ser excluída',
   })
   @HandleErrors('Acesso restrito a administradores')
-  async remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: any,
-  ) {
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() request: any) {
     const adminId = request.user.sub;
     return await this.usersService.deleteTurma(id, adminId);
   }

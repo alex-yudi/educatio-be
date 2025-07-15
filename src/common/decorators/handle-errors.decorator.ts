@@ -5,7 +5,11 @@ import { ForbiddenException } from '@nestjs/common';
  * Converte erros 401 em ForbiddenException com mensagem apropriada
  */
 export function HandleErrors(message = 'Acesso restrito') {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyName: string,
+    descriptor: PropertyDescriptor,
+  ) {
     const method = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {

@@ -25,7 +25,7 @@ import { Headers } from '@nestjs/common';
 @Controller('auth')
 @ApiTags('Autenticação')
 export class AuthController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -43,36 +43,38 @@ export class AuthController {
         description: 'Exemplo de login para usuário administrador',
         value: {
           email: 'admin@uni.edu',
-          senha: 'admin123'
-        }
+          senha: 'admin123',
+        },
       },
       professor: {
         summary: 'Login de Professor',
         description: 'Exemplo de login para professor',
         value: {
           email: 'maria.silva@uni.edu',
-          senha: 'prof123'
-        }
+          senha: 'prof123',
+        },
       },
       aluno: {
         summary: 'Login de Aluno',
         description: 'Exemplo de login para aluno',
         value: {
           email: 'joao.silva@uni.edu',
-          senha: 'aluno123'
-        }
-      }
-    }
+          senha: 'aluno123',
+        },
+      },
+    },
   })
   @ApiOkResponse({
     type: LoginResponseEntity,
-    description: 'Login realizado com sucesso. Token JWT gerado para autenticação.',
+    description:
+      'Login realizado com sucesso. Token JWT gerado para autenticação.',
   })
   @ApiUnauthorizedResponse({
     description: 'Credenciais inválidas - e-mail ou senha incorretos',
   })
   @ApiBadRequestResponse({
-    description: 'Dados de entrada inválidos - formato de e-mail incorreto ou senha muito curta',
+    description:
+      'Dados de entrada inválidos - formato de e-mail incorreto ou senha muito curta',
   })
   async login(@Body() loginDto: LoginDto) {
     const { accessToken, user } = await this.usersService.login(loginDto);
@@ -91,10 +93,12 @@ export class AuthController {
   })
   @ApiOkResponse({
     type: UserEntity,
-    description: 'Token válido. Dados completos do usuário retornados com sucesso.',
+    description:
+      'Token válido. Dados completos do usuário retornados com sucesso.',
   })
   @ApiUnauthorizedResponse({
-    description: 'Token não fornecido, inválido ou expirado. Redirecionar para tela de login.',
+    description:
+      'Token não fornecido, inválido ou expirado. Redirecionar para tela de login.',
   })
   async verificar(@Headers('Authorization') authorization?: string) {
     const authWords = authorization?.split(' ');

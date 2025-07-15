@@ -3,6 +3,7 @@
 ## ⚡ Quick Start
 
 ### 1. Setup Inicial
+
 ```bash
 # Clone e configure
 git clone https://github.com/alex-yudi/educatio-be.git
@@ -25,9 +26,11 @@ npm run start:dev
 ```
 
 ### 2. Acesso Swagger
+
 **URL:** http://localhost:3000/api
 
 ### 3. Usuários Padrão (seed)
+
 ```json
 // Admin
 {
@@ -37,7 +40,7 @@ npm run start:dev
 
 // Professor (exemplo)
 {
-  "email": "professor@educatio.com", 
+  "email": "professor@educatio.com",
   "senha": "prof123"
 }
 ```
@@ -45,6 +48,7 @@ npm run start:dev
 ## 🎯 Endpoints Essenciais
 
 ### 🔐 Autenticação
+
 ```bash
 # Login
 curl -X POST http://localhost:3000/auth/login \
@@ -57,6 +61,7 @@ curl -X POST http://localhost:3000/auth/login \
 ### 👥 Gestão de Usuários
 
 #### Cadastrar Professor (Admin)
+
 ```bash
 curl -X POST http://localhost:3000/professores \
   -H "Authorization: Bearer JWT_TOKEN" \
@@ -67,6 +72,7 @@ curl -X POST http://localhost:3000/professores \
 ```
 
 #### Cadastrar Aluno (Admin)
+
 ```bash
 curl -X POST http://localhost:3000/alunos \
   -H "Authorization: Bearer JWT_TOKEN" \
@@ -77,19 +83,21 @@ curl -X POST http://localhost:3000/alunos \
 ### 📚 Gestão Acadêmica
 
 #### Cadastrar Disciplina
+
 ```bash
 curl -X POST http://localhost:3000/disciplinas \
   -H "Authorization: Bearer JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "nome": "Programação Web",
-    "codigo": "PW001", 
+    "codigo": "PW001",
     "carga_horaria": 60,
     "ementa": "Desenvolvimento de aplicações web..."
   }'
 ```
 
 #### Criar Turma
+
 ```bash
 curl -X POST http://localhost:3000/turmas \
   -H "Authorization: Bearer JWT_TOKEN" \
@@ -114,6 +122,7 @@ curl -X POST http://localhost:3000/turmas \
 ### 📊 Sistema de Frequência
 
 #### Lançar Frequência (Professor)
+
 ```bash
 curl -X POST http://localhost:3000/frequencia \
   -H "Authorization: Bearer JWT_TOKEN_PROFESSOR" \
@@ -127,17 +136,17 @@ curl -X POST http://localhost:3000/frequencia \
 
 ## 🔒 Controle de Acesso
 
-| Ação | Admin | Professor | Aluno |
-|------|-------|-----------|-------|
-| CRUD Usuários | ✅ | ❌ | ❌ |
-| CRUD Acadêmico | ✅ | ❌ | ❌ |
-| Lançar Frequência | ❌ | ✅ (suas turmas) | ❌ |
-| Consultar Dados | ✅ | ✅ (limitado) | ❌ |
+| Ação              | Admin | Professor        | Aluno |
+| ----------------- | ----- | ---------------- | ----- |
+| CRUD Usuários     | ✅    | ❌               | ❌    |
+| CRUD Acadêmico    | ✅    | ❌               | ❌    |
+| Lançar Frequência | ❌    | ✅ (suas turmas) | ❌    |
+| Consultar Dados   | ✅    | ✅ (limitado)    | ❌    |
 
 ## 🛡️ Guards Implementados
 
 - `@UseGuards(AdminGuard)` - Apenas admin
-- `@UseGuards(ProfessorGuard)` - Apenas professor  
+- `@UseGuards(ProfessorGuard)` - Apenas professor
 - `@UseGuards(AdminProfessorGuard)` - Admin ou professor
 
 ## 📋 Decoradores Customizados
@@ -160,7 +169,7 @@ Frequencia (id, matricula_id, data_aula, presente)
 ## ⚠️ Restrições de Deleção
 
 - **Aluno**: Não pode ser excluído com matrículas ativas
-- **Professor**: Não pode ser excluído com turmas ativas  
+- **Professor**: Não pode ser excluído com turmas ativas
 - **Disciplina**: Não pode ser excluída com turmas ativas ou cursos associados
 - **Turma**: Não pode ser excluída com matrículas ativas
 - **Curso**: Não pode ser excluído com disciplinas que têm turmas ativas
@@ -168,21 +177,24 @@ Frequencia (id, matricula_id, data_aula, presente)
 ## 🐛 Debugging
 
 ### Logs da Aplicação
+
 ```bash
 # Development logs
 npm run start:dev
 
-# Database logs  
+# Database logs
 docker compose logs db
 ```
 
 ### Prisma Studio
+
 ```bash
 npx prisma studio
 # Abre interface visual do banco em http://localhost:5555
 ```
 
 ### Reset do Banco
+
 ```bash
 # CUIDADO: Apaga todos os dados
 npx prisma migrate reset
@@ -210,7 +222,7 @@ npm run test
 # Format code
 npm run format
 
-# Lint code  
+# Lint code
 npm run lint
 
 # Generate Prisma client
@@ -223,16 +235,19 @@ npx prisma studio
 ## 📞 Troubleshooting
 
 ### Erro de Conexão com Banco
+
 1. Verificar se PostgreSQL está rodando: `docker compose ps`
 2. Verificar variáveis de ambiente no `.env`
 3. Executar migrations: `npx prisma migrate dev`
 
 ### Token JWT Inválido
+
 1. Verificar se token está sendo enviado no header `Authorization: Bearer TOKEN`
 2. Verificar se token não expirou
 3. Fazer novo login para obter token válido
 
 ### Erro de Permissão
+
 1. Verificar role do usuário logado
 2. Confirmar se endpoint permite o role atual
 3. Usar usuário admin para operações de gestão

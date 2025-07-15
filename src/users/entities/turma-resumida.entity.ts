@@ -70,24 +70,28 @@ export class TurmaResumidaEntity {
   @ApiProperty({ example: 30, description: 'Número de vagas da turma' })
   vagas: number;
 
-  @ApiProperty({ example: 'Sala A101', description: 'Sala da turma', required: false })
+  @ApiProperty({
+    example: 'Sala A101',
+    description: 'Sala da turma',
+    required: false,
+  })
   sala?: string;
 
   @ApiProperty({
     type: DisciplinaResumidaEntity,
-    description: 'Dados da disciplina associada à turma'
+    description: 'Dados da disciplina associada à turma',
   })
   disciplina: DisciplinaResumidaEntity;
 
   @ApiProperty({
     type: [AlunoResumidoEntity],
-    description: 'Lista de alunos matriculados na turma'
+    description: 'Lista de alunos matriculados na turma',
   })
   alunos: AlunoResumidoEntity[];
 
   @ApiProperty({
     type: [HorarioAulaEntity],
-    description: 'Horários das aulas da turma'
+    description: 'Horários das aulas da turma',
   })
   horarios: HorarioAulaEntity[];
 
@@ -97,10 +101,14 @@ export class TurmaResumidaEntity {
       this.disciplina = new DisciplinaResumidaEntity(partial.disciplina);
     }
     if (partial.alunos) {
-      this.alunos = partial.alunos.map(aluno => new AlunoResumidoEntity(aluno));
+      this.alunos = partial.alunos.map(
+        (aluno) => new AlunoResumidoEntity(aluno),
+      );
     }
     if (partial.horarios) {
-      this.horarios = partial.horarios.map(horario => new HorarioAulaEntity(horario));
+      this.horarios = partial.horarios.map(
+        (horario) => new HorarioAulaEntity(horario),
+      );
     }
   }
 }

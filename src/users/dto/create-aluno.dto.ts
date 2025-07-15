@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 
 export class CreateAlunoDto {
   @ApiProperty({
@@ -23,7 +30,9 @@ export class CreateAlunoDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[0-9]{7}$/, { message: 'Matrícula deve conter exatamente 7 dígitos numéricos' })
+  @Matches(/^[0-9]{7}$/, {
+    message: 'Matrícula deve conter exatamente 7 dígitos numéricos',
+  })
   matricula: string;
 
   @ApiProperty({

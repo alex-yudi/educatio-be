@@ -34,9 +34,10 @@ async function bootstrap() {
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
   // Configure CORS for production and development
-  const corsOrigin = process.env.NODE_ENV === 'production'
-    ? true // Allow all origins in production (adjust as needed)
-    : 'http://localhost:3001';
+  const corsOrigin =
+    process.env.NODE_ENV === 'production'
+      ? true // Allow all origins in production (adjust as needed)
+      : 'http://localhost:3001';
 
   app.enableCors({
     origin: corsOrigin,

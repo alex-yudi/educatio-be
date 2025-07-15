@@ -32,7 +32,9 @@ export class CreateCursoDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[A-Z0-9]{2,10}$/, { message: 'Código deve conter de 2 a 10 caracteres maiúsculos e números' })
+  @Matches(/^[A-Z0-9]{2,10}$/, {
+    message: 'Código deve conter de 2 a 10 caracteres maiúsculos e números',
+  })
   codigo: string;
 
   @ApiProperty({

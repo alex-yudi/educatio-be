@@ -36,7 +36,7 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class DisciplinasController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({
@@ -55,10 +55,10 @@ export class DisciplinasController {
           codigo: 'PROG101',
           nome: 'Introdução à Programação',
           carga_horaria: 80,
-          descricao: 'Disciplina introdutória de programação'
-        }
-      }
-    }
+          descricao: 'Disciplina introdutória de programação',
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: DisciplinaEntity,
@@ -129,11 +129,19 @@ export class DisciplinasController {
         type: 'object',
         properties: {
           id: { type: 'number', example: 1, description: 'ID da disciplina' },
-          codigo: { type: 'string', example: 'PROG1', description: 'Código da disciplina' },
-          nome: { type: 'string', example: 'Programação I', description: 'Nome da disciplina' }
-        }
-      }
-    }
+          codigo: {
+            type: 'string',
+            example: 'PROG1',
+            description: 'Código da disciplina',
+          },
+          nome: {
+            type: 'string',
+            example: 'Programação I',
+            description: 'Nome da disciplina',
+          },
+        },
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Token de acesso inválido ou não fornecido',
@@ -144,10 +152,10 @@ export class DisciplinasController {
   @HandleErrors('Acesso restrito a administradores')
   async findDropdownOptions(@Req() request: any) {
     const disciplinas = await this.usersService.findAllDisciplinas();
-    return disciplinas.map(disciplina => ({
+    return disciplinas.map((disciplina) => ({
       id: disciplina.id,
       codigo: disciplina.codigo,
-      nome: disciplina.nome
+      nome: disciplina.nome,
     }));
   }
 
@@ -223,19 +231,18 @@ export class DisciplinasController {
     description: 'Token de acesso inválido ou não fornecido',
   })
   @ApiForbiddenResponse({
-    description: 'Acesso negado. Apenas administradores podem excluir disciplinas',
+    description:
+      'Acesso negado. Apenas administradores podem excluir disciplinas',
   })
   @ApiNotFoundResponse({
     description: 'Disciplina não encontrada',
   })
   @ApiBadRequestResponse({
-    description: 'Disciplina possui turmas ativas ou está associada a cursos e não pode ser excluída',
+    description:
+      'Disciplina possui turmas ativas ou está associada a cursos e não pode ser excluída',
   })
   @HandleErrors('Acesso restrito a administradores')
-  async remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: any,
-  ) {
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() request: any) {
     const adminId = request.user.sub;
     return await this.usersService.deleteDisciplina(id, adminId);
   }

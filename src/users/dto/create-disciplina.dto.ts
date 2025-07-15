@@ -1,5 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min, Max, MinLength, MaxLength, Matches } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  Max,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 
 export class CreateDisciplinaDto {
   @ApiProperty({
@@ -17,13 +27,16 @@ export class CreateDisciplinaDto {
 
   @ApiProperty({
     example: 'POO101',
-    description: 'Código único da disciplina (2-10 caracteres, letras e números)',
+    description:
+      'Código único da disciplina (2-10 caracteres, letras e números)',
     pattern: '^[A-Z0-9]{2,10}$',
     required: true,
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[A-Z0-9]{2,10}$/, { message: 'Código deve conter de 2 a 10 caracteres maiúsculos e números' })
+  @Matches(/^[A-Z0-9]{2,10}$/, {
+    message: 'Código deve conter de 2 a 10 caracteres maiúsculos e números',
+  })
   codigo: string;
 
   @ApiProperty({

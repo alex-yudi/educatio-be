@@ -38,7 +38,7 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 @ApiBearerAuth()
 @UseGuards(ProfessorGuard)
 export class FrequenciaController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({
@@ -62,10 +62,10 @@ export class FrequenciaController {
         value: {
           turma_id: 1,
           data_aula: '2024-07-15',
-          alunos_presentes: [52, 53, 54]
-        }
-      }
-    }
+          alunos_presentes: [52, 53, 54],
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     type: FrequenciaResponseEntity,
