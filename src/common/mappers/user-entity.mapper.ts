@@ -12,7 +12,6 @@ export class UserEntityMapper {
       nome: user.nome,
       email: user.email,
       password: '',
-      senha: '',
       role: user.role,
       registrationNumber: user.matricula || null,
       matricula: user.matricula || null,

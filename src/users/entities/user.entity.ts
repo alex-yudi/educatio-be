@@ -10,7 +10,10 @@ export class UserEntity implements Usuario {
   }
   nome: string;
   matricula: string | null;
+  
+  @Exclude()
   senha: string;
+  
   criado_em: Date;
   atualizado_em: Date;
 
