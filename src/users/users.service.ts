@@ -406,8 +406,107 @@ export class UsersService {
         role: true,
         criado_em: true,
         atualizado_em: true,
+        turmasMinistradas: {
+          select: {
+            id: true,
+            codigo: true,
+            ano: true,
+            semestre: true,
+            vagas: true,
+            sala: true,
+            disciplina: {
+              select: {
+                id: true,
+                nome: true,
+                codigo: true,
+                carga_horaria: true,
+              },
+            },
+            matriculas: {
+              select: {
+                estudante: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    email: true,
+                    matricula: true,
+                  },
+                },
+                status: true,
+              },
+            },
+            horarios: {
+              select: {
+                dia_semana: true,
+                hora_inicio: true,
+                hora_fim: true,
+              },
+            },
+          },
+        },
       },
     });
+  }
+
+  async findProfessorById(id: number) {
+    const professor = await this.prisma.usuario.findUnique({
+      where: {
+        id,
+        role: EnumPerfil.professor
+      },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        role: true,
+        criado_em: true,
+        atualizado_em: true,
+        turmasMinistradas: {
+          select: {
+            id: true,
+            codigo: true,
+            ano: true,
+            semestre: true,
+            vagas: true,
+            sala: true,
+            disciplina: {
+              select: {
+                id: true,
+                nome: true,
+                codigo: true,
+                carga_horaria: true,
+              },
+            },
+            matriculas: {
+              select: {
+                estudante: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    email: true,
+                    matricula: true,
+                  },
+                },
+                status: true,
+              },
+            },
+            horarios: {
+              select: {
+                dia_semana: true,
+                hora_inicio: true,
+                hora_fim: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!professor) {
+      throw new NotFoundException('Professor não encontrado');
+    }
+
+    return professor;
   }
 
   async updateProfessor(
