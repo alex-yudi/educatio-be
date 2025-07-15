@@ -52,25 +52,16 @@ export class TurmasController {
     description: 'Dados para criação da turma',
     examples: {
       exemplo1: {
-        summary: 'Turma de Programação 2024',
+        summary: 'Turma de Programação 2025',
         description: 'Exemplo de cadastro de turma para disciplina',
         value: {
-          codigo: 'PROG101-2024-1A',
-          disciplina_id: 1,
-          professor_id: 2,
-          periodo: '2024.1',
-          horarios: [
-            {
-              dia_semana: 'SEGUNDA',
-              hora_inicio: '08:00',
-              hora_fim: '10:00'
-            },
-            {
-              dia_semana: 'QUARTA',
-              hora_inicio: '08:00',
-              hora_fim: '10:00'
-            }
-          ]
+          codigo: 'PROG1-2025-1A',
+          disciplina_codigo: 'PROG1',
+          professor_email: 'carlos.prof@uni.edu',
+          ano: 2025,
+          semestre: 1,
+          sala: 'Lab A-101',
+          vagas: 35
         }
       }
     }
