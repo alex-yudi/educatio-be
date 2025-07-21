@@ -21,6 +21,11 @@ import { CreateCursoDto } from './dto/create-curso.dto';
 import { LancarFrequenciaDto } from './dto/lancar-frequencia.dto';
 import { AlterarFrequenciaDto } from './dto/alterar-frequencia.dto';
 import { DesmatricularAlunoDto } from './dto/desmatricular-aluno.dto';
+import { LancarNotaDto, TipoNota } from './dto/lancar-nota.dto';
+import { AlterarNotaDto } from './dto/alterar-nota.dto';
+import { LancarNotasLoteDto } from './dto/lancar-notas-lote.dto';
+import { AlterarNotasLoteDto } from './dto/alterar-notas-lote.dto';
+import { ResultadoOperacaoNota, RespostaLoteNotas } from './interfaces/notas-lote.interface';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -2016,6 +2021,450 @@ export class UsersService {
         detalhes_disciplinas: disciplinasInfo,
         observacao: 'As disciplinas, turmas e dados acadêmicos foram preservados. Apenas a associação com o curso foi removida.',
       },
+    };
+  }
+
+  // Métodos para gerenciamento de notas
+
+  /**
+   * Lança uma nota para um aluno
+   */
+  async lancarNota(lancarNotaDto: LancarNotaDto, professorId: number) {
+    // Verificar se o professor existe
+    await this.validateProfessor(professorId);
+
+    // Buscar a matrícula com informações da turma e professor
+    const matricula = await this.prisma.matricula.findUnique({
+      where: { id: lancarNotaDto.matricula_id },
+      include: {
+        turma: {
+          include: {
+            professor: true,
+            disciplina: true,
+          },
+        },
+        estudante: true,
+      },
+    });
+
+    if (!matricula) {
+      throw new NotFoundException('Matrícula não encontrada');
+    }
+
+    // Verificar se o professor é responsável pela turma
+    if (matricula.turma.professor_id !== professorId) {
+      throw new UnauthorizedException(
+        'Você só pode lançar notas para suas próprias turmas',
+      );
+    }
+
+    // Verificar se já existe nota deste tipo para esta matrícula
+    const notaExistente = await this.prisma.nota.findFirst({
+      where: {
+        matricula_id: lancarNotaDto.matricula_id,
+        tipo: lancarNotaDto.tipo,
+      },
+    });
+
+    if (notaExistente) {
+      throw new ConflictException(
+        `Já existe uma nota do tipo ${lancarNotaDto.tipo} para este aluno`,
+      );
+    }
+
+    // Validar regras específicas para nota final
+    if (lancarNotaDto.tipo === TipoNota.FINAL) {
+      await this.validarLancamentoNotaFinal(lancarNotaDto.matricula_id);
+    }
+
+    // Criar a nota
+    const nota = await this.prisma.nota.create({
+      data: {
+        matricula_id: lancarNotaDto.matricula_id,
+        tipo: lancarNotaDto.tipo,
+        valor: lancarNotaDto.valor,
+        criado_por_id: professorId,
+      },
+      include: {
+        criado_por: true,
+        matricula: {
+          include: {
+            estudante: true,
+            turma: {
+              include: {
+                disciplina: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      id: nota.id,
+      valor: nota.valor,
+      tipo: nota.tipo,
+      criado_em: nota.criado_em,
+      professor_nome: nota.criado_por.nome,
+      aluno_nome: nota.matricula.estudante.nome,
+      disciplina_nome: nota.matricula.turma.disciplina.nome,
+    };
+  }
+
+  /**
+   * Valida se é possível lançar nota final
+   */
+  private async validarLancamentoNotaFinal(matriculaId: number) {
+    const notasUnidades = await this.prisma.nota.findMany({
+      where: {
+        matricula_id: matriculaId,
+        tipo: {
+          in: [TipoNota.UNIDADE_1, TipoNota.UNIDADE_2, TipoNota.UNIDADE_3],
+        },
+      },
+    });
+
+    if (notasUnidades.length < 3) {
+      throw new BadRequestException(
+        'Não é possível lançar nota final. O aluno deve ter notas nas 3 unidades primeiro',
+      );
+    }
+
+    const mediaUnidades = notasUnidades.reduce((acc, nota) => acc + nota.valor, 0) / 3;
+
+    if (mediaUnidades >= 7) {
+      throw new BadRequestException(
+        'Não é necessário lançar nota final. O aluno já foi aprovado com média das unidades igual ou superior a 7',
+      );
+    }
+  }
+
+  /**
+   * Altera uma nota existente
+   */
+  async alterarNota(alterarNotaDto: AlterarNotaDto, professorId: number) {
+    // Verificar se o professor existe
+    await this.validateProfessor(professorId);
+
+    // Buscar a nota com informações da matrícula e turma
+    const nota = await this.prisma.nota.findUnique({
+      where: { id: alterarNotaDto.nota_id },
+      include: {
+        matricula: {
+          include: {
+            turma: {
+              include: {
+                professor: true,
+                disciplina: true,
+              },
+            },
+            estudante: true,
+          },
+        },
+        criado_por: true,
+      },
+    });
+
+    if (!nota) {
+      throw new NotFoundException('Nota não encontrada');
+    }
+
+    // Verificar se o professor é responsável pela turma
+    if (nota.matricula.turma.professor_id !== professorId) {
+      throw new UnauthorizedException(
+        'Você só pode alterar notas de suas próprias turmas',
+      );
+    }
+
+    // Atualizar a nota
+    const notaAtualizada = await this.prisma.nota.update({
+      where: { id: alterarNotaDto.nota_id },
+      data: { valor: alterarNotaDto.valor },
+      include: {
+        criado_por: true,
+        matricula: {
+          include: {
+            estudante: true,
+            turma: {
+              include: {
+                disciplina: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      id: notaAtualizada.id,
+      valor: notaAtualizada.valor,
+      tipo: notaAtualizada.tipo,
+      criado_em: notaAtualizada.criado_em,
+      atualizado_em: notaAtualizada.atualizado_em,
+      professor_nome: notaAtualizada.criado_por.nome,
+      aluno_nome: notaAtualizada.matricula.estudante.nome,
+      disciplina_nome: notaAtualizada.matricula.turma.disciplina.nome,
+    };
+  }
+
+  /**
+   * Lança múltiplas notas de uma vez
+   */
+  async lancarNotasLote(lancarNotasLoteDto: LancarNotasLoteDto, professorId: number): Promise<RespostaLoteNotas> {
+    // Verificar se o professor existe
+    await this.validateProfessor(professorId);
+
+    const resultados: ResultadoOperacaoNota[] = [];
+    let sucessos = 0;
+    let erros = 0;
+
+    for (const notaDto of lancarNotasLoteDto.notas) {
+      try {
+        const nota = await this.lancarNota(notaDto, professorId);
+        resultados.push({
+          sucesso: true,
+          mensagem: 'Nota lançada com sucesso',
+          nota,
+        });
+        sucessos++;
+      } catch (error) {
+        resultados.push({
+          sucesso: false,
+          mensagem: 'Erro ao lançar nota',
+          erro: error.message,
+        });
+        erros++;
+      }
+    }
+
+    return {
+      total_processadas: lancarNotasLoteDto.notas.length,
+      sucessos,
+      erros,
+      resultados,
+    };
+  }
+
+  /**
+   * Altera múltiplas notas de uma vez
+   */
+  async alterarNotasLote(alterarNotasLoteDto: AlterarNotasLoteDto, professorId: number): Promise<RespostaLoteNotas> {
+    // Verificar se o professor existe
+    await this.validateProfessor(professorId);
+
+    const resultados: ResultadoOperacaoNota[] = [];
+    let sucessos = 0;
+    let erros = 0;
+
+    for (const notaDto of alterarNotasLoteDto.notas) {
+      try {
+        const nota = await this.alterarNota(notaDto, professorId);
+        resultados.push({
+          sucesso: true,
+          mensagem: 'Nota alterada com sucesso',
+          nota,
+        });
+        sucessos++;
+      } catch (error) {
+        resultados.push({
+          sucesso: false,
+          mensagem: 'Erro ao alterar nota',
+          erro: error.message,
+        });
+        erros++;
+      }
+    }
+
+    return {
+      total_processadas: alterarNotasLoteDto.notas.length,
+      sucessos,
+      erros,
+      resultados,
+    };
+  }
+
+  /**
+   * Busca o boletim de um aluno em uma turma específica
+   */
+  async buscarBoletimAluno(matriculaId: number, professorId?: number) {
+    const matricula = await this.prisma.matricula.findUnique({
+      where: { id: matriculaId },
+      include: {
+        estudante: true,
+        turma: {
+          include: {
+            disciplina: true,
+            professor: true,
+          },
+        },
+        notas: {
+          include: {
+            criado_por: true,
+          },
+          orderBy: {
+            criado_em: 'asc',
+          },
+        },
+      },
+    });
+
+    if (!matricula) {
+      throw new NotFoundException('Matrícula não encontrada');
+    }
+
+    // Se for um professor, verificar se é responsável pela turma
+    if (professorId) {
+      await this.validateProfessor(professorId);
+      if (matricula.turma.professor_id !== professorId) {
+        throw new UnauthorizedException(
+          'Você só pode visualizar boletins de suas próprias turmas',
+        );
+      }
+    }
+
+    const notas = matricula.notas.map(nota => ({
+      id: nota.id,
+      valor: nota.valor,
+      tipo: nota.tipo,
+      criado_em: nota.criado_em,
+      professor_nome: nota.criado_por.nome,
+    }));
+
+    // Calcular média das unidades
+    const notasUnidades = notas.filter(nota =>
+      [TipoNota.UNIDADE_1, TipoNota.UNIDADE_2, TipoNota.UNIDADE_3].includes(nota.tipo as TipoNota)
+    );
+
+    let mediaUnidades: number | undefined;
+    let notaFinal: number | undefined;
+    let situacao = 'EM_ANDAMENTO';
+
+    if (notasUnidades.length === 3) {
+      mediaUnidades = notasUnidades.reduce((acc, nota) => acc + nota.valor, 0) / 3;
+
+      if (mediaUnidades >= 7) {
+        situacao = 'APROVADO';
+      } else {
+        const notaFinalObj = notas.find(nota => nota.tipo === TipoNota.FINAL);
+        if (notaFinalObj) {
+          notaFinal = notaFinalObj.valor;
+          const mediaFinal = (mediaUnidades + notaFinal) / 2;
+          situacao = mediaFinal >= 5 ? 'APROVADO' : 'REPROVADO';
+        } else {
+          situacao = 'AGUARDANDO_FINAL';
+        }
+      }
+    }
+
+    return {
+      aluno_nome: matricula.estudante.nome,
+      aluno_matricula: matricula.estudante.matricula,
+      disciplina_nome: matricula.turma.disciplina.nome,
+      professor_nome: matricula.turma.professor.nome,
+      notas,
+      media_unidades: mediaUnidades,
+      nota_final: notaFinal,
+      situacao,
+    };
+  }
+
+  /**
+   * Lista todas as notas de uma turma
+   */
+  async listarNotasTurma(turmaId: number, professorId: number) {
+    // Verificar se o professor existe
+    await this.validateProfessor(professorId);
+
+    // Verificar se a turma existe e se o professor é responsável por ela
+    const turma = await this.prisma.turma.findUnique({
+      where: { id: turmaId },
+      include: {
+        disciplina: true,
+        professor: true,
+        matriculas: {
+          include: {
+            estudante: true,
+            notas: {
+              include: {
+                criado_por: true,
+              },
+              orderBy: {
+                criado_em: 'asc',
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!turma) {
+      throw new NotFoundException('Turma não encontrada');
+    }
+
+    if (turma.professor_id !== professorId) {
+      throw new UnauthorizedException(
+        'Você só pode visualizar notas de suas próprias turmas',
+      );
+    }
+
+    const boletins = turma.matriculas.map(matricula => {
+      const notas = matricula.notas.map(nota => ({
+        id: nota.id,
+        valor: nota.valor,
+        tipo: nota.tipo,
+        criado_em: nota.criado_em,
+        professor_nome: nota.criado_por.nome,
+      }));
+
+      // Calcular situação do aluno
+      const notasUnidades = notas.filter(nota =>
+        [TipoNota.UNIDADE_1, TipoNota.UNIDADE_2, TipoNota.UNIDADE_3].includes(nota.tipo as TipoNota)
+      );
+
+      let mediaUnidades: number | undefined;
+      let notaFinal: number | undefined;
+      let situacao = 'EM_ANDAMENTO';
+
+      if (notasUnidades.length === 3) {
+        mediaUnidades = notasUnidades.reduce((acc, nota) => acc + nota.valor, 0) / 3;
+
+        if (mediaUnidades >= 7) {
+          situacao = 'APROVADO';
+        } else {
+          const notaFinalObj = notas.find(nota => nota.tipo === TipoNota.FINAL);
+          if (notaFinalObj) {
+            notaFinal = notaFinalObj.valor;
+            const mediaFinal = (mediaUnidades + notaFinal) / 2;
+            situacao = mediaFinal >= 5 ? 'APROVADO' : 'REPROVADO';
+          } else {
+            situacao = 'AGUARDANDO_FINAL';
+          }
+        }
+      }
+
+      return {
+        matricula_id: matricula.id,
+        aluno_nome: matricula.estudante.nome,
+        aluno_matricula: matricula.estudante.matricula,
+        disciplina_nome: turma.disciplina.nome,
+        professor_nome: turma.professor.nome,
+        notas,
+        media_unidades: mediaUnidades,
+        nota_final: notaFinal,
+        situacao,
+      };
+    });
+
+    return {
+      turma: {
+        id: turma.id,
+        codigo: turma.codigo,
+        disciplina_nome: turma.disciplina.nome,
+        professor_nome: turma.professor.nome,
+        ano: turma.ano,
+        semestre: turma.semestre,
+      },
+      boletins,
     };
   }
 }
