@@ -42,6 +42,7 @@ export class CursosController {
   @Post()
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'createCurso',
     summary: 'Cadastrar novo curso',
     description:
       'Cria um novo curso no sistema e pode vincular disciplinas existentes. Apenas administradores podem realizar esta operação.',
@@ -116,6 +117,7 @@ export class CursosController {
   @Get()
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getAllCursos',
     summary: 'Listar todos os cursos disponíveis',
     description:
       'Lista todos os cursos cadastrados no sistema com informações resumidas (ID, nome, código). Ideal para popular dropdowns/selects no frontend. Administradores e professores podem acessar.',
@@ -145,6 +147,7 @@ export class CursosController {
   @Get('dropdown/options')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getCursosDropdown',
     summary: 'Listar cursos para dropdown/select',
     description:
       'Retorna lista simplificada de cursos (apenas ID, código e nome) especificamente otimizada para popular dropdowns e selects no frontend.',
@@ -190,6 +193,7 @@ export class CursosController {
   @Get(':id')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getCursoById',
     summary: 'Buscar curso por ID',
     description:
       'Retorna os detalhes completos de um curso específico, incluindo disciplinas. Administradores e professores podem acessar.',
@@ -214,6 +218,7 @@ export class CursosController {
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'updateCurso',
     summary: 'Atualizar curso',
     description:
       'Atualiza os dados de um curso e pode modificar as disciplinas vinculadas. Apenas administradores podem realizar esta operação.',
@@ -269,6 +274,7 @@ export class CursosController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'deleteCurso',
     summary: 'Excluir curso',
     description:
       'Exclui um curso do sistema. Apenas administradores podem realizar esta operação. O curso não pode ser excluído se suas disciplinas possuírem turmas ativas.',

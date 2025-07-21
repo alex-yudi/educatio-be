@@ -42,6 +42,7 @@ export class FrequenciaController {
 
   @Post()
   @ApiOperation({
+    operationId: 'lancarFrequencia',
     summary: 'Lançar frequência de uma aula',
     description: `Permite que um professor lance a frequência dos alunos para uma aula específica. 
     
@@ -102,6 +103,7 @@ export class FrequenciaController {
 
   @Get('turma/:id')
   @ApiOperation({
+    operationId: 'consultarFrequencia',
     summary: 'Consultar frequência de uma turma',
     description: `Permite que um professor consulte o histórico de frequência de sua turma.
     
@@ -155,6 +157,7 @@ export class FrequenciaController {
 
   @Put('alterar')
   @ApiOperation({
+    operationId: 'alterarFrequencia',
     summary: 'Alterar frequência de uma aula já registrada',
     description: `Permite que um professor altere a frequência de alunos em uma aula que já foi registrada.
     

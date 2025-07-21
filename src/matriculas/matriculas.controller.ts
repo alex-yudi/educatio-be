@@ -36,6 +36,7 @@ export class MatriculasController {
 
   @Post()
   @ApiOperation({
+    operationId: 'createMatricula',
     summary: 'Realizar matrícula de aluno',
     description:
       'Matricula um aluno em uma turma específica. Verifica disponibilidade de vagas e se o aluno já não está matriculado. Apenas administradores podem realizar esta operação.',
@@ -100,6 +101,7 @@ export class MatriculasController {
 
   @Delete()
   @ApiOperation({
+    operationId: 'desmatricularAluno',
     summary: 'Desmatricular aluno de turma',
     description:
       'Desmatricula um aluno de uma turma específica. Remove automaticamente todas as notas e frequências associadas. Apenas administradores podem realizar esta operação.',

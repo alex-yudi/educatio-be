@@ -28,7 +28,17 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'none', // Não expande nenhuma seção automaticamente
+      tagsSorter: 'alpha', // Ordena as tags alfabeticamente
+      operationsSorter: 'alpha', // Ordena as operações alfabeticamente
+      filter: true, // Habilita filtro de busca
+      tryItOutEnabled: true, // Habilita o botão "Try it out"
+    },
+    customSiteTitle: 'Edutatio API Documentation',
+  });
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));

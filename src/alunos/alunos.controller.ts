@@ -41,11 +41,12 @@ import { AlunoComMatriculasMapper } from '../common/mappers/aluno-com-matriculas
 @ApiTags('Alunos')
 @ApiBearerAuth()
 export class AlunosController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'createAluno',
     summary: 'Cadastrar novo aluno',
     description:
       'Cria um novo aluno no sistema com senha temporária gerada automaticamente. Apenas administradores podem realizar esta operação.',
@@ -113,6 +114,7 @@ export class AlunosController {
   @Get()
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'getAllAlunos',
     summary: 'Listar todos os alunos cadastrados',
     description:
       'Retorna uma lista completa de todos os alunos cadastrados no sistema, incluindo suas informações pessoais, curso e matrículas em turmas. Apenas administradores podem realizar esta operação.',
@@ -137,6 +139,7 @@ export class AlunosController {
   @Get(':id')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getAlunoById',
     summary: 'Buscar aluno por ID',
     description:
       'Retorna os dados de um aluno específico pelo seu ID. Administradores e professores podem realizar esta operação.',
@@ -164,6 +167,7 @@ export class AlunosController {
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'updateAluno',
     summary: 'Atualizar aluno',
     description:
       'Atualiza os dados de um aluno cadastrado no sistema. Apenas administradores podem realizar esta operação.',
@@ -203,6 +207,7 @@ export class AlunosController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'deleteAluno',
     summary: 'Excluir aluno',
     description:
       'Exclui um aluno do sistema. Apenas administradores podem realizar esta operação. O aluno não pode ser excluído se possuir matrículas ativas.',

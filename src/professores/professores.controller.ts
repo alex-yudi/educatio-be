@@ -42,11 +42,12 @@ import { ProfessorComTurmasMapper } from '../common/mappers/professor-com-turmas
 @ApiTags('Professores')
 @ApiBearerAuth()
 export class ProfessoresController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'createProfessor',
     summary: 'Cadastrar novo professor',
     description:
       'Cria um novo professor no sistema. Apenas administradores podem realizar esta operação.',
@@ -102,6 +103,7 @@ export class ProfessoresController {
   @Get()
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getAllProfessores',
     summary: 'Listar todos os professores cadastrados',
     description:
       'Lista todos os professores cadastrados no sistema com informações básicas e suas turmas associadas. Útil para popular dropdowns de professores e visualizar quais turmas cada professor leciona. Administradores e professores podem acessar.',
@@ -126,6 +128,7 @@ export class ProfessoresController {
   @Get('dropdown/options')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getProfessoresDropdown',
     summary: 'Listar professores para dropdown/select',
     description:
       'Retorna lista simplificada de professores (apenas ID, email e nome) especificamente otimizada para popular dropdowns e selects no frontend.',
@@ -171,6 +174,7 @@ export class ProfessoresController {
   @Get(':id')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getProfessorById',
     summary: 'Buscar professor por ID',
     description:
       'Retorna os dados de um professor específico pelo seu ID com suas turmas associadas. Administradores e professores podem realizar esta operação.',
@@ -198,6 +202,7 @@ export class ProfessoresController {
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'updateProfessor',
     summary: 'Atualizar professor',
     description:
       'Atualiza os dados de um professor. Apenas administradores podem realizar esta operação.',
@@ -237,6 +242,7 @@ export class ProfessoresController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'deleteProfessor',
     summary: 'Excluir professor',
     description:
       'Exclui um professor do sistema. Apenas administradores podem realizar esta operação. O professor não pode ser excluído se possuir turmas ativas.',

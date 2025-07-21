@@ -38,11 +38,12 @@ import { TurmaCompletaMapper } from '../common/mappers/turma-completa.mapper';
 @ApiTags('Turmas')
 @ApiBearerAuth()
 export class TurmasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'createTurma',
     summary: 'Cadastrar nova turma',
     description:
       'Cria uma nova turma no sistema. Apenas administradores podem realizar esta operação.',
@@ -111,6 +112,7 @@ export class TurmasController {
   @Get()
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getAllTurmas',
     summary: 'Listar turmas',
     description:
       'Lista todas as turmas cadastradas no sistema. Administradores e professores podem acessar.',
@@ -148,6 +150,7 @@ export class TurmasController {
   @Get('dropdown/options')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getTurmasDropdown',
     summary: 'Listar turmas para dropdown/select',
     description:
       'Retorna lista simplificada de turmas (ID, código, disciplina e professor) especificamente otimizada para popular dropdowns e selects no frontend.',
@@ -205,6 +208,7 @@ export class TurmasController {
   @Get(':id')
   @UseGuards(AdminProfessorGuard)
   @ApiOperation({
+    operationId: 'getTurmaById',
     summary: 'Buscar turma por ID',
     description:
       'Retorna os dados completos de uma turma específica pelo seu ID, incluindo professor, disciplina e alunos matriculados. Administradores e professores podem realizar esta operação.',
@@ -237,6 +241,7 @@ export class TurmasController {
   @Put(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'updateTurma',
     summary: 'Atualizar turma',
     description:
       'Atualiza os dados de uma turma. Apenas administradores podem realizar esta operação.',
@@ -291,6 +296,7 @@ export class TurmasController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'deleteTurma',
     summary: 'Excluir turma',
     description:
       'Exclui uma turma do sistema. Apenas administradores podem realizar esta operação. A turma não pode ser excluída se possuir matrículas ativas.',

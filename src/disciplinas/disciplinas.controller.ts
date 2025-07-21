@@ -36,10 +36,11 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class DisciplinasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
+    operationId: 'createDisciplina',
     summary: 'Cadastrar nova disciplina',
     description:
       'Cria uma nova disciplina no sistema com código único. Apenas administradores podem realizar esta operação.',
@@ -93,6 +94,7 @@ export class DisciplinasController {
 
   @Get()
   @ApiOperation({
+    operationId: 'getAllDisciplinas',
     summary: 'Listar todas as disciplinas disponíveis',
     description:
       'Retorna uma lista completa de todas as disciplinas cadastradas no sistema com informações detalhadas (código, nome, carga horária, ementa). Ideal para popular dropdowns de disciplinas e visualizar disciplinas disponíveis.',
@@ -117,6 +119,7 @@ export class DisciplinasController {
   @Get('dropdown/options')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'getDisciplinasDropdown',
     summary: 'Listar disciplinas para dropdown/select',
     description:
       'Retorna lista simplificada de disciplinas (apenas ID, código e nome) especificamente otimizada para popular dropdowns e selects no frontend.',
@@ -161,6 +164,7 @@ export class DisciplinasController {
 
   @Get(':id')
   @ApiOperation({
+    operationId: 'getDisciplinaById',
     summary: 'Busca disciplina por ID',
     description: 'Retorna a disciplina com ID especificado.',
   })
@@ -181,6 +185,7 @@ export class DisciplinasController {
 
   @Put(':id')
   @ApiOperation({
+    operationId: 'updateDisciplina',
     summary: 'Atualizar disciplina',
     description: 'Atualiza os dados de uma disciplina existente no sistema.',
   })
@@ -220,6 +225,7 @@ export class DisciplinasController {
   @Delete(':id')
   @UseGuards(AdminGuard)
   @ApiOperation({
+    operationId: 'deleteDisciplina',
     summary: 'Excluir disciplina',
     description:
       'Exclui uma disciplina do sistema. Apenas administradores podem realizar esta operação. A disciplina não pode ser excluída se possuir turmas ativas ou estiver associada a cursos.',

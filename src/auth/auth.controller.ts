@@ -30,6 +30,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
+    operationId: 'login',
     summary: 'Realizar login no sistema',
     description:
       'Autentica um usuário no sistema utilizando e-mail e senha. Retorna um token JWT que deve ser usado no header Authorization (Bearer token) para acessar rotas protegidas. O token expira em 24 horas.',
@@ -87,6 +88,7 @@ export class AuthController {
   @Get('verificar')
   @ApiBearerAuth()
   @ApiOperation({
+    operationId: 'verificarToken',
     summary: 'Verificar token JWT e obter dados do usuário',
     description:
       'Verifica a validade de um token JWT e retorna os dados completos do usuário autenticado. Use este endpoint para: 1) Validar se o token ainda é válido, 2) Obter dados atualizados do usuário, 3) Verificar o papel/perfil do usuário para controle de acesso no frontend.',
