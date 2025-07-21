@@ -20,6 +20,7 @@ import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { LancarFrequenciaDto } from './dto/lancar-frequencia.dto';
 import { AlterarFrequenciaDto } from './dto/alterar-frequencia.dto';
+import { DesmatricularAlunoDto } from './dto/desmatricular-aluno.dto';
 
 // comment: O código abaixo define os serviços de usuários da aplicação,
 // mantendo apenas a funcionalidade de login.
@@ -28,7 +29,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   /**
    * Valida se o usuário é um administrador
@@ -373,13 +374,13 @@ export class UsersService {
     }
 
     // 6. Executar as operações de remoção e criação em uma transação
-    const [criadas] = await this.prisma.$transaction([
+    const [removidas, criadas] = await this.prisma.$transaction([
       // Desmatricular alunos que não estão na lista
-      // this.prisma.matricula.deleteMany({
-      //   where: {
-      //     id: { in: idsMatriculasParaRemover },
-      //   },
-      // }),
+      this.prisma.matricula.deleteMany({
+        where: {
+          id: { in: idsMatriculasParaRemover },
+        },
+      }),
       // Matricular novos alunos
       this.prisma.matricula.createMany({
         data: idsAlunosParaMatricular.map((alunoId) => ({
@@ -395,7 +396,7 @@ export class UsersService {
       message: 'Matrículas sincronizadas com sucesso.',
       turma: codigo_turma,
       matriculas_adicionadas: criadas.count,
-      // matriculas_removidas: removidas.count,
+      matriculas_removidas: removidas.count,
       total_alunos_turma: numMatriculasFinal,
     };
   }
@@ -1658,25 +1659,106 @@ export class UsersService {
     };
   }
 
-  // Métodos de deleção
-  async deleteAluno(id: number, adminId: number) {
+  // Método para desmatricular aluno individualmente
+  async desmatricularAluno(
+    desmatricularDto: DesmatricularAlunoDto,
+    adminId: number,
+  ) {
     await this.validateAdmin(adminId);
 
+    const { matricula_aluno, codigo_turma } = desmatricularDto;
+
+    // Buscar o aluno
     const aluno = await this.prisma.usuario.findUnique({
-      where: { id },
-      include: { matriculas: true },
+      where: { matricula: matricula_aluno },
     });
 
     if (!aluno || aluno.role !== 'aluno') {
       throw new NotFoundException('Aluno não encontrado');
     }
 
-    // Verificar se o aluno possui matrículas ativas
-    if (aluno.matriculas.length > 0) {
-      throw new BadRequestException(
-        'Não é possível excluir aluno com matrículas ativas. Remova as matrículas primeiro.',
-      );
+    // Buscar a turma
+    const turma = await this.prisma.turma.findUnique({
+      where: { codigo: codigo_turma },
+      include: { disciplina: { select: { nome: true, codigo: true } } },
+    });
+
+    if (!turma) {
+      throw new NotFoundException('Turma não encontrada');
     }
+
+    // Buscar a matrícula
+    const matricula = await this.prisma.matricula.findUnique({
+      where: {
+        estudante_id_turma_id: {
+          estudante_id: aluno.id,
+          turma_id: turma.id,
+        },
+      },
+      include: {
+        notas: true,
+        frequencias: true,
+      },
+    });
+
+    if (!matricula) {
+      throw new NotFoundException('Matrícula não encontrada');
+    }
+
+    // Executar a desmatrícula (com cascata, notas e frequências serão removidas automaticamente)
+    await this.prisma.matricula.delete({
+      where: { id: matricula.id },
+    });
+
+    return {
+      message: 'Aluno desmatriculado com sucesso',
+      aluno: {
+        nome: aluno.nome,
+        matricula: aluno.matricula,
+      },
+      turma: {
+        codigo: turma.codigo,
+        disciplina: turma.disciplina.nome,
+      },
+      dados_removidos: {
+        notas_removidas: matricula.notas.length,
+        frequencias_removidas: matricula.frequencias.length,
+      },
+    };
+  }
+
+  // Métodos de deleção
+  async deleteAluno(id: number, adminId: number) {
+    await this.validateAdmin(adminId);
+
+    const aluno = await this.prisma.usuario.findUnique({
+      where: { id },
+      include: {
+        matriculas: {
+          include: {
+            turma: {
+              include: {
+                disciplina: { select: { nome: true } }
+              }
+            },
+            notas: true,
+            frequencias: true,
+          }
+        }
+      },
+    });
+
+    if (!aluno || aluno.role !== 'aluno') {
+      throw new NotFoundException('Aluno não encontrado');
+    }
+
+    // Com a nova configuração de cascata, as matrículas, notas e frequências serão removidas automaticamente
+    const matriculasInfo = aluno.matriculas.map(m => ({
+      turma: m.turma.codigo,
+      disciplina: m.turma.disciplina.nome,
+      notas: m.notas.length,
+      frequencias: m.frequencias.length,
+    }));
 
     await this.prisma.usuario.delete({
       where: { id },
@@ -1689,6 +1771,10 @@ export class UsersService {
         nome: aluno.nome,
         email: aluno.email,
       },
+      dados_removidos: {
+        matriculas_removidas: aluno.matriculas.length,
+        detalhes_matriculas: matriculasInfo,
+      },
     };
   }
 
@@ -1697,18 +1783,32 @@ export class UsersService {
 
     const professor = await this.prisma.usuario.findUnique({
       where: { id },
-      include: { turmasMinistradas: true },
+      include: {
+        turmasMinistradas: {
+          include: {
+            disciplina: { select: { nome: true, codigo: true } },
+            matriculas: true,
+          }
+        }
+      },
     });
 
     if (!professor || professor.role !== 'professor') {
       throw new NotFoundException('Professor não encontrado');
     }
 
-    // Verificar se o professor possui turmas ativas
+    // Verificar se o professor possui turmas ativas (isso ainda deve bloquear)
     if (professor.turmasMinistradas.length > 0) {
-      throw new BadRequestException(
-        'Não é possível excluir professor com turmas ativas. Reatribua as turmas primeiro.',
-      );
+      const turmasInfo = professor.turmasMinistradas.map(t => ({
+        codigo: t.codigo,
+        disciplina: t.disciplina.nome,
+        alunos_matriculados: t.matriculas.length,
+      }));
+
+      throw new BadRequestException({
+        message: 'Não é possível excluir professor com turmas ativas. Reatribua as turmas primeiro.',
+        turmas_ativas: turmasInfo,
+      });
     }
 
     await this.prisma.usuario.delete({
@@ -1731,8 +1831,22 @@ export class UsersService {
     const disciplina = await this.prisma.disciplina.findUnique({
       where: { id },
       include: {
-        turmas: true,
-        cursos: true,
+        turmas: {
+          include: {
+            matriculas: {
+              include: {
+                notas: true,
+                frequencias: true,
+              }
+            },
+            professor: { select: { nome: true } },
+          }
+        },
+        cursos: {
+          include: {
+            curso: { select: { nome: true, codigo: true } }
+          }
+        },
       },
     });
 
@@ -1740,19 +1854,20 @@ export class UsersService {
       throw new NotFoundException('Disciplina não encontrada');
     }
 
-    // Verificar se a disciplina possui turmas ativas
-    if (disciplina.turmas.length > 0) {
-      throw new BadRequestException(
-        'Não é possível excluir disciplina com turmas ativas. Remova as turmas primeiro.',
-      );
-    }
+    // Com cascata configurada, turmas, matrículas, notas e frequências serão removidas automaticamente
+    // Relacionamentos curso-disciplina também serão removidos automaticamente
+    const turmasInfo = disciplina.turmas.map(t => ({
+      codigo: t.codigo,
+      professor: t.professor.nome,
+      alunos_matriculados: t.matriculas.length,
+      notas_total: t.matriculas.reduce((sum, m) => sum + m.notas.length, 0),
+      frequencias_total: t.matriculas.reduce((sum, m) => sum + m.frequencias.length, 0),
+    }));
 
-    // Verificar se a disciplina está associada a cursos
-    if (disciplina.cursos.length > 0) {
-      throw new BadRequestException(
-        'Não é possível excluir disciplina associada a cursos. Remova a associação primeiro.',
-      );
-    }
+    const cursosInfo = disciplina.cursos.map(cd => ({
+      nome: cd.curso.nome,
+      codigo: cd.curso.codigo,
+    }));
 
     await this.prisma.disciplina.delete({
       where: { id },
@@ -1765,6 +1880,12 @@ export class UsersService {
         nome: disciplina.nome,
         codigo: disciplina.codigo,
       },
+      dados_removidos: {
+        turmas_removidas: disciplina.turmas.length,
+        relacionamentos_curso_removidos: disciplina.cursos.length,
+        detalhes_turmas: turmasInfo,
+        cursos_afetados: cursosInfo,
+      },
     };
   }
 
@@ -1776,11 +1897,14 @@ export class UsersService {
       include: {
         matriculas: {
           include: {
+            estudante: { select: { nome: true, matricula: true } },
+            notas: true,
             frequencias: true,
           },
         },
         disciplina: { select: { nome: true, codigo: true } },
         professor: { select: { nome: true, email: true } },
+        horarios: true,
       },
     });
 
@@ -1788,12 +1912,13 @@ export class UsersService {
       throw new NotFoundException('Turma não encontrada');
     }
 
-    // Verificar se a turma possui matrículas ativas
-    if (turma.matriculas.length > 0) {
-      throw new BadRequestException(
-        'Não é possível excluir turma com matrículas ativas. Remova as matrículas primeiro.',
-      );
-    }
+    // Com cascata configurada, matrículas, notas, frequências e horários serão removidos automaticamente
+    const matriculasInfo = turma.matriculas.map(m => ({
+      aluno_nome: m.estudante.nome,
+      aluno_matricula: m.estudante.matricula,
+      notas: m.notas.length,
+      frequencias: m.frequencias.length,
+    }));
 
     await this.prisma.turma.delete({
       where: { id },
@@ -1809,6 +1934,11 @@ export class UsersService {
         ano: turma.ano,
         semestre: turma.semestre,
       },
+      dados_removidos: {
+        matriculas_removidas: turma.matriculas.length,
+        horarios_removidos: turma.horarios.length,
+        detalhes_alunos: matriculasInfo,
+      },
     };
   }
 
@@ -1822,7 +1952,16 @@ export class UsersService {
           include: {
             disciplina: {
               include: {
-                turmas: true,
+                turmas: {
+                  include: {
+                    matriculas: {
+                      include: {
+                        notas: true,
+                        frequencias: true,
+                      }
+                    }
+                  }
+                },
               },
             },
           },
@@ -1834,21 +1973,31 @@ export class UsersService {
       throw new NotFoundException('Curso não encontrado');
     }
 
-    // Verificar se alguma disciplina do curso possui turmas ativas
-    const disciplinasComTurmas = curso.disciplinas.filter(
-      (cd) => cd.disciplina.turmas.length > 0,
-    );
+    // Com cascata configurada, disciplinas, turmas, matrículas, notas e frequências 
+    // dos relacionamentos curso-disciplina serão mantidas intactas
+    // Apenas os relacionamentos curso-disciplina serão removidos automaticamente
+    const disciplinasInfo = curso.disciplinas.map(cd => {
+      const disciplina = cd.disciplina;
+      const totalMatriculas = disciplina.turmas.reduce((sum, t) => sum + t.matriculas.length, 0);
+      const totalNotas = disciplina.turmas.reduce((sum, t) =>
+        sum + t.matriculas.reduce((sumNotas, m) => sumNotas + m.notas.length, 0), 0);
+      const totalFrequencias = disciplina.turmas.reduce((sum, t) =>
+        sum + t.matriculas.reduce((sumFreq, m) => sumFreq + m.frequencias.length, 0), 0);
 
-    if (disciplinasComTurmas.length > 0) {
-      throw new BadRequestException(
-        'Não é possível excluir curso com disciplinas que possuem turmas ativas. Remova as turmas primeiro.',
-      );
-    }
-
-    // Remover relacionamentos com disciplinas
-    await this.prisma.cursoDisciplina.deleteMany({
-      where: { curso_id: id },
+      return {
+        nome: disciplina.nome,
+        codigo: disciplina.codigo,
+        turmas: disciplina.turmas.length,
+        alunos_matriculados: totalMatriculas,
+        notas_existentes: totalNotas,
+        frequencias_existentes: totalFrequencias,
+      };
     });
+
+    // Remover relacionamentos com disciplinas (será feito automaticamente pela cascata)
+    // await this.prisma.cursoDisciplina.deleteMany({
+    //   where: { curso_id: id },
+    // });
 
     await this.prisma.curso.delete({
       where: { id },
@@ -1861,6 +2010,11 @@ export class UsersService {
         nome: curso.nome,
         codigo: curso.codigo,
         descricao: curso.descricao,
+      },
+      dados_preservados: {
+        disciplinas_preservadas: curso.disciplinas.length,
+        detalhes_disciplinas: disciplinasInfo,
+        observacao: 'As disciplinas, turmas e dados acadêmicos foram preservados. Apenas a associação com o curso foi removida.',
       },
     };
   }

@@ -4,6 +4,8 @@ import {
   Body,
   UseGuards,
   Req,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -16,9 +18,11 @@ import {
   ApiNotFoundResponse,
   ApiConflictResponse,
   ApiBody,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateMatriculaDto } from '../users/dto/create-matricula.dto';
+import { DesmatricularAlunoDto } from '../users/dto/desmatricular-aluno.dto';
 import { MatriculaResponseEntity } from '../users/entities/matricula-response.entity';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { HandleErrors } from '../common/decorators/handle-errors.decorator';
@@ -28,7 +32,7 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class MatriculasController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({
@@ -92,5 +96,78 @@ export class MatriculasController {
     );
 
     return new MatriculaResponseEntity(result);
+  }
+
+  @Delete()
+  @ApiOperation({
+    summary: 'Desmatricular aluno de turma',
+    description:
+      'Desmatricula um aluno de uma turma específica. Remove automaticamente todas as notas e frequências associadas. Apenas administradores podem realizar esta operação.',
+  })
+  @ApiBody({
+    type: DesmatricularAlunoDto,
+    description:
+      'Dados para desmatrícula do aluno. Use matrícula do aluno e código da turma.',
+    examples: {
+      exemplo1: {
+        summary: 'Desmatrícula de turma',
+        description: 'Exemplo de desmatrícula de aluno',
+        value: {
+          matricula_aluno: '2025001',
+          codigo_turma: 'PROG1-2025-1A',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Aluno desmatriculado com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Aluno desmatriculado com sucesso',
+        },
+        aluno: {
+          type: 'object',
+          properties: {
+            nome: { type: 'string', example: 'João Silva' },
+            matricula: { type: 'string', example: '2025001' },
+          },
+        },
+        turma: {
+          type: 'object',
+          properties: {
+            codigo: { type: 'string', example: 'PROG1-2025-1A' },
+            disciplina: { type: 'string', example: 'Programação I' },
+          },
+        },
+        dados_removidos: {
+          type: 'object',
+          properties: {
+            notas_removidas: { type: 'number', example: 3 },
+            frequencias_removidas: { type: 'number', example: 15 },
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de acesso inválido ou não fornecido',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'Acesso negado. Apenas administradores podem realizar desmatrículas',
+  })
+  @ApiNotFoundResponse({
+    description: 'Aluno, turma ou matrícula não encontrados',
+  })
+  @HandleErrors('Acesso restrito a administradores')
+  async desmatricular(
+    @Body() desmatricularDto: DesmatricularAlunoDto,
+    @Req() request: any,
+  ) {
+    const adminId = request.user.sub;
+    return await this.usersService.desmatricularAluno(desmatricularDto, adminId);
   }
 }

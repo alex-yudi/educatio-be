@@ -64,8 +64,8 @@ model Disciplina {
 model CursoDisciplina {
   curso_id      Int
   disciplina_id Int
-  curso         Curso      @relation(fields: [curso_id], references: [id])
-  disciplina    Disciplina @relation(fields: [disciplina_id], references: [id])
+  curso         Curso      @relation(fields: [curso_id], references: [id], onDelete: Cascade)
+  disciplina    Disciplina @relation(fields: [disciplina_id], references: [id], onDelete: Cascade)
   criado_em     DateTime   @default(now())
 
   @@id([curso_id, disciplina_id])
@@ -84,7 +84,7 @@ model PreRequisito {
 model Turma {
   id            Int           @id @default(autoincrement())
   codigo        String        @unique
-  disciplina    Disciplina    @relation(fields: [disciplina_id], references: [id])
+  disciplina    Disciplina    @relation(fields: [disciplina_id], references: [id], onDelete: Cascade)
   disciplina_id Int
   professor     Usuario       @relation(fields: [professor_id], references: [id], name: "TurmasProfessor")
   professor_id  Int
@@ -100,7 +100,7 @@ model Turma {
 
 model HorarioAula {
   id            Int       @id @default(autoincrement())
-  turma         Turma     @relation(fields: [turma_id], references: [id])
+  turma         Turma     @relation(fields: [turma_id], references: [id], onDelete: Cascade)
   turma_id      Int
   dia_semana    DiaSemana
   hora_inicio   String // Formato HH:MM
@@ -122,7 +122,7 @@ model Matricula {
   id            Int          @id @default(autoincrement())
   estudante     Usuario      @relation(fields: [estudante_id], references: [id], name: "MatriculasAluno")
   estudante_id  Int
-  turma         Turma        @relation(fields: [turma_id], references: [id])
+  turma         Turma        @relation(fields: [turma_id], references: [id], onDelete: Cascade)
   turma_id      Int
   notas         Nota[]
   frequencias   Frequencia[]
@@ -135,7 +135,7 @@ model Matricula {
 
 model Nota {
   id            Int       @id @default(autoincrement())
-  matricula     Matricula @relation(fields: [matricula_id], references: [id])
+  matricula     Matricula @relation(fields: [matricula_id], references: [id], onDelete: Cascade)
   matricula_id  Int
   tipo          String
   valor         Float
@@ -147,7 +147,7 @@ model Nota {
 
 model Frequencia {
   id                Int       @id @default(autoincrement())
-  matricula         Matricula @relation(fields: [matricula_id], references: [id])
+  matricula         Matricula @relation(fields: [matricula_id], references: [id], onDelete: Cascade)
   matricula_id      Int
   data_aula         DateTime
   presente          Boolean   @default(true)
