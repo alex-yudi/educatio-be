@@ -18,7 +18,7 @@ export class LancarFrequenciaDto {
   })
   @IsInt()
   @IsNotEmpty()
-  @Min(1, { message: 'ID da turma deve ser um número positivo' })
+  @Min(0, { message: 'ID da turma deve ser um número positivo' })
   turma_id: number;
 
   @ApiProperty({
