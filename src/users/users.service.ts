@@ -855,6 +855,33 @@ export class UsersService {
       },
     });
   }
+  async findTurmasProfessor(professorId: number) {
+    return this.prisma.turma.findMany({
+      where: {
+        professor_id: professorId,
+      },
+      include: {
+        disciplina: {
+          select: {
+            nome: true,
+            codigo: true,
+          },
+        },
+        professor: {
+          select: {
+            nome: true,
+            email: true,
+          },
+        },
+        horarios: true,
+        _count: {
+          select: {
+            matriculas: true,
+          },
+        },
+      },
+    });
+  }
 
   // ===== MÉTODO PARA BUSCAR TURMA POR ID =====
   async findTurmaById(id: number) {

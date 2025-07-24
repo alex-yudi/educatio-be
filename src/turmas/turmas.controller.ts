@@ -115,7 +115,7 @@ export class TurmasController {
     operationId: 'getAllTurmas',
     summary: 'Listar turmas',
     description:
-      'Lista todas as turmas cadastradas no sistema. Administradores e professores podem acessar.',
+      'Quando em acesso do administrador, retorna todas as turmas cadastradas no sistema. Professores podem acessar apenas as turmas que lecionam.',
   })
   @ApiOkResponse({
     type: [TurmaEntity],
@@ -128,7 +128,28 @@ export class TurmasController {
     description:
       'Acesso negado. Apenas administradores e professores podem listar',
   })
-  async findAll() {
+  async findAll(@Req() request: any) {
+    const user = request.user;
+
+    if (user.role === 'professor') {
+      const turmas = await this.usersService.findTurmasProfessor(user.sub);
+      return turmas.map((turma) => ({
+        id: turma.id,
+        codigo: turma.codigo,
+        disciplina_id: turma.disciplina_id,
+        professor_id: turma.professor_id,
+        disciplina_nome: turma.disciplina.nome,
+        professor_nome: turma.professor.nome,
+        ano: turma.ano,
+        semestre: turma.semestre,
+        sala: turma.sala,
+        vagas: turma.vagas,
+        matriculados: turma._count.matriculas,
+        criado_em: turma.criado_em,
+        atualizado_em: turma.atualizado_em,
+      }));
+    }
+
     const turmas = await this.usersService.findAllTurmas();
     return turmas.map((turma) => ({
       id: turma.id,
