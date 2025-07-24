@@ -35,10 +35,10 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('frequencia')
 @ApiTags('Frequência')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 @UseGuards(ProfessorGuard)
 export class FrequenciaController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({

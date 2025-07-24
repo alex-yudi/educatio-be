@@ -35,7 +35,7 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('notas')
 @ApiTags('Notas')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 @UseGuards(ProfessorGuard)
 export class NotasController {
   constructor(private readonly usersService: UsersService) { }

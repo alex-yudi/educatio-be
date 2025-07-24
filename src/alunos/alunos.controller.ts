@@ -39,7 +39,7 @@ import { AlunoComMatriculasMapper } from '../common/mappers/aluno-com-matriculas
 
 @Controller('alunos')
 @ApiTags('Alunos')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 export class AlunosController {
   constructor(private readonly usersService: UsersService) { }
 

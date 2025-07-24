@@ -36,7 +36,7 @@ import { TurmaCompletaMapper } from '../common/mappers/turma-completa.mapper';
 
 @Controller('turmas')
 @ApiTags('Turmas')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 export class TurmasController {
   constructor(private readonly usersService: UsersService) { }
 

@@ -40,7 +40,7 @@ import { ProfessorComTurmasMapper } from '../common/mappers/professor-com-turmas
 
 @Controller('professores')
 @ApiTags('Professores')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 export class ProfessoresController {
   constructor(private readonly usersService: UsersService) { }
 

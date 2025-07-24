@@ -35,9 +35,9 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 
 @Controller('cursos')
 @ApiTags('Cursos')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 export class CursosController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AdminGuard)

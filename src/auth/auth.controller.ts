@@ -25,7 +25,7 @@ import { Headers } from '@nestjs/common';
 @Controller('auth')
 @ApiTags('Autenticação')
 export class AuthController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -86,7 +86,7 @@ export class AuthController {
   }
 
   @Get('verificar')
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiOperation({
     operationId: 'verificarToken',
     summary: 'Verificar token JWT e obter dados do usuário',

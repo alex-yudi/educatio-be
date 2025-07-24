@@ -34,7 +34,7 @@ import { HandleErrors } from '../common/decorators/handle-errors.decorator';
 @Controller('disciplinas')
 @ApiTags('Disciplinas')
 @UseGuards(AdminGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 export class DisciplinasController {
   constructor(private readonly usersService: UsersService) { }
 
