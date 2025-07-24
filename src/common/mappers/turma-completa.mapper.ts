@@ -11,6 +11,8 @@ export class TurmaCompletaMapper {
       ano: turma.ano,
       semestre: turma.semestre,
       vagas: turma.vagas,
+      disciplina_id: turma.disciplina_id,
+      professor_id: turma.professor_id,
       sala: turma.sala,
       total_matriculados: turma._count.matriculas,
       criado_em: turma.criado_em,

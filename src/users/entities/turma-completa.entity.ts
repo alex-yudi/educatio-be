@@ -115,6 +115,12 @@ export class TurmaCompletaEntity {
   @ApiProperty({ example: 30, description: 'Número de vagas da turma' })
   vagas: number;
 
+  @ApiProperty({ example: 1, description: 'ID da disciplina associada à turma' })
+  disciplina_id: number;
+
+  @ApiProperty({ example: 2, description: 'ID do professor responsável pela turma' })
+  professor_id: number;
+
   @ApiProperty({
     example: 'Sala A101',
     description: 'Sala da turma',
