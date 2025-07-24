@@ -24,6 +24,7 @@ import {
   ApiNotFoundResponse,
   ApiQuery,
   ApiBody,
+  ApiParam,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { LancarFrequenciaDto } from '../users/dto/lancar-frequencia.dto';
@@ -89,9 +90,10 @@ export class FrequenciaController {
   })
   @HandleErrors('Acesso restrito a professores')
   async lancarFrequencia(
-    @Body() lancarFrequenciaDto: LancarFrequenciaDto,
+    @Body() lancarFrequenciaDto,
     @Req() request: any,
   ) {
+    console.log('Lançando frequência:', lancarFrequenciaDto);
     const professorId = request.user.sub;
     const result = await this.usersService.lancarFrequencia(
       lancarFrequenciaDto,
@@ -114,6 +116,12 @@ export class FrequenciaController {
     - Mostra estatísticas: total de alunos, presentes, ausentes
     - Lista detalhada por aluno com status de presença
     - Dados incluem: ID, nome, matrícula e status (presente/ausente)`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da turma para consultar a frequência',
+    type: 'number',
+    example: 1,
   })
   @ApiOkResponse({
     description: 'Histórico de frequência da turma',
@@ -174,6 +182,36 @@ export class FrequenciaController {
     - A data_aula deve corresponder a uma aula já lançada
     - Apenas alterações necessárias são processadas
     - Sistema valida se professor é responsável pela turma`,
+  })
+  @ApiBody({
+    type: AlterarFrequenciaDto,
+    description: 'Dados para alteração da frequência de uma aula já registrada',
+    examples: {
+      exemplo1: {
+        summary: 'Alteração de frequência',
+        description: 'Exemplo de alteração de frequência para alunos de uma aula já registrada',
+        value: {
+          turma_id: 1,
+          data_aula: '2024-03-01',
+          alteracoes: [
+            { aluno_id: 7, presente: false },
+            { aluno_id: 8, presente: true },
+            { aluno_id: 11, presente: true }
+          ]
+        },
+      },
+      exemplo2: {
+        summary: 'Marcar aluno ausente como presente',
+        description: 'Exemplo alterando um aluno de ausente para presente',
+        value: {
+          turma_id: 2,
+          data_aula: '2024-03-02',
+          alteracoes: [
+            { aluno_id: 7, presente: true }
+          ]
+        },
+      },
+    },
   })
   @ApiOkResponse({
     type: AlterarFrequenciaResponseEntity,

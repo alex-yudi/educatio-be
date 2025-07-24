@@ -23,6 +23,7 @@ import {
   ApiConflictResponse,
   ApiNotFoundResponse,
   ApiBody,
+  ApiParam,
 } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
 import { CreateTurmaDto } from '../users/dto/create-turma.dto';
@@ -205,6 +206,12 @@ export class TurmasController {
     summary: 'Buscar turma por ID',
     description:
       'Retorna os dados completos de uma turma específica pelo seu ID, incluindo professor, disciplina e alunos matriculados. Administradores e professores podem realizar esta operação.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da turma a ser consultada',
+    type: 'number',
+    example: 1,
   })
   @ApiOkResponse({
     type: TurmaCompletaEntity,
