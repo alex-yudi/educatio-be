@@ -442,19 +442,19 @@ async function main() {
         // Notas do João (matricula1 - PROG1)
         {
           matricula_id: matricula1.id,
-          tipo: 'PROVA_1',
+          tipo: 'UNIDADE_1',
           valor: 8.5,
           criado_por_id: prof1.id,
         },
         {
           matricula_id: matricula1.id,
-          tipo: 'TRABALHO_1',
+          tipo: 'UNIDADE_2',
           valor: 9.0,
           criado_por_id: prof1.id,
         },
         {
           matricula_id: matricula1.id,
-          tipo: 'PROVA_2',
+          tipo: 'UNIDADE_3',
           valor: 7.8,
           criado_por_id: prof1.id,
         },
@@ -462,13 +462,13 @@ async function main() {
         // Notas do João (matricula2 - BD)
         {
           matricula_id: matricula2.id,
-          tipo: 'PROVA_1',
+          tipo: 'UNIDADE_1',
           valor: 7.2,
           criado_por_id: prof2.id,
         },
         {
           matricula_id: matricula2.id,
-          tipo: 'PROJETO',
+          tipo: 'UNIDADE_2',
           valor: 8.8,
           criado_por_id: prof2.id,
         },
@@ -476,13 +476,13 @@ async function main() {
         // Notas da Maria (matricula3 - PROG1)
         {
           matricula_id: matricula3.id,
-          tipo: 'PROVA_1',
+          tipo: 'UNIDADE_1',
           valor: 9.2,
           criado_por_id: prof1.id,
         },
         {
           matricula_id: matricula3.id,
-          tipo: 'TRABALHO_1',
+          tipo: 'UNIDADE_2',
           valor: 8.7,
           criado_por_id: prof1.id,
         },
@@ -490,27 +490,39 @@ async function main() {
         // Notas da Maria (matricula4 - PROG2)
         {
           matricula_id: matricula4.id,
-          tipo: 'PROVA_1',
-          valor: 8.9,
+          tipo: 'UNIDADE_1',
+          valor: 5,
           criado_por_id: prof3.id,
         },
         {
           matricula_id: matricula4.id,
-          tipo: 'PROJETO',
-          valor: 9.5,
+          tipo: 'UNIDADE_2',
+          valor: 4,
+          criado_por_id: prof3.id,
+        },
+        {
+          matricula_id: matricula4.id,
+          tipo: 'UNIDADE_3',
+          valor: 4,
+          criado_por_id: prof3.id,
+        },
+        {
+          matricula_id: matricula4.id,
+          tipo: 'UNIDADE_4',
+          valor: 8,
           criado_por_id: prof3.id,
         },
 
         // Notas do Lucas (matricula5 - BD)
         {
           matricula_id: matricula5.id,
-          tipo: 'PROVA_1',
+          tipo: 'UNIDADE_1',
           valor: 6.8,
           criado_por_id: prof2.id,
         },
         {
           matricula_id: matricula5.id,
-          tipo: 'TRABALHO_1',
+          tipo: 'UNIDADE_2',
           valor: 7.5,
           criado_por_id: prof2.id,
         },
@@ -518,13 +530,13 @@ async function main() {
         // Notas da Julia (matricula6 - ED)
         {
           matricula_id: matricula6.id,
-          tipo: 'PROVA_1',
+          tipo: 'UNIDADE_1',
           valor: 9.1,
           criado_por_id: prof4.id,
         },
         {
           matricula_id: matricula6.id,
-          tipo: 'LISTA_EXERCICIOS',
+          tipo: 'UNIDADE_2',
           valor: 8.6,
           criado_por_id: prof4.id,
         },
@@ -532,13 +544,13 @@ async function main() {
         // Notas do Rafael (matricula7 - PROG1)
         {
           matricula_id: matricula7.id,
-          tipo: 'PROVA_1',
+          tipo: 'UNIDADE_1',
           valor: 7.9,
           criado_por_id: prof1.id,
         },
         {
           matricula_id: matricula7.id,
-          tipo: 'TRABALHO_1',
+          tipo: 'UNIDADE_2',
           valor: 8.3,
           criado_por_id: prof1.id,
         },
