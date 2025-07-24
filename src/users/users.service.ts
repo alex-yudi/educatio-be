@@ -846,6 +846,21 @@ export class UsersService {
             email: true,
           },
         },
+        matriculas: {
+          select: {
+            id: true,
+            status: true,
+            estudante: {
+              select: {
+                id: true,
+                nome: true,
+                email: true,
+                matricula: true,
+              },
+            },
+            criado_em: true,
+          },
+        },
         horarios: true,
         _count: {
           select: {
@@ -871,6 +886,21 @@ export class UsersService {
           select: {
             nome: true,
             email: true,
+          },
+        },
+        matriculas: {
+          select: {
+            id: true,
+            status: true,
+            estudante: {
+              select: {
+                id: true,
+                nome: true,
+                email: true,
+                matricula: true,
+              },
+            },
+            criado_em: true,
           },
         },
         horarios: true,

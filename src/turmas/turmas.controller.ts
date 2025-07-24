@@ -118,7 +118,7 @@ export class TurmasController {
       'Quando em acesso do administrador, retorna todas as turmas cadastradas no sistema. Professores podem acessar apenas as turmas que lecionam.',
   })
   @ApiOkResponse({
-    type: [TurmaEntity],
+    type: [TurmaCompletaEntity],
     description: 'Lista de turmas',
   })
   @ApiUnauthorizedResponse({
@@ -133,39 +133,11 @@ export class TurmasController {
 
     if (user.role === 'professor') {
       const turmas = await this.usersService.findTurmasProfessor(user.sub);
-      return turmas.map((turma) => ({
-        id: turma.id,
-        codigo: turma.codigo,
-        disciplina_id: turma.disciplina_id,
-        professor_id: turma.professor_id,
-        disciplina_nome: turma.disciplina.nome,
-        professor_nome: turma.professor.nome,
-        ano: turma.ano,
-        semestre: turma.semestre,
-        sala: turma.sala,
-        vagas: turma.vagas,
-        matriculados: turma._count.matriculas,
-        criado_em: turma.criado_em,
-        atualizado_em: turma.atualizado_em,
-      }));
+      return turmas.map((turma) => TurmaCompletaMapper.toEntity(turma));
     }
 
     const turmas = await this.usersService.findAllTurmas();
-    return turmas.map((turma) => ({
-      id: turma.id,
-      codigo: turma.codigo,
-      disciplina_id: turma.disciplina_id,
-      professor_id: turma.professor_id,
-      disciplina_nome: turma.disciplina.nome,
-      professor_nome: turma.professor.nome,
-      ano: turma.ano,
-      semestre: turma.semestre,
-      sala: turma.sala,
-      vagas: turma.vagas,
-      matriculados: turma._count.matriculas,
-      criado_em: turma.criado_em,
-      atualizado_em: turma.atualizado_em,
-    }));
+    return turmas.map((turma) => TurmaCompletaMapper.toEntity(turma));
   }
 
   @Get('dropdown/options')
