@@ -13,7 +13,7 @@ export class LancarFrequenciaDto {
   @ApiProperty({
     example: 1,
     description: 'ID da turma onde será lançada a frequência',
-    minimum: 1,
+    minimum: 0,
     required: true,
   })
   @IsInt()
